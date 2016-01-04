@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="../../stylesheet.css" />
+
+    <title> Subtitles </title>
+
+    <style type="text/css">
+      body { counter-reset: chapter 30; }
+    </style>
+
+    <script type="text/javascript" src="../../toc.js"> 
+      /* empty */
+    </script>
+
+    <script type="text/javascript">
+      /* <![CDATA[ */
+    (function() {
+        var s = document.createElement("script"), t = document.getElementsByTagName("script")[0];
+        s.type = "text/javascript";
+        s.async = true;
+        s.src = "http://api.flattr.com/js/0.6/load.js?mode=auto";
+        t.parentNode.insertBefore(s, t);
+    })();
+/* ]]> */
+    </script>
+
+
+    <link rel="stylesheet" type="text/css" href="../../js/doc/style.css">
+    <!-- <link rel="stylesheet" type="text/css" href="../../js/css/sh_emacs.css"> -->
+    <link rel="stylesheet" type="text/css" href="../../js/sh_style.css">
+    <script type="text/javascript" src="../../js/sh_main.min.js"></script>
+    <script type="text/javascript" src="../../js/lang/sh_cpp.min.js"></script>
+    
+
+  </head>
+  <body onload="sh_highlightDocument();">
+
+    <!--#include virtual="../../header.html" -->
+
+
+    <div class="chapter">
+      <h1> Subtitles </h1>
+    </div>
+
+    <div class="preface">
+      <p>
+	Many Karaoke systems use subtitles imposed over a movie
+	of some kind. This chapter looks at how to do this with
+	Linux systems. There are limited choices, but it is possible.
+      </p>
+    </div>
+
+    <div id="generated-toc" class="generate_from_h2"></div>
+
+    <h2> Resources </h2>
+    <p>
+</p>
+      <ul>
+	<li>
+	  <a href="http://sub.wordnerd.de/linux-subs.html">
+	    Subtitling with Linux Tutorial
+	  </a>
+	</li>
+      </ul>
+<p>
+    </p>
+
+    <h2> Introduction </h2>
+    <p>
+      Programs like <code>kmid</code> and my Java programs
+      play lyrics on some sort of canvas object. This gives
+      a pretty boring background.
+      Video CDs or MPEG 4 files have a nicer background, but
+      have the lyrics hard-coded
+      onto the background video so there is little chance
+      for manipulation of them.
+      CD+G files keep the lyrics separate from the video
+      but there doesn't seem to be any way of playing them
+      directly from Linux. They can be converted to MP3+G
+      and these can be played by <code>vlc</code>:
+      load the MP3 file and it will pick up the corresponding
+      <code>.cdg</code> file.
+    </p>
+
+    <p>
+      This chapter considers subtitles that can be created
+      independently, combined with video and audio in some
+      way and then played. The current situation is not
+      completely satisfactory.
+    </p>
+
+    <h2> Subtitle formats </h2>
+    <p>
+      We are concerned here with what are called "soft subtitles"
+      where the subtitles are stored in a separate file to the
+      video or audio and are combined during rendering.
+      The Wikipedia page
+      <a href="http://en.wikipedia.org/wiki/Subtitle_%28captioning%29">
+	Subtitle (captioning)
+      </a>
+      is a long article going into many issues about subtitling.
+      It also contains a list of subtitle formats, but the one
+      that seems to be of most use in in this context is
+      SubStation Alpha.
+    </p>
+
+    <h2> MPlayer </h2> 
+    <p>
+      According to the MPlayer page
+      <a href="http://www.mplayerhq.hu/DOCS/HTML/en/subosd.htm">
+	Subtitles and OSD
+      </a>
+      The formats recognised by <code>mplayer</code> are
+</p>
+      <ul>
+	<li>
+	  VOBsub
+	</li>
+	<li>
+	  OGM
+	</li>
+	<li>
+	  CC (closed caption)
+      	</li>
+	<li>
+	  MicroDVD
+	</li>
+	<li>
+	  SubRip
+	</li>
+	<li>
+	  SubViewer
+	</li>
+	<li>
+	  Sami
+	</li>
+	<li>
+	  VPlayer
+	</li>
+	<li>
+	  RT
+	</li>
+	<li>
+	  SSA
+	</li>
+	<li>
+	  PJS (Phoenix Japanimation Society)
+	</li>
+	<li>
+	  MPsub
+	</li>
+	<li>
+	  AQTitle
+	</li>
+	<li>
+	  JACOsub 
+	</li>
+      </ul>
+<p>
+    </p>
+
+<!--
+    <p>
+      However, according to David Jao's
+      <a href="http://dominia.org/djao/dvdsub.ver3-3.html">
+	Linux Digital Fansubbing Guide
+      </a>, when it comes to SubStation Alpha subtitle scripts
+</p>
+      <blockquote>
+      <ul>
+	<li>
+	  mplayer cannot simultaneously display two different subtitles
+	  on the screen at the same time!
+	</li>
+	<li>
+	  mplayer does not (yet) allow you to place a particular subtitle 
+	  in a special position on the screen, different from all of your 
+	  other subtitles!
+	</li>
+	<li>
+	  mplayer cannot automatically generate "balanced" subtitles; 
+	  that is, multiple line subtitles where the different lines of 
+	  text are as close as possible to being equal length. 
+	  If you prefer balanced subtitles then you will have to manually 
+	  add line breaks into your script.
+	</li>
+	<li>
+	  mplayer does not understand most Sub Station Alpha formatting 
+	  codes, so any such codes in your script will most likely 
+	  result in mplayer displaying junk on the screen.
+	</li>
+      </ul>
+      </blockquote>
+<p>
+      Although this is dated 2002 this corresponds to my own 
+      experience, given below.
+    </p>
+-->
+
+    <h2> VLC </h2>
+    <p>
+      According to the
+      <a href="http://www.videolan.org/vlc/features.php?cat=sub">
+	VLC playback Features - Subtitle/Tag
+      </a>
+      VLC support under Linux includes the following subtitle formats:
+</p>
+      <ul>
+	<li>
+	  DVD
+	</li>
+	<li>
+	  Text files (MicroDVD,
+	  SubRIP, SubViewer, SSA1-5, SAMI, VPlayer)
+	</li>
+	<li>
+	  Closed captions
+	</li>
+	<li>
+	  Vobsub
+	</li>
+	<li>
+	  Universal Subtitle Format (USF)
+	</li>
+	<li>
+	  SVCD / CVD
+	</li>
+	<li>
+	  DVB
+	</li>
+	<li>
+	  OGM
+	</li>
+	<li>
+	  CMML
+	</li>
+	<li>
+	  Kate
+	</li>
+      </ul>
+<p>
+    </p>
+
+    <p>
+      If you play some sort of video file, say XYZ.mpg, and there
+      is also a file with the same root name and appropriate extension
+      such as XYZ.ass (extension for SubStation Alpha),
+      then VLC will automatically load the subtitles file and play it.
+      If the subtitles file has a different name then it can be loaded
+      from the VLC menu Video-&gt;Subtitles Track. However, this does
+      not appear to be as reliable as sharing the name.
+    </p>
+
+    <!--
+    <p>
+      Like MPlayer, VLC does not seem to support advanced subtitling
+      effects on SubStation Alpha subtitle files. Both MPlayer
+      (actually, MPlayer2) and VLC use the <code>libass</code>
+      library to do subtitle rendering, so perhaps this is lacking such support.
+    </p>
+    -->
+
+    <h2> GStreamer </h2>
+    <p>
+      See 
+      <a href="http://docs.gstreamer.com/display/GstSDK/Playback+tutorial+2%3A+Subtitle+management">
+	Playback tutorial 2: Subtitle management
+      </a>
+    </p>
+
+    <p>
+      See
+      <a href="http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gst-plugins-base-plugins/html/gst-plugins-base-plugins-subtitleoverlay.html">
+	subtitleoverlay
+      </a> (Pipeline given doesn't work).
+    </p>
+
+  
+    <p>
+      Has plugin assrender.
+    </p>
+
+    <h2> Gnome subtitles </h2>
+    <p>
+      See
+      <a href="http://gnome-subtitles.sourceforge.net/">
+	Gnome Subtitles 1.3 is out!
+      </a> supports
+    Adobe Encore DVD
+    Advanced Sub Station Alpha
+    AQ Title
+    DKS Subtitle Format
+    FAB Subtitler
+    Karaoke Lyrics LRC
+    Karaoke Lyrics VKT
+    MacSUB
+    MicroDVD
+    MPlayer
+    MPlayer 2
+    MPSub
+    Panimator
+    Phoenix Japanimation Society
+    Power DivX
+    Sofni
+    SubCreator 1.x
+    SubRip
+    Sub Station Alpha
+    SubViewer 1.0
+    SubViewer 2.0
+    ViPlay Subtitle File
+    </p>
+
+    <h2> SubStation Alpha </h2>
+    <p>
+      The SSA/ASS specification is at
+      <a href="http://moodub.free.fr/video/ass-specs.doc">
+	MooDub.free
+      </a>
+      It is brief and appears to contain some minor errors with respect
+      to later specifications and implementations: for example, the time format
+      is different. Or are the later ones all wrong?
+    </p>
+
+    <p>
+      SSA/ASS files can be used standalone. They can also be included
+      in container formats such as Matroska files, discussed briefly
+      in the 
+      <a href="../../Sampled/Codecs/">Codecs</a>
+      chapter. When they are embedded into  MKV files,
+      some 
+      <a href="http://www.matroska.org/technical/specs/subtitles/ssa.html">
+	restrictions 
+      </a>
+      are made, such as the text being converted
+      into UTF-8 Unicode.
+    </p>
+
+    <p>
+      ASS files are divided into several sections:
+</p>
+      <ul>
+	<li>
+	  General information about the environment the subtitle
+	  file expects, such as the X and Y resolutions
+	</li>
+	<li>
+	  Style information such as colours and fonts
+	</li>
+	<li>
+	  Event information, which is where the subtitle text is
+	  given along with timing information and 
+	  any special effects to be applied
+	</li>
+      </ul>
+<p>
+    </p>
+
+    <p>
+      Under normal circumstances you would not directly create
+      such files using a text editor. Instead, the program
+      <code>Aegisub</code> gives you a GUI environment in which
+      to create the files. Essentially, you just enter the text
+      by lines, plus the start and end times for the line to 
+      be displayed.
+    </p>
+
+    <p>
+      A screen dump is <br/>
+      <img alt="" src="aegisub.png" />
+    </p>
+
+    <p>
+      Many special effects are possible. 
+      The video on
+      <a href="https://billcreswell.wordpress.com/tag/aegisub/">
+	Bill Cresswell's
+      </a> blog is an excellent example.
+      Here is the direct
+      <a href="http://www.youtube.com/watch?v=0Z0dgdglrAo">
+	YouTube
+      </a>
+      link.
+    </p>
+
+    <p>
+      For completeness, here is part of an ASS file I created:
+</p>
+      <pre>
+	<code>
+[Script Info]
+; Script generated by Aegisub 2.1.9
+; http://www.aegisub.org/
+Title: Default Aegisub file
+ScriptType: v4.00+
+WrapStyle: 0
+PlayResX: 640
+PlayResY: 480
+ScaledBorderAndShadow: yes
+Video Aspect Ratio: 0
+Video Zoom: 6
+Video Position: 0
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Default,Arial,20,&amp;H00FFFFFF,&amp;H00B4FCFC,&amp;H00000008,&amp;H80000008,0,0,0,0,100,100,0,0,1,2,2,2,10,10,10,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:18.22,0:00:19.94,Default,,0000,0000,0000,,Here comes the sun
+Dialogue: 0,0:00:20.19,0:00:21.75,Default,,0000,0000,0000,,doo doo doo doo
+Dialogue: 0,0:00:22.16,0:00:24.20,Default,,0000,0000,0000,,Here comes the sun
+Dialogue: 0,0:00:24.61,0:00:28.24,Default,,0000,0000,0000,,I said it's alright
+...
+	</code>
+      </pre>
+<p>
+    </p>
+
+    <h2> Karaoke effects in ASS files </h2>
+    <p>
+      A line in an ASS file essentially consists of a time to start
+      display, a time to finish the display and the text itself.
+      However, Karaoke users are accustomed to the text being 
+      highlighted as it is played.
+    </p>
+
+    <p>
+      ASS supports two major highlight styles:
+</p>
+      <ul>
+	<li>
+	  Words are highlighted one at a time
+	</li>
+	<li>
+	  The text is highlighted by filling from the left
+	</li>
+      </ul>
+<p>
+      These effects are done by embedding "Karaoke overrides"
+      into the text. These are in {} brackets with a duration
+      time in hundredths of a second.
+    </p>
+
+    <p>
+      The details are
+    </p>
+      <dl>
+	<dt>
+	  Word highlighting
+	</dt>
+	<dd>
+	  An override of the form {\k&lt;time&gt;}
+	  will highlight the following word for <em>time</em>
+	  hundredths of a second.
+	  An example would be
+	  <pre>
+	    <code>
+{\k100}Here {\k150}comes {\k50}the {\k150}sun
+	    </code>
+	  </pre>
+	</dd>
+	<dt>
+	  Fill highlighting
+	</dt>
+	<dd>
+	  An override of the form {\kf&lt;time&gt;}
+	  will progressively fill up the following word for <em>time</em>
+	  hundredths of a second.
+	  An example would be
+	  <pre>
+	    <code>
+{\kf100}Here {\kf150}comes {\kf50}the {\kf150}sun
+	    </code>
+	  </pre>
+	</dd>
+      </dl>
+    
+
+    <p>
+      The three styles appear as
+</p>
+      <ul>
+	<li>
+	  Lines with no highlighting <br/>
+	  <img alt="" src="line.png"/>
+	</li>
+	<li>
+	  Word highlighting <br/>
+	  <img alt="" src="word.png"/>
+	</li>
+	<li>
+	  Fill highlighting <br/>
+	  <img alt="" src="fill.png"/>
+	</li>
+      </ul>
+<p>
+    </p>
+
+    <h2> Multi-line Karaoke </h2>
+    <p>
+      Ideally, a Karaoke system should have a "look ahead" mechanism whereby
+      you can see the next line before having to sing it. This can be done by
+      showing two lines of text with overlapping times at different heights.
+      The algorithm is:
+</p>
+      <pre>
+	<code>
+When line N with markup is shown,
+    show line N+1 without markup
+After line N is finished, continue showing line N+1
+When line N+1 is due to show,
+     finish showing unmarked line N+1
+     show line N+1 with markup
+	</code>
+      </pre>
+<p>
+    </p>
+
+    <p>
+      For the song Here Comes the Sun with lyrics
+</p>
+      <pre>
+	<code>
+Here comes the sun
+doo doo doo doo
+Here comes the sun
+I said it's alrigh
+	</code>
+      </pre>
+<p>
+      the resultant ASS file should look like
+      <pre>
+	<code>
+Dialogue: 0,0:00:18.22,0:00:19.94,Default,,0000,0000,0100,,{\kf16}Here {\kf46}comes {\kf43}the {\kf67}sun
+Dialogue: 0,0:00:18.22,0:00:20.19,Default,,0000,0000,0000,,doo doo doo doo
+Dialogue: 0,0:00:20.19,0:00:21.75,Default,,0000,0000,0000,,{\kf17}doo {\kf25}doo {\kf21}doo {\kf92}doo
+Dialogue: 0,0:00:20.19,0:00:22.16,Default,,0000,0000,0100,,Here comes the sun
+Dialogue: 0,0:00:22.16,0:00:24.20,Default,,0000,0000,0100,,{\kf17}Here {\kf46}comes {\kf43}the {\kf97}sun
+Dialogue: 0,0:00:22.16,0:00:24.61,Default,,0000,0000,0000,,I said it's alright
+	</code>
+      </pre>
+<p>
+      with appearance <br/>
+      <img alt="" src="multiline.png"/>
+    </p>
+
+    <h2> libass </h2>
+    <p>
+      Sub Station Alpha and its renderers appear to have been through a complex
+      history. According to
+      <a href="http://blog.aegisub.org/2010/02/old-and-present-vsfilter.html">
+	The old and present: VSFilter
+      </a>
+      the ASS format was finalised about 2004, and the renderer
+      VSFilter was made open source at this time.
+      However, around 2007 development of VSFilter ceased
+      and several forks were made. These introduced several
+      extensions to the format, such as the <em>blur</em> tag
+      by Aegisub. Some of these forks since merged, some were abandoned,
+      and for some of these forks there is still code in the wild.
+    </p>
+
+    <p>
+      <a href="http://code.google.com/p/libass/">
+	libass 
+      </a> is the main rendering library for Linux. An alternative,
+      xy-vsfilter, claims to be faster, more reliable, etc but does
+      not seem to have a Linux implementation.
+      libass supports some of the later extensions - these seem to be
+      the Aegisub 2008 extensions:
+      <a href="http://blog.aegisub.org/2008/07/vsfilter-hacks.html">
+	VSFilter hacks
+      </a>.
+    </p>
+
+    <h2> Converting KAR files to MKV files with ASS subtitles </h2>
+    <p>
+      Well, it's not hard...
+</p>
+      <ul>
+	<li>
+	  In order to pull out the lyrics form a KAR or MIDI file, use the Java 
+	  <code>DumpSequence</code> given in the
+	  <a href="../../MIDI/JavaSound/">
+	    MIDI - JavaSound 
+	  </a> chapter, as in 
+	  <pre>
+	    <code>
+java DumpSequence  song.kar  &gt; song.dump
+	    </code>
+	  </pre>
+<p>
+	  to get a dump of all events
+	</li>
+	<li>
+	  For line-only display, use the following Python script to extract the lyrics and
+	  save them in ASS format
+      <pre>
+	<code>
+      <!--#exec cmd="/usr/local/bin/escape.pl . songs/lyric2ass4kar.py" -->
+	</code>
+      </pre>
+<p>
+       as in
+      <pre>
+	<code>
+python lyric2ass4kar.py song.dump &gt; song.ass
+	</code>
+      </pre>
+	</li>
+	<li>
+	  For fill lyrics display, use the following Python script to extract the lyrics and
+	  save them in ASS format
+      <pre>
+	<code>
+      <!--#exec cmd="/usr/local/bin/escape.pl . songs/lyric2karaokeass4kar.py" -->
+	</code>
+      </pre>
+<p>
+       as in
+      <pre>
+	<code>
+python lyric2karaokeass4kar.py song.dump &gt; song.ass
+	</code>
+      </pre>
+	</li>
+	<li>
+	  For multiline lyrics display, use the following Python script to extract the lyrics and
+	  save them in ASS format
+      <pre>
+	<code>
+      <!--#exec cmd="/usr/local/bin/escape.pl . songs/lyric2fullkaraokeass4kar.py" -->
+	</code>
+      </pre>
+<p>
+       as in
+      <pre>
+	<code>
+python lyric2karaokeass4kar.py song.dump &gt; song.ass
+	</code>
+      </pre>
+	</li>
+	<li>
+	  Convert the MIDI sound file to a WAV file using 
+	  <code>fluidsynth</code>:
+	  <pre>
+	    <code>
+fluidsynth -F song.wav /usr/share/sounds/sf2/FluidR3_GM.sf2 song.kar
+	    </code>
+	  </pre>
+	</li>
+	<li>
+	  Convert the WAV file to MP3:
+	  <pre>
+	    <code>
+lame song.wav song.mp3
+	    </code>
+	  </pre>
+	</li>
+	<li>
+	  Find a suitable video-only file for your background - 
+	  I used one off my Karaoke disks - and then merge
+	  then into an MKV file:
+	  <pre>
+	    <code>
+mkvmerge -o 54154.mkv 54154.mp3 54154.ass BACK01.MPG
+	    </code>
+	  </pre>
+	</li>
+      </ul>
+<p>
+    </p>
+
+    <p>
+      The resultant MKV file can then by played as a standalone
+      file by MPlayer:
+</p>
+      <pre>
+	<code>
+mplayer song.mkv
+	</code>
+      </pre>
+<p>
+      It can also be played by VLC, but only with the ASS file
+      present
+      <pre>
+	<code>
+vlc song.mkv
+	</code>
+      </pre>
+<p>
+      Screen captures were shown before, depending on the Karaoke effect
+      chosen.
+    </p>
+
+    <p>
+      Timing is however an issue: the default MIDI tempo is 120 beats per minute
+      and a common tick rate is 30 ticks per beat. This leads to a rate of
+      60 MIDI ticks per second. However, we are now playing MP3 files and ASS files
+      neither of which are MIDI files any more and
+      which are not necessarily synchronised, and with a rate of 60 ticks per
+      second in converting from MIDI to ASS, the lyrics run too slow.
+      Experimentally I have found 62.9 to be a reasonable rate for at least
+      some files...
+    </p>
+
+    <h2> HTML5 subtitles </h2>
+    <p>
+      HTML 5 has support for video types, although exactly what video
+      format is supported by which brower is variable.
+      Standard audio and video was discussed in the chapter
+      on <a href="../../Streaming/HTML5/"> Streaming HTML5 </a>.
+    </p>
+ 
+    <p>
+      A more recent development has been to include subtitles in HTML5 video.
+      Under Linux it is currently (June 2013) only supported by the Chromium
+      browser. A tutorial is at
+      <a href="html5doctor.com/video-subtitling-and-webvtt/">
+	Video Subtitling and WebVTT:  HTML5 Doctor
+      </a> and specified at
+      <a href="http://dev.w3.org/html5/spec-preview/the-track-element.html">
+	HTML5: 4.8.9 The track element
+      </a>.
+    </p>
+    <p>
+      You need to prepare a file of timing and text instructions.
+      The format shown in examples is as a .vtt file and can be
+</p>
+      <pre>
+	<code>
+WEBVTT
+
+1
+00:00:01.000 --&gt; 00:00:30.000  D:vertical A:start
+This is the first line of text, displaying from 1-30 seconds
+
+2
+00:00:35.000 --&gt; 00:00:50.000
+And the second line of text
+separated over two lines from 35 to 50 seconds
+        </code>
+      </pre>
+<p>
+      where the first line is "WEBVTT" and blocks of text are separated by
+      blank lines.
+      The format of VTT files is specified at
+      <a href="http://dev.w3.org/html5/webvtt/">
+	WebVTT: The Web Video Text Tracks Format
+      </a>.
+    </p>
+
+    <p>
+      The HTML then references the A/V files and the subtitle file as in
+</p>
+      <pre>
+	<code>
+    &lt;video  controls&gt;
+      &lt;source src="output.webm" controls&gt;
+      &lt;track src="54154.vtt" kind="subtitles" srclang="en" label="English" default /&gt;
+      &lt;!-- fallback for rubbish browsers --&gt;
+    &lt;/video&gt;
+	</code>
+      </pre>
+<p>
+      A screen capture is <br/>
+      <img alt="" src="chrome.png"/>
+    </p>
+
+    <p>
+      There does no seem to be any mechanism for highlighting words
+      progressively in a line.
+      Possibly JavaScript may be able to do so, but at a cursory look it
+      doesn't seem likely. This makes it not yet suitable for Karaoke.
+    </p>
+
+    <h2> Conclusion </h2>
+    <p>
+      This chapter has discussed methods for overlaying subtitle text
+      onto a changing video image. It is feasible, but there are only
+      a few viable mechanisms.
+    </p>
+
+
+
+      <!--#exec cmd="/usr/local/bin/escape.pl . OpenMAX_AL_playback.c" -->
+
+
+<!--
+
+
+Convert MPG o WEBM by
+
+ffmpeg -i in.mpg out.webm
+
+      Extract sub from VOB file by
+      mencoder appleseed.vob -nosound -ovc copy -o /dev/null -vobsubout appleseed -sid 0 -vobsuboutindex 0 -vobsuboutid en
+      http://mplayerhq.hu/pipermail/mplayer-users/2005-May/053175.html
+
+      Try to playback using 
+      mplayer -vo xv -vobsub  appleseed.sub -vobsubid 0 ~/dvdrip-data/unnamed/vob/002/unnamed-002.vob
+      (Loses subtitle)
+
+
+
+
+
+      Doesn't work, but intresting:
+      gst-launch -v filesrc location=54154.mkv ! matroskademux name=d ! queue ! mp3parse ! mad ! audioconvert ! autoaudiosink  d. ! queue ! ffdec_h264 ! ffmpegcolorspace ! r.   d. ! queue ! "application/x-ass" ! assrender name=r ! ffmpegcolorspace ! autovideosink
+
+
+Chrome supported A/V formats:
+https://sites.google.com/a/chromium.org/dev/audio-video
+
+-->    
+
+  <!--#include virtual="../../footer.html" -->
+
+  </body>
+</html>

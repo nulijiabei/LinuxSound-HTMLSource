@@ -1,0 +1,4 @@
+#!/bin/bash
+
+sleep 0.5s
+mplayer -af pan=1:1 "$*" > /dev/null 2> /dev/null

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="../../stylesheet.css" />
+
+    <title> Karaoke Overview </title>
+
+    <style type="text/css">
+        body { counter-reset: chapter 24; }
+    </style>
+
+    <script type="text/javascript" src="../../toc.js"> 
+      /* empty */
+    </script>
+
+   <script type="text/javascript">
+/* <![CDATA[ */
+    (function() {
+        var s = document.createElement("script"), t = document.getElementsByTagName("script")[0];
+        s.type = "text/javascript";
+        s.async = true;
+        s.src = "http://api.flattr.com/js/0.6/load.js?mode=auto";
+        t.parentNode.insertBefore(s, t);
+    })();
+/* ]]> */
+    </script>
+
+
+   <link rel="stylesheet" type="text/css" href="../../js/doc/style.css">
+   <!-- <link rel="stylesheet" type="text/css" href="../../js/css/sh_emacs.css"> -->
+   <link rel="stylesheet" type="text/css" href="../../js/sh_style.css">
+   <script type="text/javascript" src="../../js/sh_main.min.js"></script>
+   <script type="text/javascript" src="../../js/lang/sh_cpp.min.js"></script>
+   
+
+  </head>
+  <body onload="sh_highlightDocument();">
+
+    <!--#include virtual="../../header.html" -->
+
+
+    <div class="chapter">
+        <h1> Overview </h1>
+     </div>
+
+    <div class="preface">
+      <p>
+	This chapter gives a quick summary of the successive chapters.
+      </p>
+    </div>
+
+    <div id="generated-toc" class="generate_from_h2"></div>
+
+    <h2> Overview </h2>
+    <p>
+      The whole purpose of this book - from my point of view -
+      is to document what is going on in Linux Sound in my path
+      to building a Linux Karaoke system. I'm still on the way.
+      This chapter looks at various explorations I have made using
+      the material of previous chapters.
+    </p>
+
+    <p>
+      First, what are my goals?
+    </p>
+      <ul>
+	<li>
+	  Be able to play KAR files (one of the possible Karaoke file formats)
+	</li>
+	<li>
+	  Show the lyrics at least one line at a time, highlighting the
+	  characters when they should be sung
+	</li>
+	<li>
+	  For Chinese songs, also show the Pinyin (English) form of
+	  the lyrics as well as the Chinese characters
+	<li>
+	  Play a movie in the background
+	</li>
+	<li>
+	  Display the melody in some form
+	</li>
+	<li>
+	  Show the notes actually sung against the melody
+	</li>
+	<li>
+	  Score the results in some way
+	</li>
+      </ul>
+
+
+    <p>
+      Nothing I have yet done gets anywhere near these goals.
+      Let me pick out the highlights of my explorations so far:
+    </p>
+      <ul>
+	<li>
+	  The simplest "off the shelf" system is 
+	  <a href="../User/">
+	    PyKaraoke
+	  </a>,
+	  with
+	  <a href="../User/">
+	    kmid
+	  </a> a close follower.
+	  These play KAR files and highlight the lyrics but no more.
+	</li>
+	<li>
+	  The simplest way to add microphone input to such a system is to
+	  use an  <a href="../User/">external mixer</a>.
+	  These can also do reverb and other effects
+	</li>
+	<li>
+	  Jack and PulseAudio can trivially be used to add in microphone
+	  input as play-through, but effects take more work
+	<li>
+	  <a href="../JavaSound/">
+	    Java
+	  </a> is really cool for nearly everything - except latency
+	  ruins it in the end
+	</li>
+	<li>
+	  <a href="../FluidSynth/">FluidSynth</a> can be hacked to
+	  give hooks to hang Karaoke from. But it is CPU intensive
+	  and doesn't leave room for much other processing
+	</li>
+	<li>
+	  <a href="../Timidity/">TiMidity</a> is a standalone system with
+	  configurable backends. It can be configured to give a crude
+	  Karaoke system. But it can be hacked to make it into a library
+	  which gives it more potential. It is not as CPU intensive
+	  as FluidSynth.
+	</li>
+	<li>
+	  Playing a background movie can be done using FFMpeg and
+	  a GUI such as
+	  <a href="../../Diversions/Gtk/"> Gtk </a>.
+	  Gtk also has the mechanisms for overlaying highlighted lyrics
+	  on top of the video, but Gtk 2 and Gtk 3 differ in the mechanism
+	</li>
+	<li>
+	  TiMidity can be <a href="../Timidity/">combined</a> with
+	  FFMpeg and GtK to display hightlighted lyrics against a movie background
+	</li>
+	<li>
+	  Scoring is still out of sight right now, although the Java library
+	  TarsosDSP can give lots of information
+	</li>
+      </ul>
+
+
+    <p>
+      The following chapters cover:
+    </p>
+      <dl>
+	<dt>
+	  <a href="../User/"> User level tools </a>
+	</dt>
+	<dd>
+	  Karaoke is an "audience participation" sound system,
+	  in which the soundtrack and usually the melody are played 
+	  along with a moving display of the lyrics. 
+	  This chapter considers the features, formats and user-level 
+	  tools for playing Karaoke.
+	</dd>
+	<dt>
+	  <a href="../Sonken/"> Decoding the DKD files on the Songken Karaoke DVD </a>
+	</dt>
+	<dd>
+	  This chapter is about getting the information off my Songken Karaoke DVD 
+	  so that I can start writing programs to play the songs.
+	  It is not directly involved in playing sound under Linux and can be skipped.
+	</dd>
+	<dt>
+	  <a href="../JavaSound/"> JavaSound </a>
+	</dt>
+	<dd>
+	  JavaSound has no direct support for Karaoke. This chapter looks at how to combine the JavaSound libraries with other libraries such as Swing to give a Karaoke player for MIDI files.
+	</dd>
+	<dt>
+	  <a href="../Subtitles/"> Subtitles </a>
+	</dt>
+	<dd>
+	  Many Karaoke systems use subtitles imposed over a movie of some kind. This chapter looks at how to do this with Linux systems. There are limited choices, but it is possible.
+	</dd>
+	<dt>
+	  <a href="../FluidSynth/"> FluidSynth </a>
+	</dt>
+	<dd>
+	  FluidSynth is an application for playing MIDI files and a library for MIDI applications. It does not have the hooks for playing Karaoke files. This chapter discusses an extension to FluidSynth which adds appropriate hooks, and then uses these to build a variety of Karaoke systems.
+	</dd>
+	<dt>
+	  <a href="TiMidity"> Timidity </a>
+	</dt>
+	<dd>
+	  TiMidity is designed as a standalone application with a particular kind of extensibility. Out of the box it can sort-of play Karaoke but not well. This chapter looks at how to work with TiMidity to build a Karaoke system.
+	</dd>
+      </dl>
+    
+
+
+    <!--#include virtual="../../footer.html" -->
+
+  </body>
+</html>

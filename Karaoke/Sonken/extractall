@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# Show the SongTable or
+# extract a song with a given index
+
+SONGDIR=/server/KARAOKE/KARAOKE/Sonken/
+PLAYDIR=/home/httpd/html/LinuxSound/Karaoke/JavaSound
+
+set -x
+
+n=45179
+while [ $n -lt 50000 ]
+do
+    match=`grep "^$n " allsonglist.txt`
+    if [ -z "$match" ]
+    then
+	let n=$n+1
+	continue
+    fi
+    if `echo $match | grep -- "-  -"`
+    then
+	let n=$n+1
+	continue;
+    fi
+
+    cd java
+    java SongExtracter $n
+    java KARConverter ${SONGDIR}/$n
+    [ -f $n.wma ] && mv $n.* $SONGDIR
+    cd ..
+
+    let n=$n+1
+
+done
+
+exit 0

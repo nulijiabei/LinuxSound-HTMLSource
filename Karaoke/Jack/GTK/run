@@ -1,0 +1,5 @@
+#!/bin/bash
+
+T=../../../MIDI/Timidity/TiMidity++-2.14.0/timidity/timidity
+$T -d. -ik -Oj  --trace  --trace-text-meta $*
+#$T   --trace  --trace-text-meta $*

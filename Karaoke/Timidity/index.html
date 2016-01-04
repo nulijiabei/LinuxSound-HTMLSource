@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="../../stylesheet.css" />
+
+    <title> TiMidity</title>
+
+    <style type="text/css">
+        body { counter-reset: chapter 32; }
+    </style>
+
+    <script type="text/javascript" src="../../toc.js"> 
+   /* empty */
+   </script>
+
+   <script type="text/javascript">
+/* <![CDATA[ */
+    (function() {
+        var s = document.createElement("script"), t = document.getElementsByTagName("script")[0];
+        s.type = "text/javascript";
+        s.async = true;
+        s.src = "http://api.flattr.com/js/0.6/load.js?mode=auto";
+        t.parentNode.insertBefore(s, t);
+    })();
+/* ]]> */
+    </script>
+
+
+   <link rel="stylesheet" type="text/css" href="../../js/doc/style.css">
+   <!-- <link rel="stylesheet" type="text/css" href="../../js/css/sh_emacs.css"> -->
+   <link rel="stylesheet" type="text/css" href="../../js/sh_style.css">
+   <script type="text/javascript" src="../../js/sh_main.min.js"></script>
+   <script type="text/javascript" src="../../js/lang/sh_cpp.min.js"></script>
+   
+
+  </head>
+  <body onload="sh_highlightDocument();">
+
+    <!--#include virtual="../../header.html" -->
+
+
+    <div class="chapter">
+        <h1> TiMidity</h1>
+     </div>
+
+    <div class="preface">
+      <p>
+	TiMidity is designed as a standalone application with a
+	particular kind of extensibility. Out of the box it
+	can sort-of play Karaoke but not well.
+	This chapter looks at how to work with TiMidity to
+	build a Karaoke system.
+      </p>
+    </div>
+
+    <div id="generated-toc" class="generate_from_h2"></div>
+
+    <h2> Files </h2>
+    <p>
+      Source files in this chapter are 
+      <a href="all.zip"> here </a>.
+    </p>
+
+
+    <h2> Introduction </h2>
+    <p>
+      TiMidity is a MIDI player, not a Karaoke player.
+      By default it just plays the MIDI music, with the lyrics
+      printed out:
+</p>
+     <pre>
+	<code>
+$timidity ../54154.mid
+Requested buffer size 32768, fragment size 8192
+ALSA pcm 'default' set buffer size 32768, period size 8192 bytes
+Playing ../54154.mid
+MIDI file: ../54154.mid
+Format: 1  Tracks: 1  Divisions: 30
+No instrument mapped to tone bank 0, program 92 - this instrument will not be heard
+#0001
+@@00@12
+@Here Comes The Sun
+@
+@@Beatles
+Here comes the sun
+doo doo doo doo
+Here comes the sun
+I said it's alright
+Little
+darling
+	</code>
+      </pre>
+<p>
+    </p>
+
+    <p>
+      But it has
+      a number of alternative interfaces which give different displays. 
+      If you run
+      <code>timidity</code> with the <code>-h</code> (help)
+      option, it will show a screen including something like
+</p>
+      <pre>
+	<code>
+Available interfaces (-i, --interface option):
+  -in          ncurses interface
+  -ie          Emacs interface (invoked from `M-x timidity')
+  -ia          XAW interface
+  -id          dumb interface
+  -ir          remote interface
+  -iA          ALSA sequencer interface
+	</code>
+      </pre>.
+<p>
+    </p>
+
+    <p>
+      The default interface is "dumb", but if you run with, say, the XAW
+      interface you get a display like <br/>
+      <img alt="" src="timidity-xaw.png"/>
+    </p>
+
+    <p>
+      There is, however, one unfortunate effect: the lyrics are displayed
+      <em>before</em> they are due to be played! 
+      To get the lyrics played just as they should be sung,
+      you need to turn on the
+      <code>--trace</code> option. From the man page,
+      "Toggles  trace  mode.   In trace mode, TiMidity++ attempts to
+       display its current state in real time."
+      You may find the link between documentation and behaviour
+      a lttle less than obvious...
+</p>
+      <pre>
+	<code>
+timidity --trace ../54154.mid
+	</code>
+      </pre>
+<p>
+    </p>
+
+    <p>
+      This now works fine for MIDI files, the lyrics are displayed
+      when they should be sung. But it doesn't display the lyrics
+      for <code>.KAR</code> files. For that you need the
+      <code>--trace-text-meta</code> option:
+</p>
+      <pre>
+	<code>
+timidity --trace --trace-text-meta ../54154.kar
+	</code>
+      </pre>
+<p>
+    </p>
+
+    <p>
+      So by this stage, TiMidity will display the lyrics on the screen
+      in realtime for Karaoke files (and MIDI files with LYRIC events).
+      To have our own control over this display, we need to build our
+      own TiMidity interface.
+    </p>
+
+    <h2> TiMidity and Jack </h2> 
+    <p>
+      In the MIDI chapter on 
+      <a href="../../MIDI/User/">User space tools</a>
+      we discussed playing MIDI files using Jack.
+      Jack is designed to link audio sources and sinks in
+      arbitrary configurations. By running <code>qjackctl</code>
+      you can link, for example, microphone outputs to
+      speaker inputs.
+      This is done by dragging "capture_1" to "playback_1" etc
+      and appears like
+      <br/> <img alt="" src="in_2_out.png"/>
+    </p>
+
+    <p>
+      If TiMidity is then run with Jack output, you get instant
+      Karaoke. You can also see the lyrics played in real time
+      using the <code>--trace</code> option:
+</p>
+      <pre>
+	<code>
+timidity -Oj --trace 54154.mid
+	</code>
+      </pre>
+<p>
+      The connections are shown in <code>qjackctl</code> as
+      <br/> <img alt="" src="timidity_jack.png"/>
+    </p>
+
+    <p>
+      The lyric display is klunky, and will be improved later.
+    </p>
+
+    <h2> TiMidity interface </h2>
+    <p>
+      You will need to have the TiMidity source downloaded
+      from
+      <a href="http://sourceforge.net/projects/timidity/?source=dlp">
+	SourceForge TiMidity++
+      </a>.
+    </p>
+
+    <p>
+      In the earlier chapter on
+      <a href="../../MIDI/Timidity/">MIDI and TiMidity</a>
+      we discussed two alternative ways of building applications
+      using TiMidity:
+</p>
+      <ul>
+	<li>
+	  Build a front-end with TiMidity as a library back-end
+	</li>
+	<li>
+	  Use standard TiMidity with a custom-built interface
+	  as back-end to TiMidity
+	</li>
+      </ul>
+<p>
+    </p>
+
+    <p>
+      Both options are possible here, with one wrinkle: if we want to 
+      capture MIDI events then we have to do so as a back-end to TiMidity, which
+      requires that we build a TiMidity interface.
+    </p>
+
+
+    <p>
+      To recap on this,
+      the different interface files for TiMidity are stored in the
+      directory <code>interface</code> and include files such as
+      <code>dumb_c.c</code> for the dumb interface. They all revolve
+      around a data structure <code>ControlMode</code>
+       defined in <code>timidity/controls.h</code>:
+</p>
+      <pre class="sh_cpp">
+	<code>
+typedef struct {
+  char *id_name, id_character;
+  char *id_short_name;
+  int verbosity, trace_playing, opened;
+
+  int32 flags;
+
+  int  (*open)(int using_stdin, int using_stdout);
+  void (*close)(void);
+  int (*pass_playing_list)(int number_of_files, char *list_of_files[]);
+  int  (*read)(int32 *valp);
+  int  (*write)(char *buf, int32 size);
+  int  (*cmsg)(int type, int verbosity_level, char *fmt, ...);
+  void (*event)(CtlEvent *ev);  /* Control events */
+} ControlMode;
+	</code>
+      </pre>
+<p>
+     .
+    </p>
+
+    <p>
+      For the simplest values of the functions in this structure,
+      see the code for the dumb interface in 
+      <code>interface/dumb_c.c</code>. 
+    </p>
+
+    <p>
+      For dealing with lyrics, the main field to set is the 
+      function <code>event()</code>. This will be passed a
+      pointer to a <code>CtlEvent</code> which is
+      defined in <code>timidity/controls.h</code>:
+</p>
+      <pre class="sh_cpp">
+	<code>
+typedef struct _CtlEvent {
+    int type;           /* See above */
+    ptr_size_t v1, v2, v3, v4;/* Event value */
+} CtlEvent;
+	</code>
+      </pre>
+<p>
+    </p>
+    
+    <p>
+      The type field distinguishes a large number of event types
+      such as <code>CTLE_NOW_LOADING</code> and <code>CTLE_PITCH_BEND</code>.
+      The type of interest to us is <code>CTLE_LYRIC</code>.
+</p>
+      Typical code to handle this is in <code>interface/dumb_c.c</code>
+      which prints event information to output:
+      <pre class="sh_cpp">
+	<code>
+static void ctl_event(CtlEvent *e)
+{
+    switch(e-&gt;type) {
+      case CTLE_LYRIC:
+        ctl_lyric((int)e-&gt;v1);
+        break;
+   }
+}
+
+static void ctl_lyric(int lyricid)
+{
+    char *lyric;
+
+    lyric = event2string(lyricid);
+    if(lyric != NULL)
+    {
+        if(lyric[0] == ME_KARAOKE_LYRIC)
+        {
+            if(lyric[1] == '/' || lyric[1] == '\\')
+            {
+                fprintf(outfp, "\n%s", lyric + 2);
+                fflush(outfp);
+            }
+            else if(lyric[1] == '@')
+            {
+                if(lyric[2] == 'L')
+                    fprintf(outfp, "\nLanguage: %s\n", lyric + 3);
+                else if(lyric[2] == 'T')
+                   fprintf(outfp, "Title: %s\n", lyric + 3);
+                else
+                    fprintf(outfp, "%s\n", lyric + 1);
+            }
+            else
+            {
+                fputs(lyric + 1, outfp);
+                fflush(outfp);
+            }
+        }
+        else
+        {
+            if(lyric[0] == ME_CHORUS_TEXT || lyric[0] == ME_INSERT_TEXT)
+                fprintf(outfp, "\r");
+            fputs(lyric + 1, outfp);
+            fflush(outfp);
+        }
+    }
+}
+	</code>
+      </pre>
+<p>
+    </p>
+
+<!--
+    <h2> Adding an interface to TiMidity </h2>
+    <p>
+      You can add your own interface to the <code>interface</code>
+      directory. Then it can be made part of the TiMidity build.
+      Good luck - I gave up after I discovered that the Gnu
+      <a href="http://www.nondot.org/sabre/Mirrored/autoconf-2.12/autoconf_toc.html">
+	autoconf
+      </a> and
+      <a href="http://www.gnu.org/software/automake/manual/html_node/index.html#SEC_Contents">
+	automake
+      </a> tools in my current distro (Ubuntu 13.04) were
+</p>
+      incompatable with the versions used to prepare TiMidity
+      2.14.0.
+      <em> Since discovered that by running <code>autoscan</code> first
+	that it may work better.
+      Checkout <a href="http://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/autoconf-2.69/html_node/Making-configure-Scripts.html#Making-configure-Scripts">
+	  Making configure Scripts
+	</a>
+      </em>.
+    </p>
+
+    <p>
+      If you want to try, here is what you have to do
+</p>
+      <ul>
+	<li>
+	  Add to interface.h.in:
+	  <pre class="sh_cpp">
+	    <code>
+/* Define if you have KARAOKE interface. */
+#undef IA_KARAOKE
+	    </code>
+	  </pre>
+	</li>
+	<li>
+	  Add to timidity/controls.c:
+	  <pre  class="sh_cpp">
+	    <code>
+#ifdef IA_KARAOKE
+  extern ControlMode karaoke_control_mode;
+# ifndef DEFAULT_CONTROL_MODE
+#  define DEFAULT_CONTROL_MODE &karaoke_control_mode
+# endif
+#endif
+	    </code>
+	  </pre>
+<p>
+	  and add to the <code>ctl_list</code>
+	  <pre  class="sh_cpp">
+	    <code>
+ControlMode *ctl_list[]={
+   ...
+#ifdef IA_KARAOKE
+  &amp;karaoke_control_mode,
+#endif
+   ...
+};
+	    </code>
+	  </pre>
+	</li>
+	<li>
+	  Add your file <code>karaoke_c.c</code> to
+	  the <code>interface</code> directory.
+	  The file should have content such as
+	  <pre  class="sh_cpp">
+	    <code>
+#define ctl karaoke_control_mode
+
+ControlMode ctl=
+    {
+        "karaoke interface", 'k',
+        "karaoke",
+        1,          /* verbosity */
+        0,          /* trace playing */
+        0,          /* opened */
+        0,          /* flags */
+        ctl_open,
+        ctl_close,
+        pass_playing_list,
+        ctl_read,
+        NULL,       /* write */
+        cmsg,
+        ctl_event
+    };
+
+...
+
+ControlMode *interface_k_loader(void)
+{
+    return &amp;ctl;
+}
+	    </code>
+	  </pre>
+
+	</li>
+	<li>
+	  Add a section to <code>configure.in</code>
+	  <pre>
+	    <code>
+dnl KARAOKE
+AM_CONDITIONAL(ENABLE_KARAOKE, false)
+CONFIG_INTERFACE(karaoke,KARAOKE,k,
+  AS_HELP_STRING([- -enable-karaoke], [Enable KAROAKE interface          (default is no)]),
+  ,
+  [ INTERFACE_SRCS="$INTERFACE_SRCS karaoke_c.c" ])
+	    </code>
+	  </pre>
+	</li>
+	<li>
+	  If you want to use Gtk for UI, you have to add their libraries
+	  in as well - see the entry for Gtk 2.0
+	</li>
+	<li>
+	  If you also want to support Gtk 3.0 you need to add 
+	  <code>/usr/share/aclocal/gtk-3.0.m4</code> to the
+	  <code>autoconf</code> directory, and add <code>gtk-3.0</code>
+	  to <code>autoconf/Makefile.am</code>
+	</li>
+	<li>
+	  I didn't find suitable macros to support FFMpeg
+	</li>
+	<li>
+	  Then run <code>automake</code>,
+	  <code>autoconf</code> and <code>configure</code>.
+	  That's when I gave up due to tool version changes. 
+	</li>
+      </ul>
+<p>
+    </p>
+-->
+
+    <h2> Getting the list of lyrics </h2>
+    <p>
+      The failing of the current interfaces in TiMidity with regard
+      to Karaoke is that while they can show the lyrics as they are played,
+      they don't show the lyric lines and progressively highlight them as they are
+      played. For that, you need the set of lyrics.
+    </p>
+
+    <p>
+      TiMidity in fact builds a list of lyrics, and makes them accessible.
+      It has a function <code>event2string()</code> which
+      takes an integer parameter from one upwards. For each value
+      it returns the string of a lyric or text event, finally
+      returning <code>NULL</code> on the end of the list.
+      The first character returned is a type parameter, the rest is
+      the string. Using GLib functions, we can build up an array
+      of lines for a <code>KAR</code> file by
+</p>
+      <pre class="sh_cpp">
+	<code>
+struct _lyric_t {
+    gchar *lyric;
+    long tick; // not used here
+};
+typedef struct _lyric_t lyric_t;
+
+struct _lyric_lines_t {
+    char *language;
+    char *title;
+    char *performer;
+    GArray *lines; // array of GString *
+};
+typedef struct _lyric_lines_t lyric_lines_t;
+
+GArray *lyrics;
+lyric_lines_t lyric_lines;
+
+static void build_lyric_lines() {
+    int n;
+    lyric_t *plyric;
+    GString *line = g_string_new("");
+    GArray *lines =  g_array_sized_new(FALSE, FALSE, sizeof(GString *), 64);
+
+    lyric_lines.title = NULL;
+
+    n = 1;
+    char *evt_str;
+    while ((evt_str = event2string(n++)) != NULL) {
+        gchar *lyric = evt_str+1;
+
+        if ((strlen(lyric) &gt;= 2) &amp;&amp; (lyric[0] == '@') &amp;&amp; (lyric[1] == 'L')) {
+            lyric_lines.language =  lyric + 2;
+            continue;
+        }
+
+        if ((strlen(lyric) &gt;= 2) &amp;&amp; (lyric[0] == '@') &amp;&amp; (lyric[1] == 'T')) {
+            if (lyric_lines.title == NULL) {
+                lyric_lines.title = lyric + 2;
+            } else {
+                lyric_lines.performer = lyric + 2;
+            }
+            continue;
+        }
+
+        if (lyric[0] == '@') {
+            // some other stuff like @KMIDI KARAOKE FILE
+            continue;
+        }
+
+        if ((lyric[0] == '/') || (lyric[0] == '\\')) {
+            // start of a new line
+            // add to lines
+            g_array_append_val(lines, line);
+            line = g_string_new(lyric + 1);
+        }  else {
+            line = g_string_append(line, lyric);
+        }
+    }
+    lyric_lines.lines = lines;
+    
+    printf("Title is %s, performer is %s, language is %s\n", 
+           lyric_lines.title, lyric_lines.performer, lyric_lines.language);
+    for (n = 0; n &lt; lines->len; n++) {
+        printf("Line is %s\n", g_array_index(lines, GString *, n)->str);
+    }
+}
+	</code>
+      </pre>
+<p>
+    </p>
+
+    <p>
+      The function <code>build_lyric_lines()</code> should be called
+      from the <code>CTLE_LOADING_DONE</code> branch of
+      <code>ctl_event()</code>.
+    </p>
+
+    <h2> TiMidity options </h2>
+
+<!--
+    <p>
+      TiMidity as an application is in control. You can change 
+      some parts of behaviour such as responding to events by adding
+      to or changing interfaces. We hit this problem in the
+      chapter on 
+      <a href="../../MIDI/Timidity/">
+	MIDI TiMidity
+      </a>.
+    </p>
+
+    <p>
+      In that chapter we looked at how to turn TiMidity into a library
+      to be called from our controlling code. For a Karoake system,
+      we don't want to just play a single MIDI file, or even a fixed
+      list of files given on the command line. Instead, we want to
+      be able to choose files dynamically and call TiMidity on those
+      files. So treating TiMidity as a library is the way we want to go.
+    </p>
+
+    <p>
+      But on the other hand, we want to use the event sequencing
+      features of TiMidity to display lyrics when they should be sung.
+      So we want both TiMidity as a library and some of our own
+      code treated as though it were a TiMidity interface.
+    </p>
+-->
+
+    <p>
+      If we choose to use TiMidity as front-end then we need to run it
+</p>
+      with suitable options. These include turning tracing on and
+      also dynamically loading our new interface.
+      This can be done for example by
+      <pre>
+	<code>
+timidity -d. -iv --trace  --trace-text-meta ...
+	</code>
+      </pre>
+<p>
+      for a "v" interface in the current directory.
+    </p>
+
+    <p>
+      The alternative is building a
+      main program that calls TiMidity as a library. The command
+      line parameters to TiMidity then have to be included as hard-coded
+      parameters in the application. 
+      One is easy: the <code>CtlMode</code> has a field
+      <code>trace_playing</code> and setting that to one turns tracing on.
+      Including Text events as Lyric events requires digging a bit deeper
+      into TiMidity, but just requires (shortly after initialising
+      the library)
+</p>
+      <pre class="sh_cpp">
+	<code>
+extern int opt_trace_text_meta_event;
+opt_trace_text_meta_event = 1;
+	</code>
+      </pre>
+<p>
+    </p>
+
+    <!--
+    <p>
+      We are going to cheat too:
+      instead of dynamically loading our interface, we will just
+      re-assign the <code>ctl</code> variable to our Karaoke
+      version, which we will build outside of the TiMidity code base.
+</p>
+      <pre  class="sh_cpp">
+	<code>
+extern ControlMode  *ctl;
+
+ControlMode karaoke_ctl=
+    {
+	"karaoke interface", 'k',
+	"karaoke",
+	1,          /* verbosity */
+	1,          /* trace playing */
+	0,          /* opened */
+	0,          /* flags */
+	ctl_open,
+	ctl_close,
+	pass_playing_list,
+	ctl_read,
+	NULL,       /* write */
+	cmsg,
+	ctl_event
+    };
+
+ctl = &amp;karaoke_ctl;
+	</code>
+      </pre>
+<p>
+    </p>
+
+    <p>
+      This enough to use TiMidity as a library with hooks for
+      a Karaoke player.
+    </p>
+    -->
+
+    <h2> Playing lyrics using Pnago + Cairo + Xlib </h2>
+    <p>
+      I want to be able to play my Karaoke files on the Raspberry Pi and similar 
+      Systems on a Chip (SOCs). Unfortuanately the rapsberry Pi has a grossly
+      underpowered CPU, so I have ended up using a 
+      <a href="http://cubieboard.org/2013/06/19/cubieboard2-is-here/">CubieBoard 2</a>.
+    </p>
+
+    <p>
+      Even then I don't know how to program the GPU, so anything involving heavy graphics
+      is not possible on this CPU. Any of the MIDI players hit close to (or over) 100%
+      CPU usage just be themselves. So the system discussed in the next section,
+      showing background video, isn't feasible.
+    </p>
+
+    <p>
+      In this section we use TiMidity as MIDI player with a minimal backend to display
+      the lyrics as they are played. The lowest level of GUI support is used, namely
+      Xlib. This can be used to draw text using low-level Xlib calls such as
+      <code>XDrawImageString</code>. This wrks fine with ASCII languages, and with
+      appropriate font choices, with other languages in the ISO-8859 family.
+    </p>
+
+    <p>
+      Asian languages are harder to deal with in standard C. They involve one or two byte 
+      characters when using an encoding such as UTF-8. To manage these. it is easiest
+      to switch to a library designed to handle them such, such as Cairo.
+    </p>
+
+    <p>
+      Cairo is good for drawing simple text. For e.g. Chinese characters you have to
+      find a font that will allow you to draw them. Alternatively, you can jump
+      up one further level to Pango. Pango looks after all the font issues and
+      produces glyphs which are sent to the X server.
+    </p>
+
+
+    <p>
+      that approach is adopted in the following interface, <code>x_code.c</code>
+</p>
+      <pre class="sh_cpp">
+<!--#exec cmd="/usr/local/bin/escape.pl . x_code.c" -->
+      </pre>
+<p>
+      it is compiled by
+      <pre class="sh_cpp">
+        gcc  -fPIC $(CFLAGS) -c -o x_code.o x_code.c $(LIBS)
+        gcc -shared -o if_x.so x_code.o $(LIBS)
+      </pre>
+<p>
+      and run by
+      <pre class="sh_cpp">
+timidity -d. -ix --trace --trace-text-meta ...
+      </pre>
+<p>
+    </p>
+
+
+    <h2> Playing a background video with Gtk </h2>
+
+   
+    <p>
+      In the chapter on
+      <a href="../FluidSynth/"> FluidSynth </a> case:
+      we discussed a program to show lyrics overlaid onto
+      a movie. Apart from the above considerations,
+      the rest of the application follows similarly to the 
+      FluidSynth case:
+      build a set of lyric lines, display them using
+      Pango over Gtk Pixbufs, and when a new lyric event
+      occurs update the corresponding colours in the lyric
+      line. 
+    </p>
+
+    <p>
+      All of the dynamic action needs to occur out of the back-end of TiMidity.
+      particularly in the function <code>ctl_event</code>.
+      Other parts such as initialising FFMpeg and Gtk must also occur
+      in the back-end when using standard TiMidity. If TiMidity is used
+      as a library, this initialisation could occur in the front or the
+      back. For simplicity, we just place it all in the back in
+      the file <code>video_code.c</code>:
+
+</p>
+      <pre class="sh_cpp">
+<!--#exec cmd="/usr/local/bin/escape.pl . video_code.c" -->
+      </pre>
+<p>
+    </p>
+
+    <h2> Background video with TiMidity as library </h2>
+    <p>
+      The code for this follows the same structure as the code
+      in the <a href="../..MIDI/Timidity/"> MIDI TiMidity</a>
+      chapter. It is is in the file 
+      <code>gtkkaraoke_player_video_pango.</code>:
+</p>
+      <pre class="sh_cpp">
+<!--#exec cmd="/usr/local/bin/escape.pl . gtkkaraoke_player_video_pango.c" -->
+      </pre>
+<p>
+    </p>
+
+   <h2> Background video with TiMidity as front-end </h2>
+    <p>
+      The interface needs to be built as a shared library by
+</p>
+      <pre>
+	<code>
+if_video.so: video_code.c
+        gcc  -fPIC $(CFLAGS) -c -o video_code.o video_code.c $(LIBS)
+        gcc -shared -o if_video.so video_code.o $(LIBS)
+	</code>
+      </pre>
+<p>
+    </p>
+
+    <p>
+      TiMidity is then run with options
+</p>
+      <pre>
+	<code>
+timidity -d. -iv --trace  --trace-text-meta 
+	</code>
+      </pre>
+<p>
+      As before, it crashes TiMidity from the Ubuntu distro
+      but works fine with TiMidity built from source in
+      the current Linux environment.
+    </p>
+      
+    <h2> Adding microphone input </h2>
+    <p>
+      At this stage we have a single application which can play a MIDI file,
+      play a background movie and display highlighted lyrics on top of
+      the video. There is no microphone input to sing along.
+    </p>
+
+    <p>
+      Singing along can be handled either within this application or by an
+      external process. if we want to include it in the current application
+      then we will have to build a mixer for two audio streams. 
+      Java does this in the JavaSound package, but in C we would need to
+      do that ourselves. Now I think that can be done in ALSA, but at present
+      their mixer code is gobbledygook to me.
+    </p>
+
+    <p>
+      Jack makes it easy to mix audio - from different <em>processes</em>.
+      The earlier section showed how to do that.
+    </p>
+
+    <p>
+      My long term goal is to include scoring, etc. I need to split out the
+      GUI code into a process that can also deal with microphone input.
+      The Gtk interface in TiMidity is a "separate process" model,
+      so I'll build on that - when I have Jack under control.
+    </p>
+
+    <p>
+      <em> This section is a place-holder for now. </em>
+    </p>
+
+    <h2> Conclusion </h2>
+    <p>
+      This chapter has shown how to use TiMidity as MIDI player
+      for a Karaoke system. On my laptop it uses less than 60% of CPU
+      with Gtk 3.0,
+      better than the 100% of FluidSynth.
+    </p>
+
+<!--
+Add "karaoke" to TiMidity configure.in
+and
+
+dnl KARAOKE
+AM_CONDITIONAL(ENABLE_KARAOKE, false)
+CONFIG_INTERFACE(karaoke,KARAOKE,k,
+  AS_HELP_STRING([- -enable-karaoke], [Enable KAROAKE interface          (default is no)]),
+  ,
+  [ INTERFACE_SRCS="$INTERFACE_SRCS karaoke_c.c" ])
+
+
+Add to interface.h.in:
+
+/* Define if you have KARAOKE interface. */
+#undef IA_KARAOKE
+
+Add to timidity/controls.c:
+
+#ifdef IA_KARAOKE
+  extern ControlMode karaoke_control_mode;
+# ifndef DEFAULT_CONTROL_MODE
+#  define DEFAULT_CONTROL_MODE &karaoke_control_mode
+# endif
+#endif
+
+ControlMode *ctl_list[]={
+#ifdef IA_NCURSES
+  &ncurses_control_mode,
+#endif
+#ifdef IA_VT100
+  &vt100_control_mode,
+#endif
+#ifdef IA_KARAOKE
+  &karaoke_control_mode,
+#endif
+
+
+Run autoconf
+Add karaoke_c.c to interfaces, and gtk to get GTK libs(can improve)
+Run ./configure - -enable-interface=karaoke - -enable-interface=gtk
+./configure  - -enable-audio=alsa - -enable-karaoke - -enable-gtk - -enable-debug
+make
+
+
+To add GTK 3.0:
+
+copy gtk-3.0.m4 from  /usr/share/aclocal/gtk-3.0.m4 to autoconf
+add gtk-3.0 to autoconf/Makefile.am
+
+
+
+Need k for karaoke, t to play at right time, 
+trace-text-meta to trace Text as well as Lyric events (for .kar)
+
+timidity/timidity  -ikt  - -trace-text-meta ../54154.kar
+
+In playmidi.c:
+
+static MidiEvent *event_list;
+
+static int play_midi(MidiEvent *eventlist, int32 samples)
+{...
+	event_list = eventlist;
+
+
+static int check_midi_play_end(MidiEvent *e, int len)
+
+int play_event(MidiEvent *ev)
+{...
+	switch(ev->type) {
+      case ME_LYRIC:
+      case ME_MARKER:
+      case ME_INSERT_TEXT:
+      case ME_TEXT:
+      case ME_KARAOKE_LYRIC:
+	i = ev->a | ((int)ev->b << 8);
+	ctl_mode_event(CTLE_LYRIC, 1, i, 0);
+	break;
+}
+
+void ctl_mode_event(int type, int trace, long arg1, long arg2)
+{
+    CtlEvent ce;
+    ce.type = type;
+    ce.v1 = arg1;
+    ce.v2 = arg2;
+    if(trace && ctl->trace_playing)
+	push_midi_trace_ce(ctl->event, &ce);
+    else
+	ctl->event(&ce);
+}
+
+	case CTLE_LYRIC:
+	    ctl_lyric((int)e->v1);
+	    break;
+
+static void ctl_lyric(int lyricid)
+{
+    char *lyric;
+
+    current_file_info = get_midi_file_info(current_file, 1);
+
+    lyric = event2string(lyricid);
+    if(lyric != NULL)
+	{
+	    if(lyric[0] == ME_KARAOKE_LYRIC)
+		{
+		    if(lyric[1] == '/' || lyric[1] == '\\')
+			{
+			    fprintf(outfp, "\n%s", lyric + 2);
+			    fflush(outfp);
+			}
+		    else if(lyric[1] == '@')
+			{
+			    if(lyric[2] == 'L')
+				fprintf(outfp, "\nLanguage: %s\n", lyric + 3);
+			    else if(lyric[2] == 'T')
+				fprintf(outfp, "Title: %s\n", lyric + 3);
+			    else
+				fprintf(outfp, "%s\n", lyric + 1);
+			}
+		    else
+			{
+			    fputs(lyric + 1, outfp);
+			    fflush(outfp);
+			}
+		}
+	    else
+		{
+		    if(lyric[0] == ME_CHORUS_TEXT || lyric[0] == ME_INSERT_TEXT)
+			fprintf(outfp, "\r");
+		    fputs(lyric + 1, outfp);
+		    fflush(outfp);
+		}
+	}
+}
+
+// returns an event list
+static int play_midi_load_file(char *fn,
+			       MidiEvent **event,
+			       int32 *nsamples)
+{...
+	tf = open_midi_file(fn, 1, OF_VERBOSE)
+       *event = read_midi_file(tf, &nevents, nsamples, fn);
+}
+
+int play_midi_file(char *fn)
+{...
+	play_midi_load_file(fn, &event, &nsamples)
+}
+
+int dumb_pass_playing_list(int number_of_files, char *list_of_files[]) 
+{...
+	play_midi_file(list_of_files[i]
+}
+
+From timidity/readmidi.h:
+
+extern struct timidity_file *open_midi_file(char *name,
+                                            int decompress, int noise_mode);
+
+0
+
+
+
+struct {
+  int32 time;
+  uint8 type, channel, a, b;
+} MidiEvent;
+
+enum midi_event_t
+{...
+	ME_LYRIC,
+}
+-->
+    <!--#include virtual="../../footer.html" -->
+
+  </body>
+</html>

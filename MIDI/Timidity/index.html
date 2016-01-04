@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="../../stylesheet.css" />
+
+    <title> Timidity </title>
+
+    <style type="text/css">
+        body { counter-reset: chapter 23; }
+    </style>
+
+    <script type="text/javascript" src="../../toc.js"> 
+   /* empty */
+   </script>
+
+   <script type="text/javascript">
+/* <![CDATA[ */
+    (function() {
+        var s = document.createElement("script"), t = document.getElementsByTagName("script")[0];
+        s.type = "text/javascript";
+        s.async = true;
+        s.src = "http://api.flattr.com/js/0.6/load.js?mode=auto";
+        t.parentNode.insertBefore(s, t);
+    })();
+/* ]]> */
+    </script>
+
+
+   <link rel="stylesheet" type="text/css" href="../../js/doc/style.css">
+   <!-- <link rel="stylesheet" type="text/css" href="../../js/css/sh_emacs.css"> -->
+   <link rel="stylesheet" type="text/css" href="../../js/sh_style.css">
+   <script type="text/javascript" src="../../js/sh_main.min.js"></script>
+   <script type="text/javascript" src="../../js/lang/sh_cpp.min.js"></script>
+   
+
+  </head>
+  <body onload="sh_highlightDocument();">
+
+    <!--#include virtual="../../header.html" -->
+
+
+    <div class="chapter">
+        <h1> Timidity </h1>
+     </div>
+
+    <div class="preface">
+      <p>
+	Timidity is designed as a standalone application.
+	To add to this, you should build a new "interface".
+	It can also be subverted to act as though
+	it were a library that can be called.
+	This chapter explains both ways.
+      </p>
+    </div>
+
+    <div id="generated-toc" class="generate_from_h2"></div>
+
+    <h2> Files </h2>
+    <p>
+      Source files in this chapter are
+      <a href="all.zip">
+        here
+      </a>.
+    </p>
+
+    <h2> Timidity design </h2>
+    <p>
+      Timidty is designed as a standalone application.
+      When built, you get a single executable but do not get
+      a library of functions that can be called, unlike
+      FluidSynth for example.
+    </p>
+    
+    <p>
+      What you <em>can</em> do with Timidity is to add different interfaces.
+      For example, there are ncurses, XaW and dumb interfaces which can be
+      invoked at runtime by e.g.
+    </p>
+      <pre>
+	<code>
+timidity -in ...
+timidity -ia ...
+timidity -id ...
+	</code>
+      </pre>
+    <p>
+      There are also others with more specialised uses such as WRD, emacs,
+      ALSA and remote interfaces.
+    </p>
+
+    <p>
+      For example, the Xaw interface looks like
+      <br/> <img alt ="" src="timidity-xaw.png">
+    </p>
+    <p>
+      The idea seems to be that if you want something extra, perhaps you should
+      build a custom interface and drive it from Timidity.
+    </p>
+
+    <p>
+      That doesn't always suit me, as I would prefer to be able to embed
+      Timidity into my own applications in a simple way.
+      The rest of this chapter looks at both ways:
+    </p>
+      <ul>
+	<li>
+	  Turn TiMidity into a library and include it in your own code
+	</li>
+	<li>
+	  Build your own interface
+	</li>
+      </ul>
+    
+
+
+    <h2> Making TiMidity into  a library </h2>
+    <p>
+      TiMidity is not designed as a library and you have to convince it 
+      otherwise. That isn't hard, by messing around with the build system.
+    </p>
+
+    <h3> Managed environments hook </h3>
+    <p>
+      A system whereby the application is in control doesn't work so well in a
+      managed environment such as Windows (or probably the many more recent
+      ones such as Android). In such environments you can't call Timidity's
+      <code>main</code>, but rather the <code>main</code> function belonging
+      to the framework. This in turn will call an appropriate function
+      in the application.
+    </p>
+
+    <p>
+      To make use of such hooks, you need to download the source code of
+      Timidity, either from a package manager or from the
+      <a href="http://timidity.sourceforge.net/">
+	TiMidity++
+      </a> web site.
+    </p>
+
+    <p>
+      For Timidity, the variations on the <code>main</code> function are in
+      the file <code>timidity/timidity.c</code>. Controlled by various define's,
+      you can have <code>main</code> or <code>win_main</code>. One of the more
+      interesting defines is <code>ANOTHER_MAIN</code>. If this is defined,
+      none of the versions of the <code>main</code> function are
+      compiled and you end with main-free object modules.
+    </p>
+
+    <p>
+      If you build Timidity from the toplevel source directory
+      in the following way, it will produce an
+      error that the <code>main</code> function is not defined:
+    </p>
+      <pre>
+	<code>
+CFLAGS="-DANOTHER_MAIN" ./configure
+make
+	</code>
+      </pre>
+    <p>
+      That's the hook you need to take Timidity from being a standalone
+      application to being able to be called as a library from another
+      application. Note that you <em>cannot</em> just remove
+      <code>timidity/timidity.c</code> from the build - that file
+      contains too many other critical functions!
+    </p>
+
+    <h3> Building the library </h3>
+    <p>
+      To build Timidity as a static library, remove the <code>main</code>
+      function as above and attempt to build timidity.
+      I found I needed to also specify which output system I wanted to use,
+      such as ALSA:
+    </p>
+      <pre>
+	<code>
+CFLAGS="-DANOTHER_MAIN" ./configure --enable-audio=alsa
+nake clean
+make
+	</code>
+      </pre>
+    <p>
+      This builds several <code>.ar</code> files and lots of object
+      <code>.o</code> modules, but fails to build
+      the final <code>timidity</code> executable as (of course) there
+      is no <code>main</code> function. It also leaves a bunch of unlinked
+      files in the <code>timidity</code> subdirectory.
+    </p>
+
+    <p>
+      You can
+      collect all of the object modules into an archive file by
+      running this from the top of the TiMidity source directory:
+    </p>
+      <pre>
+	<code>
+ar cru  libtimidity.a */*.o
+ranlib libtimidity.a
+	</code>
+      </pre>
+    
+
+    <p>
+      Since you will have to build Timidity from the source,
+      check that it is working in normal mode before you try to
+      build this alternative library version.
+      That way you can find out that you need, say,
+      the <code>libasound-dev</code> library in order to use
+      ALSA, before you get mixed up in this other stuff!
+    </p>
+
+
+      <h3> Library entry points </h3>
+    <p>
+      Timidity built with <code>ANOTHER_MAIN</code> exposes these public entry points
+    </p>
+      <pre>
+	<code>
+void timidity_start_initialize(void);
+int timidity_pre_load_configuration(void);
+int timidity_post_load_configuration(void);
+void timidity_init_player(void);
+int timidity_play_main(int nfiles, char **files);
+int got_a_configuration;
+	</code>
+      </pre>
+    <p>
+      They do not seem to be defined in any convenient header file.
+    </p>
+
+    <h3> A minimal application </h3>
+    <p>
+      The real Timidity application is coded to work on many different
+      operating systems with many different versions of libraries.
+      Most of those dependencies are taken care of in building the
+      object files and library as above.
+    </p>
+
+
+    <p>
+      A minimal application just wraps our own <code>main</code>
+      around the library entry points in <code>my_main.c</code>:
+    </p>
+      <pre class="sh_cpp">
+<!--#exec cmd="/usr/local/bin/escape.pl . my_main.c" -->
+      </pre>
+    <p>
+      The compile command needs to bring in the Timidity library
+      and any other required library, and is for an ALSA application
+    </p>
+      <pre>
+	<code>
+my_timidity: my_main.o
+        gcc -g -o my_timidity my_main.o libtimidity.a  -lasound -lm
+	</code>
+      </pre>
+    
+
+    <h3> Playing a background video to a MIDI file </h3>
+    <p>
+      As a more complex example, we look at playing a video file
+      while also playing a MIDI file. We assume that the video
+      file has no audio component and there is no attempt to
+      perform any synchronisation between the two streams -
+      that is an extra order of complexity!
+    </p>
+
+    <p>
+      To play a video file we make use of the FFMpeg library
+      to decode a video stream into video frames. We then
+      need to display the frames in some kind of GUI object,
+      and there are very, very many toolkits for doing this :-(.
+      I've chosen the GTK toolkit as it underlies Gnome, is in
+      C, supports many other things such as i18n and so on.
+      I've based my code on 
+      <a href="http://dranger.com/ffmpeg/">
+	An ffmpeg and SDL Tutorial
+      </a>
+      by Stephen Dranger which uses the SDL toolkit for display.
+    </p>
+
+    <p>
+      This runs the video and the MIDI in separate threads using the
+      <code>pthreads</code> package. I've cheated a bit by hard-coding
+      the names of the files and fixing the size of the video frames.
+      It was a real b*mmer getting it to work under GTK3.0 as that
+      has removed pixmaps and it took too, too long to find out what
+      was going on.
+    </p>
+
+    <p>
+      I've split the code into two files, one to play the video using Gtk
+      and the other to play the TiMidity library and invoke the
+      video. The video playing file is <code>video_code.c</code>:
+    </p>
+      <pre class="sh_cpp">
+<!--#exec cmd="/usr/local/bin/escape.pl . video_code.c" -->
+      </pre>
+    
+
+    <p>
+      The file <code>video_player.c</code> is
+    </p>
+      <pre class="sh_cpp">
+<!--#exec cmd="/usr/local/bin/escape.pl . video_player.c" -->
+      </pre>
+    
+
+   <h2> Building a new interface </h2>
+
+    <h3> Shared objects </h3>
+    <p>
+      You can build your own interfaces and add them to TiMidity without
+      changing or recompiling TiMidity. Such interfaces are built as
+      dynamically loadable shared libraries, and are loaded when 
+      TiMidity starts.
+    </p>
+
+    <p>
+      You have to be a little careful with compile and link flags
+      to build these libraries 
+      (see <a href="http://stackoverflow.com/questions/7252550/loadable-bash-builtin">
+	Building shared objects in Linux
+      </a>). To build the shared object <code>if_my_interface.so</code>
+      from <code>my_interface.c</code> I use
+    </p>
+      <pre>
+	<code>
+gcc  -fPIC $(CFLAGS) -c -o my_interface.o my_interface.c
+gcc -shared -o if_my_interface.so my_interface.o
+	</code>
+      </pre>
+    
+
+    <p>
+      TiMidity will only load files that begin with <code>if_</code>.
+      They can reside in any directory, with the default being
+      something like <code>/usr/lib/timidity</code>
+      or <code>/usr/local/lib/timidity</code>
+      (see the "Supported dynamic load interfaces" directory
+      from <code>timidity -h</code>).
+    </p>
+
+    <p>
+      The defaulty directory to load dynamic modules can be overridden
+      by the option <code>-d</code> as in
+    </p>
+      <pre>
+	<code>
+timidity -d. -ik --trace 54154.mid
+	</code>
+      </pre>
+    
+
+    <h3> Entry point </h3>
+    <p>
+      Each interface must have a unique function that can be called
+      by the dynamic loader. Recall that interfaces are selected by the
+      command line option <code>-i</code>, such as 
+      <code>timidity -iT ...</code> to choose the VT100 interface.
+      Your interface must have a single ASCII letter identifier
+      which isn't used by any other interface, say <code>m</code>
+      for "my interface". The loader will then look for a function
+    </p>
+      <pre>
+	<code>
+ControlMode *interface_m_loader(void)
+	</code>
+      </pre>
+    <p>
+      where the "m" in the function name is the identifier.
+      This function is simple: it just returns the address of a
+      structure of type <code>ControlMode</code> which is defined
+      elsewhere in the interface's code:
+    </p>
+      <pre class="sh_cpp">
+	<code>
+ControlMode *interface_m_loader(void)
+{
+    return &amp;ctl;
+}
+	</code>
+      </pre>
+    
+
+    <h3> ControlMode </h3>
+    <p>
+      The <code>ControlMode</code> structure is
+    </p>
+      <pre class="sh_cpp">
+	<code>
+typedef struct {
+  char *id_name, id_character;
+  char *id_short_name;
+  int verbosity, trace_playing, opened;
+
+  int32 flags;
+
+  int  (*open)(int using_stdin, int using_stdout);
+  void (*close)(void);
+  int (*pass_playing_list)(int number_of_files, char *list_of_files[]);
+  int  (*read)(int32 *valp);
+  int  (*write)(char *buf, int32 size);
+  int  (*cmsg)(int type, int verbosity_level, char *fmt, ...);
+  void (*event)(CtlEvent *ev);  /* Control events */
+} ControlMode;
+	</code>
+      </pre>
+    <p>
+      which defines information about the interface and a set of functions
+      which are called by TiMidity in response to events and actions
+      within TiMidity. For example, for "my interface" this structure is
+    </p>
+      <pre class="sh_cpp">
+	<code>
+ControlMode ctl=
+    {
+	"my interface", 'm',
+	"my iface",
+	1,          /* verbosity */
+	0,          /* trace playing */
+	0,          /* opened */
+	0,          /* flags */
+	ctl_open,
+	ctl_close,
+	pass_playing_list,
+	ctl_read,
+	NULL,       /* write */
+	cmsg,
+	ctl_event
+    };
+	</code>
+      </pre>
+    
+
+    <p>
+      Some of these fields are obvious, some are less so:
+      <dl>
+	<dt>
+	  <code>open</code>
+	</dt>
+	<dd>
+	  This is called to set which files are used for I/O...
+	</dd>
+	<dt>
+	  <code>close</code>
+	</dt>
+	<dd>
+	  ... and to close them
+	</dd>
+	<dt>
+	   <code>pass_playing_list</code>
+	</dt>
+	<dd>
+	  This function is passed a list of files to play.
+	  The most likely action is to walk through this
+	  list, calling <code>play_midi_file</code> on each
+	</dd>
+	<dt>
+	   <code>read</code>
+	</dt>
+	<dd>
+	  Not sure yet
+	</dd>
+	<dt>
+	   <code>write</code>
+	</dt>
+	<dd>
+	  Not sure yet
+	</dd>
+	<dt>
+	  <code>cmsg</code>
+	</dt>
+	<dd>
+	  Called with information messages
+	</dd>
+	<dt>
+	  <code>event</code>
+	</dt>
+	<dd>
+	  This is the major function for handling MIDI control events.
+	  Typically it will be a big switch for each type of control
+	  event
+	</dd>
+      </dl>
+    <p>
+
+    <h3> Include files </h3>
+    <p>
+      This is messy. A typical interface will need to know some of the
+      constants and functions used by TiMidity. While these are organised
+      logically for TiMidity, they are not organised conveniently for a
+      new interface. So you have to keep pulling in extra includes, which point
+      to other externals, which require more includes, etc. These may be in
+      different directories such <code>timidity</code> and <code>utils</code>
+      so you have to point to many different include directories.
+    </p>
+
+    <p>
+      Note that you will need the TiMidity source code to get these
+      include files, downloaded from
+      <a href="http://sourceforge.net/projects/timidity/?source=dlp">
+        SourceForge TiMidity++
+      </a>.
+
+    </p>
+
+      <h3> My simple interface </h3>
+    <p>
+      This basically does the same as the "dumb" interface
+      built into TiMidity. It is loaded from the current directory
+      and invoked by
+    </p>
+      <pre>
+	<code>
+timidity -im -d. 54154.mid
+	</code>
+      </pre>
+    
+
+    <p>
+      The code is in one file, <code>my_interface.c</code>:
+    </p>
+      <pre class="sh_cpp">
+<!--#exec cmd="/usr/local/bin/escape.pl . my_interface.c" -->
+      </pre>
+    
+
+    <h3> Running my simple interface </h3>
+    <p>
+      When I tried to run the interface using the standard package
+      TiMidity v2.13.2-40.1 it crashed in a memory free call.
+      The code is stripped, so tracking down why is not easy
+      and I haven't bothered to do so yet - I'm not sure what
+      libraries, versions of code, etc, the package distro was 
+      compiled against.
+    </p>
+
+    <p>
+      I had built my own copy of TiMidity from source.
+      This worked fine. Note that when you build TiMidity from
+      source, you will need to specify that it can load dynamic
+      modules, for example by
+    </p>
+      <pre>
+	<code>
+congfigure --enable-audio=alsa --enable-vt100 --enable-debug --enable-dynamic
+	</code>
+      </pre>
+    
+
+    <h3> Playing a background video to a MIDI file </h3>
+    <p>
+      We can take the code from playing a video given earlier and put it
+      as the "back end" of a TiMidity systems as a "video" interface.
+      Essentially all that needs to be done is to change
+      <code>ctl_open</code> from the simple interface to call
+      the Gtk code to play the video, and change the identity
+      of the interface.
+    </p>
+
+    <p>
+      The new "video" interface is <code>video_player_interface.c</code>
+    </p>
+      <pre class="sh_cpp">
+      <!--#exec cmd="/usr/local/bin/escape.pl . video_player_interface.c" -->
+      </pre>
+    
+
+    <p>
+      The build command is
+    </p>
+      <pre>
+	<code>
+video_code.o: video_code.c
+        gcc  -fPIC $(CFLAGS) -c -o video_code.o video_code.c $(LIBS3)
+
+if_video_player.so: video_player_interface.c video_code.o
+        gcc  -fPIC $(CFLAGS) -c -o video_player_interface.o video_player_interface.c
+        gcc -shared -o if_video_player.so video_player_interface.o video_code.o $(LIBS3)
+	</code>
+      </pre>
+    
+
+    <p>
+      You may hit a hiccup with running this Gtk-based interface: Gtk version
+      mismatch :-(. The current builds of TiMidity either do not have the Gtk
+      interface compiled in, or have Gtk version 2. If Gtk is not compiled in,
+      you should have no problem. Otherwise, if you have compiled this interface
+      with Gtk version 3, you will get runtime errors about type mismatches,
+      inability to load widgets and no visual display.
+    </p>
+
+    <p>
+      Check for Gtk in the executable by
+    </p>
+      <pre>
+	<code>
+nm timidity | grep gtk
+	</code>
+      </pre>
+    
+
+    <h2> Summary </h2>
+    <p>
+      Timidity is not designed for use by other applications.
+      Either you add a new interface or work around the TiMidity
+      design to produce a library.
+      This chapter has shown both mechanisms and illustrated them
+      with simple and more complex examples.
+    </p>
+
+    <!--#include virtual="../../footer.html" -->
+
+  </body>
+</html>

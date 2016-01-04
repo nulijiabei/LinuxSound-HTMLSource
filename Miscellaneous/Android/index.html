@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="../../stylesheet.css" />
+
+    <title> Android </title>
+
+    <style type="text/css">
+        body { counter-reset: chapter 38; }
+    </style>
+
+    <script type="text/javascript" src="../../toc.js"> 
+   /* empty */
+   </script>
+
+   <script type="text/javascript">
+/* <![CDATA[ */
+    (function() {
+        var s = document.createElement("script"), t = document.getElementsByTagName("script")[0];
+        s.type = "text/javascript";
+        s.async = true;
+        s.src = "http://api.flattr.com/js/0.6/load.js?mode=auto";
+        t.parentNode.insertBefore(s, t);
+    })();
+/* ]]> */
+    </script>
+
+  <link rel="stylesheet" type="text/css" href="../../js/doc/style.css">
+   <!-- <link rel="stylesheet" type="text/css" href="../../js/css/sh_emacs.css"> -->
+   <link rel="stylesheet" type="text/css" href="../../js/sh_style.css">
+   <script type="text/javascript" src="../../js/sh_main.min.js"></script>
+   <script type="text/javascript" src="../../js/lang/sh_cpp.min.js"></script>
+   
+
+  </head>
+  <body onload="sh_highlightDocument();">
+
+    <!--#include virtual="../../header.html" -->
+
+
+    <div class="chapter">
+        <h1> Android </h1>
+     </div>
+
+    <div class="preface">
+      <p>
+	Android is a Linux-based system from Google now found on phones, tablets
+	and various miscellaneous devices. 
+      </p>
+    </div>
+
+    <div id="generated-toc" class="generate_from_h2"></div>
+
+    <h2> Resources </h2>
+    <p>
+</p>
+      <ul>
+	<li>
+	  <a href="http://developer.android.com/reference/android/media/MediaPlayer.html">
+	    MediaPlayer API
+	  </a>
+	</li>
+	<li>
+	  <a href="http://developer.android.com/guide/topics/media/mediaplayer.html">
+	    Media Playback guide
+	  </a>
+	</li>
+	<li>
+	  <a href="http://developer.android.com/guide/appendix/media-formats.html">
+	    Android Supported Media Formats
+	  </a>
+	</li>
+	<li>
+	  <a href="http://audioprograming.wordpress.com/2012/03/03/android-audio-streaming-with-opensl-es-and-the-ndk/">
+	    Android audio streaming with OpenSL ES and the NDK
+	  </a>
+	</li>
+	<li>
+	  <a href="http://www.youtube.com/watch?v=RQws6vsoav8">
+	    Google I/O 2012 - New Low-Level Media APIs in Android
+	  </a>
+	</li>
+      </ul>
+<p>
+    </p>
+
+    <h2> Identifying devices </h2>
+    <p>
+      Android doesn't have a means of listing the input and output devices.
+      Instead there are methods to query the state of various assumed or possible
+      devices. The page
+      <a href="http://developer.android.com/training/managing-audio/audio-output.html">
+	Dealing with Audio Output Hardware
+      </a>
+      gives the code using  <code>AudioManager</code> methods
+</p>
+      <pre>
+	<code>
+if (isBluetoothA2dpOn()) {
+    // Adjust output for Bluetooth.
+} else if (isSpeakerphoneOn()) {
+    // Adjust output for Speakerphone.
+} else if (isWiredHeadsetOn()) {
+    // Adjust output for headsets
+} else { 
+    // If audio plays and noone can hear it, is it still playing?
+}
+	</code>
+      </pre>
+<p>
+    </p>
+
+    <h2> My Android experience </h2>
+    <p>
+      I have an Android device designed to be hooked up to a TV (or similar) and
+      used as a media player, browser, etc. It is branded in various ways:
+      in Australia it was sold by Kogan as the Agora Adroid TV, and is available
+      in other countries under different names
+      while the OEM appears to be jointech.com.hk selling it as the JTV220 Android TV.
+    </p>
+
+    <p>
+      This device is stuck on Android 2.2 and the OEM has not released any upgrades.
+      Android 2.2 was not the greatest for media support and will not - for example -
+      stream Ogg Vorbis audio files from HTTP servers.
+    </p>
+ 
+    <p>
+      I also have an Asus TF101 Transformer running 4.0.3. Media support is much
+      more advanced.
+    </p>
+
+    <p>
+      The list of supported types is
+      <a href="http://developer.android.com/guide/appendix/media-formats.html">
+	Android Supported Media Formats
+      </a>.
+    </p>
+
+ 
+    <h2> Playing files </h2>
+    <p>
+      An app can get media from various sources
+    </p>
+      <ul>
+	<li>
+	  Packaged with the app
+	</li>
+	<li>
+	  From the MediaStore
+	</li>
+	<li>
+	  From an external source such as an SD card
+	</li>
+	<li>
+	  Streamed from the network
+	</li>
+    </ul>
+    <p>
+      I'm not so much interested in the first two. They are discussed in books such as
+      "Pro Android Media Developing Graphics, Music, Video,
+      and Rich Media Apps for Smartphones
+      and Tablets" by Shawn Van Every from APress.
+<p>
+    </p>
+
+    <p>
+      An SD card on my ASUS Transformer is mounted into <code>/Removable/SD</code>.
+      I put audio files into a subdirectory <code>Music</code>. Files from here can
+      be played using an Android <code>MediaPlayer</code>. There is a state machine
+      model for setting up the media player to play files: here it consists of
+      setting a data source and then calling <code>prepare()</code> and <code>start()</code>.
+      The only wrinkle in this is actually finding the path to the data file: in the
+      Android, the <code>File</code> class doesn't like a path with embedded '/'.
+      So you have to walk the file path one directory at a time till you get to the
+      file itself. Note that the ASUS Transformer has an internal SD card, and the
+      "recommended" way of getExternalStorageDirectory returns the internal card
+      and <em>not</em> the external one!
+    </p>
+
+    <p>
+      I'm not going to go through any of how to set up an environment such as Eclipse
+      or how to build projects. Once done, an app can be "exported" to an SD card
+      and installed from the file browser. A player for a single file
+      on the SD disk looks like
+    </p>
+    <pre class="sh_cpp">
+      <code>
+      <!--#exec cmd="/usr/local/bin/escape.pl . DiskPlayerActivity.java" -->
+      </code>
+    </pre>
+
+    <p>
+      This app requires access to read the SD card. In the AndroidManifest file this is
+      given by
+</p>
+      <pre>
+	<code>
+&lt;uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/&gt;
+	</code>
+      </pre>
+<p>
+    </p>
+
+    <h2> Streaming audio </h2>
+    <p>
+      The <code>MediaPlayer</code> will take the URL of an audio file - in some versions
+      of Android and for some file types. This is sad, particularly for me since
+      Android 2.2 won't stream Ogg files and  my media player can't be upgraded
+      from 2.2.
+    </p>
+
+    <p>
+      When an app can't stream a file from the web, we have to do silly tricks like
+      downloading it locally and then playing it. That code looks like
+    </p>
+    <pre class="sh_cpp">
+      <code>
+      <!--#exec cmd="/usr/local/bin/escape.pl . HttpPlayerActivity.java" -->
+      </code>
+    </pre>
+
+    <p>
+      This app requires access to the internet to get the resource. 
+      In the AndroidManifest file this is
+      given by
+</p>
+      <pre>
+	<code>
+	  &lt;uses-permission android:name="android.permission.INTERNET"/&gt;
+	</code>
+      </pre>
+<p>
+    </p>
+
+    <h2> Recording audio </h2>
+    <p>
+      There are two ways: using <code>MediaRecorder</code> or <code>AudioRecorder</code>.
+      The second gives you more control. An example using this is given as
+      <a href="http://www.androiddevblog.net/android/android-audio-recording-part-2">	
+	Android audio recording, part 2
+      </a>
+      by  Krishnaraj Varma.
+    </p>
+
+    <p>
+      This app requires RECORD_AUDIO permission. 
+      In the AndroidManifest file this is
+      given by
+</p>
+      <pre>
+	<code>
+	  &lt;uses-permission android:name="android.permission.INTERNET"/&gt;
+	</code>
+      </pre>
+<p>
+    </p>
+
+
+    <h2> Playing audio from the microphone </h2>
+    <p>
+      Best so far: http://stackoverflow.com/questions/2413426/playing-an-arbitrary-tone-with-android
+</p>
+<pre>
+<code>
+    void playSound(){
+        final AudioTrack audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC,
+                sampleRate, AudioFormat.CHANNEL_CONFIGURATION_MONO,
+                AudioFormat.ENCODING_PCM_16BIT, generatedSnd.length,
+                AudioTrack.MODE_STATIC);
+        audioTrack.write(generatedSnd, 0, generatedSnd.length);
+        audioTrack.play();
+    }
+</code>
+</pre>
+<p>
+    </p>
+
+    <p>
+      Similar stuff at http://www.speakingcode.com/2012/01/01/playing-with-android-audiotrack-to-generate-sounds/
+      Playing with Android AudioTrack to Generate Sounds, but no code
+    </p>
+
+    <p>
+      Code at http://masterex.github.com/archive/2012/05/28/android-audio-synthesis.html
+      Android: Crafting a Metronome with Audio Synthesis
+    </p>
+
+    <p>
+      Replaying the audio recorded from the microphone to the output device makes use of two
+      objects: an <code>AudioRecord</code> to capture data from the microphone and an
+      <code>AudioTrack</code> to send it to the output device. The previous program for
+      recording audio just needs to write the data to an <code>AudioTrack</code> object
+      instead of to a file.
+    </p>
+
+  
+    <p>
+      The code is PlayMicrophone.java:
+    </p>
+    <pre class="sh_cpp">
+      <code>
+      <!--#exec cmd="/usr/local/bin/escape.pl . PlayMicrophoneActivity.java" -->
+      </code>
+    </pre>
+
+    <p>
+      This app requires RECORD_AUDIO permission. 
+      In the AndroidManifest file this is
+      given by
+</p>
+      <pre>
+	<code>
+	  &lt;uses-permission android:name="android.permission.RECORD_AUDIO"/&gt;
+	</code>
+      </pre>
+<p>
+    </p>
+
+    <p>
+      On my ASUS Transformer with 4.0, the input and output devices both require
+      a minimum buffer of 8192 bytes with a sample rate of 44100hz.
+      The latency is poor: 330 milliseconds and is similar to other reports.
+      It is not usable for
+      realtime record and playback. The new APIs in 4.1 may improve the situation.
+    </p>
+
+    <h2> MIDI playback </h2>
+    <p>
+      The Android <code>MediaPlayer</code> supports the playback of MIDI files.
+      See
+      <a href="http://blog.umito.nl/2010/05/07/midi-on-android.html">
+	The state of MIDI support on Android
+      </a>.
+      It uses the Sonivox EAS (Embedded Audio Synthesis).
+    </p>
+
+    <h2> OpenMAX </h2>
+    <p>
+      The audio/video components of Android systems are Java layered on top of
+      OpenMAX - a C-based system for low-end devices. This is partly covered
+      in the chapter
+      <a href="../../Sampled/OpenMAX/"> OpenMAX and and OpenSL </a>.
+      The links using NDK will be explored inlater editions of this book.
+    </p>
+
+    <h2> Conclusion </h2>
+    <p>
+      Android offers a Java API for dealing with audio. It suffers from version
+      dependencies and the failure to have an open model for the ROMs means that
+      you can be stuck with an old version of Android which you can't upgrade.
+    </p>
+
+<!--#exec cmd="/usr/local/bin/escape.pl . a.c" -->
+
+
+<hr/>
+ <!--#include virtual="../../footer.html" -->
+
+  </body>
+</html>

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="../../stylesheet.css" />
+
+    <title> Jack </title>
+
+    <style type="text/css">
+        body { counter-reset: chapter 4; }
+    </style>
+
+    <script type="text/javascript" src="../../toc.js"> 
+   <!-- empty -->
+   </script>
+
+   <script type="text/javascript">
+/* <![CDATA[ */
+    (function() {
+        var s = document.createElement("script"), t = document.getElementsByTagName("script")[0];
+        s.type = "text/javascript";
+        s.async = true;
+        s.src = "http://api.flattr.com/js/0.6/load.js?mode=auto";
+        t.parentNode.insertBefore(s, t);
+    })();
+/* ]]> */
+    </script>
+
+
+   <link rel="stylesheet" type="text/css" href="../../js/doc/style.css">
+   <!-- <link rel="stylesheet" type="text/css" href="../../js/css/sh_emacs.css"> -->
+   <link rel="stylesheet" type="text/css" href="../../js/sh_style.css">
+   <script type="text/javascript" src="../../js/sh_main.min.js"></script>
+   <script type="text/javascript" src="../../js/lang/sh_cpp.min.js"></script>
+   
+
+  </head>
+  <body onload="sh_highlightDocument();">
+
+    <!--#include virtual="../../header.html" -->
+
+
+    <div class="chapter">
+        <h1> Jack </h1>
+     </div>
+
+    <div class="preface">
+      <p>
+	In addition to supporting digital audio with minimum latency, Jack also has support
+	for MIDI data.
+      </p>
+    </div>
+
+    <div id="generated-toc" class="generate_from_h2"></div>
+
+    <h2> Resources </h2>
+    <p>
+      <ul>
+	<li>
+	  <a href="http://murks.lima-city.de/serendipity/?/archives/7-ALSA-and-JACK-MIDI-explained-by-a-dummy-for-dummies.html">
+	    ALSA and JACK MIDI explained (by a dummy for dummies)
+	  </a>
+	  by  Philipp Überbacher 
+	</li>
+	<li>
+	  <a href="http://jack-keyboard.sourceforge.net/">
+	    Jack Keyboard
+	  </a> 
+	  by Edward Tomasz Napierala
+	</li>
+	<li>
+	  <a href="http://smbolton.com/whysynth.html">
+	    WhySynth — A DSSI Softsynth Plugin
+	  </a>
+	</li>
+	<li>
+	  <a href="http://smbolton.com/linux.html">
+	    Sean Bolton's Linux Audio Software 
+	  </a> including ghostess
+	</li>
+      </ul>
+
+      <h2> Jack MIDI and ALSA </h2>
+    <p>
+      Jack is a synchronised transport system, allowing multiple Jack
+      clients to send messages to each other. The original version of Jack
+      considered digital audio only, but it was later extended to transport
+      MIDI data between MIDI clients.
+    </p>
+
+    <p>
+      Jack does not talk directly to hardware. This is the job of device drivers
+      such as ALSA. For digital audio, you create a hardware endpoint by starting 
+      Jack with device output as in
+      <pre>
+	<code>
+jackd -dalsa
+	</code>
+      </pre>
+    </p>
+
+    <p>
+      For MIDI, ALSA supplies a MIDI sequencer. This does not play the MIDI, just
+      sends the MIDI events at the right time to a backend. This was discussed in
+      <a href="../../MIDI/Alsa">ALSA MIDI</a>. For example, TiMidity can be run
+      as the backend by
+      <pre>
+	<code>
+timidity -iA -B2,8 -Os -EFreverb=0
+	</code>
+      </pre>
+      while FluidSynth can be run as
+      <pre>
+	<code>
+fluidsynth --server --audio-driver=alsa -C0 -R1 -l /usr/share/soundfonts/FluidR3_GM.sf2
+	</code>
+      </pre>
+      You will probably find that a TiMidity server is already running. 
+    </p>
+
+    <p>
+      <a href="http://murks.lima-city.de/serendipity/?/archives/7-ALSA-and-JACK-MIDI-explained-by-a-dummy-for-dummies.html">
+	Philipp Überbacher</a> explains the options for using Jack MIDI with (or without) ALSA MIDI:
+      <ul>
+	<li>
+	  If Jack is run with the option <code>-Xraw</code> then the ALSA MIDI sequencer is ignored
+	  and Jack MIDI output is sent <em>only</em> to hardware MIDI devices
+	</li>
+	<li>
+	   If Jack is run with the option <code>-Xseq</code> then each ALSA MIDI port is made
+	   visible as a Jack sequencer port
+	</li>
+	<li>
+	  If Jack is run without either option then you cannot see any ALSA-based MIDI ports.
+	  The command <code>a2jmidid</code> will make the ALSA MIDI sequencer ports visible
+	  to Jack.
+	</li>
+      </ul>
+    </p>
+
+    <p>
+      The difference between the last two can be seen graphically using <code>qjackctl</code>.
+      Using <code>a2jmidid</code> the MIDI clients show under a <code>a2j</code> dropdown
+      and have meaningful names:
+      <br/>
+      <img src="jack-midi-j2midid.png"/>
+      <br/>
+      Using the <code>-Xseq</code> option, the same MIDI clients show with names given by Jack
+      which are not so useful:
+      <br/>
+      <img src="jack-midi-xseq.png"/>
+      <br/>
+    </p>
+
+
+    <h2> Playing MIDI </h2>
+    <p>
+      The application <code>jack-keyboard</code> is a piano keyboard.
+      This can play MIDI events by holding down "keys" with the mouse 
+      or by using the keyboard.
+      It looks like
+      <br/>
+      <img src="jack-keyboard.png"/>
+      <br/>
+    </p>
+
+    <p>
+      It will show in <code>qjackctl</code>
+      as both an output port and (probably less usefully) as an input port.
+      How can you check it is working okay? It's not too hard:
+      <ul>
+	<li>
+	  Pause PulseAudio by <code>pasuspender cat</code>.
+	  Restart it at the end of the Jack session by ctl-D to <code>cat</code>
+	</li>
+	<li>
+	  Start Jack running by <code>jackd -dalsa</code>
+	</li>
+	<li>
+	  Start <code>qjackctl</code>.
+	</li>
+	<li>
+	  Start <code>a2jmidid</code> to map ALSA ports into Jack ports.
+	  Under the MIDI tab of <code>qjackctl</code>
+	  you may now see TiMidity or other synthesizer as an input port
+	</li>
+	<li>
+	  Start <code>aseqdump</code> from the command line.
+	  This can show the events at an ALSA sequencer port in the terminal window.
+	  This will now show in <code>qjackctl</code> as an input port.
+	</li>
+	<li>
+	  Connect the <code>jack-piano</code> output port to an <code>aseqdump</code>
+	  input port as in
+	  <br/>
+	  <img src="jack-seqdump.png"/>
+	  <br/>
+	</li>
+	<li>
+	  Bang away at the piano and watch the events show in <code>aseqdump</code>
+	  <pre>
+	    <code>
+130:0   Note on                 0, note 73, velocity 32
+130:0   Note off                0, note 73, velocity 32
+130:0   Note on                 0, note 82, velocity 32
+130:0   Note off                0, note 82, velocity 32
+130:0   Note on                 0, note 86, velocity 32
+130:0   Note off                0, note 86, velocity 32
+130:0   Note on                 0, note 73, velocity 127
+130:0   Note off                0, note 73, velocity 127
+130:0   Note on                 0, note 73, velocity 127
+130:0   Note off                0, note 73, velocity 127
+130:0   Note on                 0, note 70, velocity 127
+130:0   Note off                0, note 70, velocity 127
+	    </code>
+	  </pre>
+	</li>
+      </ul>
+    </p>
+
+    <p>
+      Another useful application is <code>jack-smf-player</code>
+      from <a href="http://sourceforge.net/projects/jack-smf-utils/">
+	Simple JACK MIDI player and recorder
+      </a> by Edward Tomasz Napierała. 
+      This will play a MIDI file to a Jack MIDI input client.
+    <p>
+
+      <h2> Synthesizing MIDI </h2>
+    <p>
+      With one of the Jack-ALSA links by <code>aj2midid</code> or <code>jackd -dalsa -Xseq</code>,
+      TiMidity will probably show up as a Jack MIDI input, and we know it is a synthesizer to
+      play MIDI events. Unfortunately, I have not yet succeeded in getting it to play anything:
+      connecting the keyboard or file player to it results in obstinate silence.
+      The same things happens if I run FluidSynth as a backend server to <code>alsaseq</code>:
+      no sound.
+    </p>
+
+    <p>
+      The solution I have found so far is to start <em>another</em> TiMidity server with Jack as output (-Oj) using
+      <pre>
+	<code>
+timidity -iA -B2,8 -Oj -EFverb=0
+	</code>
+      </pre>
+      Then using qjackctl it shows up under the Audio tab with two output ports. 
+      I can connect these to the System playback ports as in 
+      <br/><img src="jack-audio.png"/><br/>
+    </p>
+
+    <p>
+      It also shows up under the MID tab (here as midi_playback 28-31) and I can connect 
+      <code>jack-keyboard</code> or other MIDI producer such as 
+      <code>jack-smf-player</code> as in 
+      <br/><img src="jack-midi.png"/><br/>
+    </p>
+
+    <p>
+      Then I can send Jack MIDI to the TiMidity Jack MIDI inputs which send audio out on 
+      the TiMidity Jack Audio output ports which is then played by the Jack Audio system playback ports.
+    </p>
+
+    <p>
+      FluidSynth can also be run in the same way by setting its audio driver to Jack
+      <pre>
+	<code>
+fluidsynth --server --audio-driver=jack  /home/httpd/html/LinuxSound/MIDI/User/TimGM6mb.sf2
+	</code>
+      </pre>
+      and connecting MIDI output ports to FluidSynth input ports and FluidSynth audio output ports to the
+      system playback ports.
+    </p>
+      
+
+
+
+      <pre class="sh_cpp">
+<!--#exec cmd="/usr/local/bin/escape.pl . OpenMAX_AL_playback.c" -->
+      </pre>
+
+
+    <!--#include virtual="../../footer.html" -->
+
+  </body>
+</html>

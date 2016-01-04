@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="../../stylesheet.css" />
+
+    <title> Streaming audio over HTTP </title>
+
+    <style type="text/css">
+        body { counter-reset: chapter 34; }
+    </style>
+
+    <script type="text/javascript" src="../../toc.js"> 
+   /* empty */
+   </script>
+
+   <script type="text/javascript">
+/* <![CDATA[ */
+    (function() {
+        var s = document.createElement("script"), t = document.getElementsByTagName("script")[0];
+        s.type = "text/javascript";
+        s.async = true;
+        s.src = "http://api.flattr.com/js/0.6/load.js?mode=auto";
+        t.parentNode.insertBefore(s, t);
+    })();
+/* ]]> */
+    </script>
+
+
+  </head>
+  <body>
+
+
+
+    <div class="chapter">
+        <h1> HTTP </h1>
+     </div>
+
+    <div class="preface">
+      <p>
+	HTTP is the protocol underlying the Web. The protocol is agnostic to
+	the content it carries - while it was originally designed to carry HTML documents
+	it is now used to transport image files, Postscript documents, PowerPoint files
+	and almost anything. This includes media files, the subject of this book.
+      </p>
+    </div>
+
+    <div id="generated-toc" class="generate_from_h2"></div>
+
+
+    <h2> HTTP servers </h2>
+    <p>
+      Content is delivered from a Web site by means of HTTP servers.
+      The most well-known of these is Apache, but in the Linux world
+      Nginx and Lighttpd are also common. There are a number of 
+      proprietary servers as well.
+    </p>
+
+    <p>
+      An HTTP server can deliver static files stored on the server,
+      or construct content dynamically from e.g. a database connection.
+    </p>
+
+    <h2> HTTP clients </h2>
+
+    <h3> HTTP Browsers </h3>
+    <p>
+      Point the browser to the URL of an audio file and it will pass
+      the content to a helper which will attempt to play the file.
+      The browser will choose the helper based on the file extension
+      of the URL, or based on the Content-Type of the file as delivered
+      in the HTTP header from the HTTP server.
+    </p>
+
+    <h3> mplayer </h3>
+    <p>
+      MPlayer is HTTP-aware:
+      just give the URL of the file
+</p>
+      <pre>
+	<code>
+mplayer http://localhost/audio/enigma/audio_01.ogg
+	</code>
+      </pre>
+<p>
+    </p>
+
+
+    <h3> VLC </h3>
+    <p>
+      VLC is also HTTP-aware:
+      just give the URL of the file
+</p>
+      <pre>
+	<code>
+vlc http://localhost/audio/enigma/audio_01.ogg
+	</code>
+      </pre>
+<p>
+    </p>
+
+    <h2> Streaming vs downloading </h2>
+    <p>
+      If you download a file from the Web, then you can play it once it has finished
+      downloading. This means that play is delayed until the entire file has been
+      saved into the local file file system. On the other hand, since it is now local
+      it can play without worrying about network delays. A simple shell script to 
+      illustrate this is
+</p>
+      <pre>
+	<code>
+wget -O tmp  http://localhost/audio/enigma/audio_01.ogg
+mplayer tmp
+rm tmp
+	</code>
+      </pre>
+<p>
+    </p>
+
+    <p>
+      The alternative is to read the resource from the Web and hand it as it is
+      received to a player, using some sort of pipeline. This is fine as long as the
+      pipeline is large enough to buffer enough of the resource that it can cope
+      with network delays. It is illustrated by
+</p>
+      <pre>
+	<code>
+wget -O -  http://localhost/audio/enigma/audio_01.ogg | mplayer -
+	</code>
+      </pre>
+<p>
+      (Yes, I know, mplayer can stream URLs directly - I'm using this way it for the point
+      I'm making.).
+    </p>
+
+
+<!--#exec cmd="/usr/local/bin/dataprogram.pl . a.c" -->
+
+
+<hr/>
+ <!--#include virtual="../../footer.html" -->
+
+  </body>
+</html>

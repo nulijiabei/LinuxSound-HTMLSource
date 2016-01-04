@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="../../stylesheet.css" />
+
+    <title> Jack </title>
+
+    <style type="text/css">
+        body { counter-reset: chapter 33; }
+    </style>
+
+    <script type="text/javascript" src="../../toc.js"> 
+   /* empty */
+   </script>
+
+   <script type="text/javascript">
+/* <![CDATA[ */
+    (function() {
+        var s = document.createElement("script"), t = document.getElementsByTagName("script")[0];
+        s.type = "text/javascript";
+        s.async = true;
+        s.src = "http://api.flattr.com/js/0.6/load.js?mode=auto";
+        t.parentNode.insertBefore(s, t);
+    })();
+/* ]]> */
+    </script>
+
+
+   <link rel="stylesheet" type="text/css" href="../../js/doc/style.css">
+   <!-- <link rel="stylesheet" type="text/css" href="../../js/css/sh_emacs.css"> -->
+   <link rel="stylesheet" type="text/css" href="../../js/sh_style.css">
+   <script type="text/javascript" src="../../js/sh_main.min.js"></script>
+   <script type="text/javascript" src="../../js/lang/sh_cpp.min.js"></script>
+   
+
+  </head>
+  <body onload="sh_highlightDocument();">
+
+    <!--#include virtual="../../header.html" -->
+
+
+    <div class="chapter">
+        <h1> Jack </h1>
+     </div>
+
+    <div class="preface">
+      <p>
+	Jack is designed for professional audio.
+	In this chapter we apply the techniques from 
+	earlier chapters to building a Karaoke system.
+      </p>
+    </div>
+
+
+
+
+    <div id="generated-toc" class="generate_from_h2"></div>
+
+    <h2> Using jack rack for effects </h2>
+    <p>
+      Karaoke takes inputs from MIDI sources and from
+      microphones. These are mixed together.
+      Generally there is an overall volume
+      control but there is usually a volume control
+      for the microphones as well.
+      While the MIDI source should be passed straight through,
+      it is common to apply a reverb effect to the microphones.
+    </p>
+
+    <p>
+      These are all effects that can be supplied by
+      LADSPA modules (see the
+      <a href="../../DSP/LADSPA/">LADSPA</a> chapter).
+      The Jack application <code>jack-rack</code>
+      makes these plugins accessible to Jack
+      applications so that LADSPA effects can be applied
+      to Jack pipelines.
+    </p>
+
+    <p>
+      It is fairly straighforward to add a module
+      to a session. Click on the "+" button and
+      choose from the enormous menu of effects.
+      For example, choosing the Karaoke plugin
+      from the Utilities menu looks like
+      <br/><img alt="" src="karaoke.png"/><br/>
+    </p>
+
+    <p>
+      Some of the modules that might be relevant are
+</p>
+      <ul>
+	<li>
+	  Karaoke (number 1409) which shows under the Utilities menu.
+	  This will attempt to remove centre vocals from a music
+	  track.
+	</li>
+	<li>
+	  There are a number of reverb modules which show
+	  under the Simulators -&gt; Reverb menus
+	  <ul>
+	    <li>
+	      GVerb
+	    </li>
+	    <li>
+	      Plate reverb
+	    </li>
+	    <li>
+	      TAP reverberator (from the TAP plugins)
+	    </li>
+	  </ul>
+<p>
+	  The TAP reverberator seems to be the most
+	  full featured (but is not guaranteed to be realtime).
+	</li>
+	<li>
+	  There are a number of amplifiers under
+	  Amplitude -&gt; Amplifiers
+	</li>
+      </ul>
+<p>
+    </p>
+
+    <p>
+      Multiple modules may be applied in a single
+      <code>jack-rack</code> application, and
+      multiple applications can be run.
+      For example, to apply a volume control to a microphone
+      and then apply reverb before sending to the speakers
+      can be done by adding  the TAP reverberator and then
+      one of the amplifiers. This looks like
+    </p>
+      <figure>
+	<figcaption>Jack Rack with reverb and amplifier plugins</figcaption>
+	<img src="reverb+amplifier.png" alt="Jack rack with reverb and amplifier plugins"/>
+      </figure>
+    
+
+    <p>
+      I'm running this on a USB Sound Blaster TruStudioPro.
+      This is only 16-bits and I can't seem to find a suitable
+      Jack hardware configuration.
+      So I'm running Jack by hand using a plug device,
+      which Jack complains about but works anyway:
+</p>
+       <pre>
+	 <code>
+jackd -dalsa -dplughw:2 -r 48000
+	 </code>
+       </pre>
+<p>
+    </p>
+
+    <p>
+      Although <code>gladish</code> can see it under its
+      Jack configuration menu,
+      I haven't managed to get <code>gladish</code> to
+      accept the SoundBlaster as a setting - so far I can only
+      manage to get Jack running under as a plug device
+      and gladish keeps swapping it back to a hardware
+      device.
+    </p>
+
+    <p>
+      <code>qjackctl</code> does an okay job of
+      saving and restoring sessions, starting
+      <code>jack-rack</code> with its correct
+      plugins and their settings, and linking
+      it to the correct capture and playback ports.
+    <p>
+      
+      <h2> Playing MIDI </h2>
+    <p>
+      The major synthesizer engines TiMidity and FluidSynth
+      will output to ALSA devices. To bring them into the
+      Jack world, Jack needs to be started with the
+      <code>-Xseq</code> option or for <code>a2jmidid</code>
+      to be run.
+    </p>
+
+    <p>
+      We can try to manage the connections using the Jack
+      session manager (e.g. <code>qjackctl</code>).
+      But this hits a snag using the MIDI synthesizers
+      such as TiMidity or FluidSynth
+      since they assume a PulseAudio output rather
+      than Jack output. 
+      Restoring a session fails to restore the synthesizer
+      with Jack output.
+    </p>
+
+    <p>
+      We can try to manage the connections using LADSPA.
+      Unfortunately I have so far been unable to manage
+      the Jack server settings using <code>gladish</code>.
+      So it starts Jack using the default ALSA settings
+      and doesn't use the <code>-Xseq</code> setting
+      to map the ALSA ports to Jack.
+      We need to start <code>a2jmidid</code>
+      and then it can succesfully manage a session of e.g
+      <code>timidity</code>, <code>jack_keyboard</code> and 
+      <code>a2jmidid</code>.
+    </p>
+
+    <p>
+      Even then, the connection diagram looks a mess:
+    </p>
+      <figure>
+	<figcaption>LADISH playing MIDI</figcaption>
+	<img src="ladish-mess.png" alt="LADISH playing MIDI"/>
+      </figure>
+
+      <h2> TiMidity plus Jack Rack </h2>
+    <p>
+      In the chapter on 
+      <a href="../Timidity/"> Karaoke TiMidity </a>
+      we used TiMidity with a Jack backend and an
+      Xaw interface to give a basic Karaoke system.
+      We can now improve on that by using Jack Rack
+      effects:
+</p>
+      <ul>
+	<li>
+	  Run TiMidity with Jack output, an Xaw interface
+	  and synchronising the lyrics to sound by
+	  <pre>
+	    <code>
+timidity -ia -B2,8 -Oj -EFverb=0 --trace --trace-text-meta
+	    </code>
+	  </pre>
+	</li>
+	<li>
+	  Run Jack rack with TAP reverberator and a volume
+	  control installed
+	</li>
+	<li>
+	  Connect ports using <code>qjackctl</code>
+	</li>
+      </ul>
+<p>
+      The resulting system looks like
+</p>
+      <figure>
+	<figcaption>TiMidity with Jack Rack</figcaption>
+	<img src="timidity+jackrack.png" alt="TiMidity with Jack Rack"/>
+      </figure>
+    
+
+    <h2> Customising TiMidity build </h2>
+    <p>
+      The version of TiMidity from the Ubuntu distro crashes if
+      I try to dynamically load another interface. As the code is
+      stripped, it is not possible to find out why.
+      So to add a new interface we need to build TiMidity
+      from source.
+    </p>
+    <p>
+      The commands I now use are
+</p>
+      <pre>
+	<code>
+./configure --enable-audio=alsa,jack \
+            --enable-interface=xaw,gtk \
+            --enable-server \
+            --enable-dynamic
+make clean
+make
+	</code>
+      </pre>
+<p>
+      An interface with key, say 'k', can then be run
+      with Jack output by
+      <pre>
+	<code>
+timidity -d. -ik -Oj --trace  --trace-text-meta 54154.mid
+	</code>
+      </pre>
+<p>
+    </p>
+
+    <h2> Playing MP3+G with Jack Rack pitch shifting</h2>
+    <p>
+      The player <code>vlc</code> will play MP3+G files.
+      Often the MP3+G is a zipped files containing both
+      an MP3 file and CDG file with the same root. 
+      This must be unzipped, and then can be played by giving
+      <code>vlc</code> the MP3 filename:
+</p>
+      <pre class="sh_cpp">
+vlc file.mp3
+      </pre>
+<p>
+      This will pick up the CDG file and display the lyrics.
+    </p>
+
+    <p>
+      <code>vlc</code> can be used with Jack by the <code>--aout jack</code>
+      option
+</p>
+      <pre class="sh_cpp">
+vlc --aout jack file.mp3
+      </pre>
+<p>
+    </p>
+
+    <p>
+      One of the common requests for <code>vlc</code> is to have
+      a "pitch control" mechanism. While it should be possible to add
+      LADPSA pitch controls to <code>vlc</code>, no-one has got
+      around to it yet. But we can still add LADSPA effects
+      through <code>jack-rack</code>.
+    </p>
+
+    <p>
+      The steps are
+</p>
+      <ul>
+	<li>
+	  You may need to stop <code>pulseaudio</code> temporarily
+	  by e.g <code>pasuspender cat</code>
+	</li>
+	<li>
+	  Start the Jack daemon running as usual by
+	  <pre class="sh_cpp">
+jackd -d alsa
+	  </pre>
+	</li>
+	<li>
+	  Start <code>qjackctl</code> so you have some control
+	  over Jack connections
+	</li>
+	<li>
+	  Start <code>jack-rack</code>. Using the '+' button,
+	  select Frequency -&gt; Pitch shifters -&gt; TAP Pitch Shifter.
+	  Don't forget to Enable it, so it should look like
+	
+	  <figure>
+	    <figcaption></figcaption>
+	    <img src="jack-rack.png" alt="jack-rack"/>
+	  </figure>
+	  Note that in <code>qjackctl</code>, <code>jack-rack</code>
+	  shows as <code>jack_rack</code> - the minus has been
+	  replaced by an underscore, and is the proper Jack
+	  name of <code>jack-rack</code>. Connect the output
+	  of <code>jack-rack</code> to <code>system</code>.
+	</li>
+	<li>
+	  Now start <code>vlc --aout jack</code> so we can set up
+	  the correct configuration. Choose Tools -&gt; Preferences,
+	  and in "Show settings" set the radio button to "All".
+	  Then under Audio -&gt; Output modules -&gt; Jack
+	  check "Automatically connect to writable clients" 
+	  and connect to clients matching "jack_rack"
+	  (note the underscore). This should look like
+	  <figure>
+	    <figcaption></figcaption>
+	    <img src="vlc-config.png" alt="VLC configuration"/>
+	  </figure>
+	</li>
+	<li>
+	  Next time you start <code>vlc</code> by e.g.
+	  <code>vlc --aout jack BST.mp3</code>,
+	  <code>qjackctl</code> should show
+	  <figure>
+	    <figcaption></figcaption>
+	    <img src="qjackctl.png" alt="QJackCtl with VLC"/>
+	  </figure>
+	  and the music should play through <code>jack-rack</code>
+	  where you can adjust the pitch.
+	</li>
+      </ul>
+<p>
+    </p>
+
+    <p>
+      The result of this with <code>vlc</code> playing MP3 audio
+      through the pitch filter and also showing the CDG video
+      should look like
+    </p>
+      <figure>
+	<figcaption></figcaption>
+	<img src="playing.png" alt="Playing MP3+G file"/>
+      </figure>
+    
+
+    <h2> Conclusion </h2>
+    <p>
+      This chapter has discussed a number of ways of building
+      Jack pipelines to add effects to MIDI and MP3+G
+      files.
+    </p>
+
+    <!--#include virtual="../../footer.html" -->
+
+  </body>
+</html>

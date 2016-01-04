@@ -1,0 +1,1610 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="../../stylesheet.css" />
+
+    <title> PulseAudio </title>
+
+    <style type="text/css">
+        body { counter-reset: chapter 6; }
+    </style>
+
+
+    <script type="text/javascript" src="../../toc.js"> 
+   /* empty */
+   </script>
+
+   <script type="text/javascript">
+/* <![CDATA[ */
+    (function() {
+        var s = document.createElement("script"), t = document.getElementsByTagName("script")[0];
+        s.type = "text/javascript";
+        s.async = true;
+        s.src = "http://api.flattr.com/js/0.6/load.js?mode=auto";
+        t.parentNode.insertBefore(s, t);
+    })();
+/* ]]> */
+    </script>
+
+  <link rel="stylesheet" type="text/css" href="../../js/doc/style.css">
+   <!-- <link rel="stylesheet" type="text/css" href="../../js/css/sh_emacs.css"> -->
+   <link rel="stylesheet" type="text/css" href="../../js/sh_style.css">
+   <script type="text/javascript" src="../../js/sh_main.min.js"></script>
+   <script type="text/javascript" src="../../js/lang/sh_cpp.min.js"></script>
+ 
+
+  </head>
+  <body onload="sh_highlightDocument();">
+
+    <!--#include virtual="../../header.html" -->
+
+    <div class="chapter">
+      <h1> PulseAudio </h1>
+    </div>
+
+    <div class="preface">
+      <p>
+      PulseAudio is a sound server, sitting above device drivers
+      such as ALSA or OSS. It offers more capablilities than
+      device drivers.
+      PulseAudio is designed for consumer audio, to make it easy 
+      to use sound on desktops, laptops and mobile devices.
+      Multiple sources of sound can all play to the PulseAudio
+      server and it will mix them together and play them.
+      Low latency is not a design goal, so it is unsuitable
+      for professional audio.
+      </p>
+    </div>
+
+
+    <div id="generated-toc" class="generate_from_h2"></div>
+
+    <h2> Resources </h2>
+
+      <ul>
+	<li>
+	  <a href="http://www.freedesktop.org/wiki/Software/PulseAudio">
+	    PulseAudio home page
+	  </a>
+	</li>
+	<li>
+	  <a href="http://0pointer.de/blog/projects/when-pa-and-when-not.html">
+	    PulseAudio and Jack
+	  </a> by Lennart Poettering 
+	</li>
+	<li>
+	  <a href="http://lac.linuxaudio.org/2010/recordings/day1_1400_Pro_Audio_is_Easy_Consumer_Audio_is_Hard.ogv">
+	    Pro Audio is Easy, Consumer Audio is Hard
+	  </a> - 60 minute talk by Lennart Poettering
+	</li>
+	<li>
+	  <a href="http://freedesktop.org/software/pulseaudio/doxygen/index.html">
+	    PulseAudio API Documentation
+	  </a>
+	</li>
+      </ul>
+
+
+    <h2> Starting, stopping and pausing PulseAudio </h2>
+    <p>
+      If you have a current Linux system, PulseAudio is probably
+      running. Test by running this from the command line:
+    </p>
+      <pre>
+	<code>
+ps agx | grep pulse
+	</code>
+      </pre>
+   
+    <p>
+      If you see a line like "/usr/bin/pulseaudio --start --log-target=syslog" 
+then it is running already.
+    </p>
+
+    <p>
+      If it isn't running and you have it installed, then start it by
+    </p>
+      <pre>
+	<code>
+pulseaudio --start
+	</code>
+      </pre>
+
+    <p>
+      Stopping PulseAudio isn't so easy - Carla Schroder
+      <a href="http://www.linuxplanet.com/linuxplanet/tutorials/7130/2"> 
+	shows how </a>.
+      The basic problem is that PulseAudio is set to respawn itself
+      after it is killed. You have to turn that off by
+      editing /etc/pulse/client.conf, 
+      changing autospawn = yes to autospawn = no,
+      and setting daemon-binary to /bin/true.
+      Then you can kill the processs, remove it from startup files, etc.
+    </p>
+
+    <p>
+      If you want to run another sound system (such as Jack) for a short
+      while, you may just want to pause PulseAudio. You do this by using
+      <code>pasuspender</code>. This takes a command (after "--") and
+      will pause access by the PulseAudio server to the audio devices until 
+      the subcommand has finished.
+      For example, 
+    </p>
+      <pre>
+	<code>
+pasuspender -- jackd
+	</code>
+      </pre>
+    <p>
+      will run the Jack server, with PulseAudio getting out of the way until
+      it has finished.
+    </p>
+
+    <h2> User space tools </h2>
+
+    <h3> paman </h3>
+    <p>
+      This shows you information about the PulseAudio server, its devices and clients.
+      The following three screen dumps show the type of information it gives.
+      <br/>
+      <img alt="" src="images/paman1.png"/>
+      <br/> 
+      <img alt="" src="images/paman2.png"/>
+      <br/> 
+      <img alt="" src="images/paman3.png"/>
+    </p>
+
+
+    <h3> pavumeter </h3>
+    <p>
+      <code>pavumeter</code> is a simple meter for showing input or output levels
+      of the default devices. When run by <code>pavumeter</code> it shows the
+      playback device as in
+      <br/> <img alt="" src="images/pavumeter-playback.png"/> <br/>
+      while if it is run by <code>pavumeter --record</code>  it shows the record device
+      as in
+      <br/> <img alt="" src="images/pavumeter-record.png"/> <br/>
+    </p>
+
+
+    <h3> pavucontrol</h3>
+    <p>
+      <code>pavucontrol</code> allows you to control the input and ouput volumes of the
+      different connected audio devices:
+      <br /> <img alt="" src="images/pavucontrol.png" />
+    </p>
+
+    <p>
+      With these tabs, <code>pavucontrol</code> is a device-level mixer,
+      able to control the overall volume to individual devices.
+    </p>
+
+    <p>
+      One of the special advantages of PulseAudio is that it can perform
+      application-level mixing. If two audio sources write to the same 
+      PulseAudio device, the audio will be mixed to the output device.
+      <code>pavucontrol</code> can show the multiple applications using
+      the Playback tab, showing all applications or all streams 
+      currently being mixed. Each stream can have its channel volumes
+      individually controlled.
+    </p>
+    
+    
+    <p>
+      For example, Karaoke on the cheap can be done by setting
+      the straight-through module for the microphone to speaker
+      by
+    </p>
+      <pre>
+	<code>
+pactl load-module module-loopback latency_msec=1
+	</code>
+      </pre>
+
+    <p>
+      while the Karoake file is played by a Karaoke player
+      such as <code>kmid</code> through <code>timidity</code> e.g.
+    </p>
+      <pre>
+	<code>
+kmid nightsin.kar
+	</code>
+      </pre>
+
+    <p>
+      While these two are running, relative volumes can be controlled
+      by use of <code>pavucontrol</code>:
+      <br/> <img alt="" src="images/pavumixer.png"/> <br/>
+    </p>
+
+    <h3> Gnome control center (sound) </h3>
+    <p>
+      The <code>gnome-control-center sound</code> allows full view and control of
+       the attached sound devices, including selection of the default input and
+      output devices. It looks like
+      <br/> <img alt="" src="images/sound-center.png"/> 
+    </p>
+
+    <h3> parec/paplay/pacat </h3>
+    <p>
+      These are command line tools to record and playback sound files.
+      They are all symbolic links to the same code, just differently named links.
+      The default format is PCM s16.
+      There are many options, but they don't always do quite what you want them to.
+      For example, to play from the default record device to the default playback
+      device with minimum latency, 
+    </p>
+      <pre>
+	<code>
+pacat -r --latency-msec=1 | pacat -p --latency-msec=1
+	</code>
+      </pre>
+    <p>
+      This actually has a latency of about 50 msec.
+    </p>
+
+
+    <h3> pactl/pacmd </h3>
+    <p>
+      These two commands do basically the same thing. <code> pacmd </code> is
+      the interactive version with more options.
+      For example <code> pacmd </code> with the command
+      <code> list-sinks </code> includes
+    </p>
+      <pre>
+	<code>
+	name: &lt;alsa_output.pci-0000_00_1b.0.analog-stereo&gt;
+	driver: &lt;module-alsa-card.c&gt;
+	flags: HARDWARE HW_MUTE_CTRL HW_VOLUME_CTRL DECIBEL_VOLUME LATENCY FLAT_VOLUME DYNAMIC_LATENCY
+	state: SUSPENDED
+	suspend cause: IDLE 
+	priority: 9959
+	volume: 0:  93% 1:  93%
+	        0: -1.88 dB 1: -1.88 dB
+	        balance 0.00
+	base volume: 100%
+	             0.00 dB
+	volume steps: 65537
+	muted: no
+	current latency: 0.00 ms
+	max request: 0 KiB
+	max rewind: 0 KiB
+	monitor source: 1
+	sample spec: s16le 2ch 44100Hz
+	channel map: front-left,front-right
+	             Stereo
+	used by: 0
+	linked by: 0
+	configured latency: 0.00 ms; range is 16.00 .. 2000.00 ms
+	card: 1 &lt;alsa_card.pci-0000_00_1b.0&gt;
+	module: 5
+	properties:
+		alsa.resolution_bits = "16"
+		device.api = "alsa"
+		device.class = "sound"
+		alsa.class = "generic"
+		alsa.subclass = "generic-mix"
+		alsa.name = "STAC92xx Analog"
+		alsa.id = "STAC92xx Analog"
+		alsa.subdevice = "0"
+		alsa.subdevice_name = "subdevice #0"
+		alsa.device = "0"
+		alsa.card = "0"
+		alsa.card_name = "HDA Intel PCH"
+		alsa.long_card_name = "HDA Intel PCH at 0xe6e60000 irq 47"
+		alsa.driver_name = "snd_hda_intel"
+		device.bus_path = "pci-0000:00:1b.0"
+		sysfs.path = "/devices/pci0000:00/0000:00:1b.0/sound/card0"
+		device.bus = "pci"
+		device.vendor.id = "8086"
+		device.vendor.name = "Intel Corporation"
+		device.product.id = "1c20"
+		device.product.name = "6 Series/C200 Series Chipset Family High Definition Audio Controller"
+		device.form_factor = "internal"
+		device.string = "front:0"
+		device.buffering.buffer_size = "352800"
+		device.buffering.fragment_size = "176400"
+		device.access_mode = "mmap+timer"
+		device.profile.name = "analog-stereo"
+		device.profile.description = "Analog Stereo"
+		device.description = "Internal Audio Analog Stereo"
+		alsa.mixer_name = "IDT 92HD90BXX"
+		alsa.components = "HDA:111d76e7,10280494,00100102"
+		module-udev-detect.discovered = "1"
+		device.icon_name = "audio-card-pci"
+	ports:
+		analog-output: Analog Output (priority 9900)
+		analog-output-headphones: Analog Headphones (priority 9000)
+	active port: &lt;analog-output&gt;
+
+	</code>
+      </pre>
+
+    <h3> Device names </h3>
+    <p>
+      PulseAudio uses its own naming conventions. The names of source devices
+      (such as microphones) can be found using code from the
+      <a href="http://www.freedesktop.org/wiki/Software/PulseAudio/FAQ#How_do_I_record_stuff.3F">
+	PulseAudio FAQ
+      </a>:
+    </p>
+      <pre>
+	<code>
+pactl list | grep -A2 'Source #' | grep 'Name: .*\.monitor$' | cut -d" " -f2
+	</code>
+      </pre>
+
+    <p>
+      On my system this produces
+    </p>
+      <pre>
+	<code>
+alsa_output.pci-0000_01_00.1.hdmi-stereo.monitor
+alsa_output.pci-0000_00_1b.0.analog-stereo.monitor
+alsa_input.pci-0000_00_1b.0.analog-stereo
+	</code>
+      </pre>
+    
+    <p>
+      Similarly the output devices are found by 
+    </p>
+      <pre>
+	<code>
+pactl list | grep -A2 'Sink #' | grep 'Name: .*\.monitor$' | cut -d" " -f2
+	</code>
+      </pre>
+    <p>
+      to give
+    </p>
+      <pre>
+	<code>
+alsa_output.pci-0000_01_00.1.hdmi-stereo
+alsa_output.pci-0000_00_1b.0.analog-stereo
+	</code>
+      </pre>
+
+    <h3> Loopback module </h3>
+    <p>
+      Using <code> pactl</code> you can load the module <code>module-loopback</code> by
+    </p>
+      <pre>
+	<code>
+pactl load-module module-loopback latency_msec=1
+	</code>
+      </pre>
+    <p>
+      When loaded, sound is internally routed from the input device to the output
+      device. The latency is effectively zero.
+    </p>
+
+    <p>
+      If you load this module into, say. your laptop, be careful about unplugging
+      speakers, microphones, etc. The internal speaker and microphone are close enough
+      to set up a feedback loop. Unload module number N by
+    </p>
+      <pre>
+	<code>
+pactl unload-module N
+	</code>
+      </pre>
+    <p>
+      (if you have forgotten the module number, just running <code>pactl</code>
+      will list all modules so you can identify the loopback module.).
+    </p>
+
+    <h3> PulseAudio and ALSA </h3>
+    <p>
+      Output from <code>pacmd</code> shows PulseAudio uses ALSA.
+      The relationship is deeper: the default ALSA device is "hw:0"
+      but PulseAudio overrides that. In <code>/etc/asound.conf</code>
+      is a hook to load <code>/etc/alsa/pulse-default.conf</code>
+      and this contains
+    </p>
+      <pre>
+	<code>
+pcm.!default {
+    type pulse
+    hint {
+        description "Default"
+    }
+}
+	</code>
+      </pre>
+    <p>
+      which replaces the default device with a PulseAudio module.
+    </p>
+
+    <p>
+      Opening the default ALSA device will actually call into PulseAudio
+      which will then call back into ALSA with the devices it chooses.
+    </p>
+
+
+    <h2> Programming with PulseAudio </h2>
+    <p>
+      The source for Pulse Audio and its documentation is
+      <a href="http://freedesktop.org/software/pulseaudio/doxygen/index.html">
+	PulseAudio 2.0
+      </a>
+      There are two ways of programming with PulseAudio:
+      the "simple API" and the "asynchronous API".
+      Both are described below.
+    </p>
+
+    <h2> Simple API </h2>
+    <p>
+      Pulse has a "simple" API and a far more complex asynchronous API.
+      The simple API may be good enough for your needs.
+    </p>
+
+    <p>
+      The simple API has a small set of functions
+    </p>
+<pre>
+<code>
+pa_simple * 	pa_simple_new (const char *server, const char *name, pa_stream_direction_t dir, const char *dev, const char *stream_name, const pa_sample_spec *ss, const pa_channel_map *map, const pa_buffer_attr *attr, int *error)
+ 	Create a new connection to the server.
+void 	pa_simple_free (pa_simple *s)
+ 	Close and free the connection to the server.
+int 	pa_simple_write (pa_simple *s, const void *data, size_t bytes, int *error)
+ 	Write some data to the server.
+int 	pa_simple_drain (pa_simple *s, int *error)
+ 	Wait until all data already written is played by the daemon.
+int 	pa_simple_read (pa_simple *s, void *data, size_t bytes, int *error)
+ 	Read some data from the server.
+pa_usec_t 	pa_simple_get_latency (pa_simple *s, int *error)
+ 	Return the playback latency.
+int 	pa_simple_flush (pa_simple *s, int *error)
+ 	Flush the playback buffer. 
+</code>
+</pre>
+
+    <h3> Play a file </h3>
+    <p>
+      A program to play from a file to the default output device is
+      from the PulseAudio site.
+      The basic structure is
+    </p>
+      <ul>
+	<li>
+	  Create a new playback stream (pa_simple_new)
+	</li>
+	<li>
+	  Read blocks from the file (read)...
+	</li>
+	<li>
+	  ...and write them to the stream (pa_simple_write)
+	</li>
+ 	<li>
+	  Finish by flushing the stream (pa_simple_drain)
+	</li>
+      </ul>
+    <p>
+      The program is
+      <a href="http://freedesktop.org/software/pulseaudio/doxygen/examples.html">
+	pacat-simple.c
+      </a>.
+      Rather weirdly, it does a <code>dup2</code> to map the open file descriptor
+      onto <code>stdin</code> and then reads from <code>stdin</code>. This isn't
+      necessary - what not just read from the original file descriptor?
+    </p>
+      <pre class="sh_cpp">
+      <!--#exec cmd="/usr/local/bin/escape.pl . pacat-simple.c" -->
+      </pre>
+
+    <h3> Record to a file </h3>
+    <p>
+      A program to record to a file from the default input device is
+      from the Pulse Audio site
+      <a href="http://freedesktop.org/software/pulseaudio/doxygen/examples.html">
+	parec-simple.c
+      </a>
+      The basic structure is
+    </p>
+      <ul>
+	<li>
+	  Create a new recording stream (pa_simple_new)
+	</li>
+	<li>
+	  Read blocks from the stream (pa_simple_read)...
+	</li>
+	<li>
+	  ...and write them to the output (write)
+	</li>
+ 	<li>
+	  Finish by releasing the stream (pa_simple_free)
+	</li>
+      </ul>
+    <p>
+      Note that you need to tell PulseAudio the format to write
+      the data, using a pa_sample_spec. Two channel, 44100hz and
+      PCM 16 bit little-endian is chosen.
+    </p>
+      <pre class="sh_cpp">
+      <!--#exec cmd="/usr/local/bin/escape.pl . parec-simple.c" -->
+      </pre>
+    
+
+    <p>
+      The output from this is a PCM s16 file. You can convert it to
+      another format using Sox
+      (e.g. sox -c 2 -r 44100 tmp.s16 tmp.wav), 
+      or import it as raw data into
+      Audacity and play it directly.
+    </p>
+
+    <p>
+      How good are these for real-time audio? The first program 
+      can show
+      the latency (turn the "#if 0" to "#if 1").
+      This code can also be copied into the second one.
+      The results are not good:
+    </p>
+      <ul>
+	<li>
+	  recording has a latency of 11 msecs on my laptop
+	</li>
+	<li>
+	  playback has a latency of 130 msecs!
+	</li>
+      </ul>
+
+    <h3> Play from source to sink </h3>
+    <p>
+      You can combine the two programs to copy from the
+      microphone to the speaker using a record and a playback stream.
+      The program is
+      <a href="pa-mic-2-speaker-simple.c">
+	 pa-mic-2-speaker-simple.c
+      </a>:
+    </p>
+      <pre class="sh_cpp">
+      <!--#exec cmd="/usr/local/bin/escape.pl . pa-mic-2-speaker-simple.c" -->
+      </pre>
+    <p>
+      Try running this and you will discover that the
+      the latency is noticeable and unsatisfactory.
+    </p>
+
+
+    <h2> Asynchronous API </h2>
+    <p>
+      The simple API is ... simple. By contrast, the asynchronous API is
+      large and complex. There are also very few examples of using this
+      API.
+    </p>
+    <p>
+      Nearly all interaction with this API is asynchronous.
+      A call is made to the PulseAudio server and when the response
+      is ready, a library invokes a callback function that you
+      will have passed to it when making the library call.
+      This avoids the need for user code to either block or make
+      polling calls.
+    </p>
+
+    <p>
+      The essential structure is
+    </p>
+      <ol>
+	<li>
+	  Create a PulseAudio mainloop (synchronous - pa_mainloop_new)
+	</li>
+	<li>
+	  Get the mainloop API object, a table of mainloop functions
+	  (synchronous - pa_mainloop_get_api)
+	</li>
+	<li>
+	  Get a context object to talk to the PulseAudio server
+	  (synchronous - pa_context_new)
+	</li>
+	<li>
+	  Establish a connection to the PulseAudio server.
+	  This is asynchronous -  pa_context_connect
+	</li>
+	<li>
+	  Register a callback for context state changes from the server
+	  -  pa_context_set_state_callback
+	</li>
+	<li>
+	  Commence the event processing loop - (pa_mainloop_run
+	</li>
+	<li>
+	  Within the context state callback, determine what state
+	  has changed e.g. the connection has been established
+	</li>
+	<li>
+	  Within this callback, set up, for example, 
+	  record or playback streams
+	</li>
+	
+	<li>
+	  Establish further callbacks for these streams 
+	</li>
+
+	<li>
+	  Within the stream callbacks, do more processing,
+	  such as saving a recording stream to file
+	</li>
+      </ol>
+
+    <p>
+      Steps (1) - (7) will be common to most applications.
+      The context state callback wil be called in response to changes
+      in the server. These are state changes such as
+      <code>PA_CONTEXT_CONNECTIN</code>, <code>PA_CONTEXT_SETTING_NAME</code>
+      and so on. The change of relevance to most applications will be
+      <code>PA_CONTEXT_READY</code>. This signifies that the application
+      can make requests of the server in its steady state.
+    </p>
+
+    <p>
+      In step (8) the application will set its own behaviour.
+      This is done by setting up further callback functions for various 
+      operations, such as listing devices or playing audio.
+    </p>
+
+    <h3> List of devices </h3>
+
+    <p>
+      The function <code>pa_context_get_sink_info_list</code>
+      will set up a callback function to list source devices by
+    </p>
+      <pre>
+	<code>
+pa_context_get_sink_info_list(c, sinklist_cb, NULL)
+	</code>
+      </pre>
+    <p>
+      where <code>c</code> is the context,
+      <code>sinklist_cb</code> is the application's callback
+      and <code>NULL</code> is user data passed to the callback.
+    </p>
+
+    <p>
+      The callback is called as 
+    </p>
+      <pre>
+	<code>
+void sinklist_cb(pa_context *c, const pa_sink_info *i, int eol, void *userdata)
+	</code>
+      </pre>
+    <p>
+      The parameter <code>eol</code> can take three values: negative means a failure
+      of some kind; zero means a valid entry for 
+      <code>pa_sink_info</code>; positive means that there are no more
+      valid entries in the list.
+    </p>
+
+    <p>
+      The structure <code>pa_sink_info</code> is defined as
+    </p>
+      <pre>
+	<code>
+struct {
+  const char *  name;
+  uint32_t 	index;
+  const char * 	description;
+  pa_sample_spec 	sample_spec;
+  pa_channel_map 	channel_map;
+  uint32_t 	owner_module;
+  pa_cvolume 	volume;
+  int 	mute;
+  uint32_t 	monitor_source;
+  const char * 	monitor_source_name;
+  pa_usec_t 	latency;
+  const char * 	driver;
+  pa_sink_flags_t 	flags;
+  pa_proplist * 	proplist;
+  pa_usec_t 	configured_latency;
+  pa_volume_t 	base_volume;
+  pa_sink_state_t 	state;
+  uint32_t 	n_volume_steps;
+  uint32_t 	card;
+  uint32_t 	n_ports;
+  pa_sink_port_info ** 	ports;
+  pa_sink_port_info * 	active_port;
+  uint8_t 	n_formats;
+  pa_format_info ** 	formats;
+} pa_sink_info
+	</code>
+      </pre>
+    <p>
+      Further information about this structure is maintained in the
+      Doxygen entry
+      <a href="http://freedesktop.org/software/pulseaudio/doxygen/structpa__sink__info.html">
+	pa_sink_info Struct Reference
+      </a>
+    </p>
+
+    <p>
+      For information, the major fields are the <code>name</code> and the
+      <code>description</code>. The <code>index</code> is an opaque index into
+      some data structure and is used in many PulseAudio functions. 
+      The <code>proplist</code>
+      is a map of general information that may contain interesting information.
+      This can be retrieved by iterating through the map.
+    </p>
+
+    <p>
+      There is a similar callback and data structures for input devices.
+    </p>
+
+    <p>
+      A program to list input and output devices current when the application connects
+      to the server is 
+      <a href="palist_devices.c">
+	 palist_devices.c:
+      </a>
+    </p>
+      <pre class="sh_cpp">
+      <!--#exec cmd="/usr/local/bin/escape.pl . palist_devices.c" -->
+      </pre>
+    
+
+    <p>
+      On my laptop this gives (elided)
+    </p>
+      <pre>
+	<code>
+Source: name alsa_output.pci-0000_01_00.1.hdmi-stereo.monitor, description Monitor of HDMI Audio stub Digital Stereo (HDMI)
+  Properties are: 
+   key: device.description, value: Monitor of HDMI Audio stub Digital Stereo (HDMI)
+   key: device.class, value: monitor
+   key: alsa.card, value: 1
+   key: alsa.card_name, value: HDA NVidia
+   key: alsa.long_card_name, value: HDA NVidia at 0xe5080000 irq 17
+   key: alsa.driver_name, value: snd_hda_intel
+   key: device.bus_path, value: pci-0000:01:00.1
+   key: sysfs.path, value: /devices/pci0000:00/0000:00:01.0/0000:01:00.1/sound/card1
+   key: device.bus, value: pci
+   key: device.vendor.id, value: 10de
+   key: device.vendor.name, value: nVidia Corporation
+   key: device.product.id, value: 0e08
+   key: device.product.name, value: HDMI Audio stub
+   key: device.string, value: 1
+   key: module-udev-detect.discovered, value: 1
+   key: device.icon_name, value: audio-card-pci
+Source: name alsa_output.pci-0000_00_1b.0.analog-stereo.monitor, description Monitor of Internal Audio Analog Stereo
+  Properties are: 
+   ...
+Source: name alsa_input.pci-0000_00_1b.0.analog-stereo, description Internal Audio Analog Stereo
+  Properties are: 
+  ...
+Source: name alsa_output.usb-Creative_Technology_Ltd_SB_X-Fi_Surround_5.1_Pro_000003d0-00-Pro.analog-stereo.monitor, description Monitor of SB X-Fi Surround 5.1 Pro Analog Stereo
+  Properties are: 
+  ...
+Source: name alsa_input.usb-Creative_Technology_Ltd_SB_X-Fi_Surround_5.1_Pro_000003d0-00-Pro.analog-stereo, description SB X-Fi Surround 5.1 Pro Analog Stereo
+  Properties are: 
+  ...
+**No more sources
+Sink: name alsa_output.pci-0000_01_00.1.hdmi-stereo, description HDMI Audio stub Digital Stereo (HDMI)
+  Properties are: 
+   key: alsa.resolution_bits, value: 16
+   key: device.api, value: alsa
+   key: device.class, value: sound
+   key: alsa.class, value: generic
+   key: alsa.subclass, value: generic-mix
+   key: alsa.name, value: HDMI 0
+   key: alsa.id, value: HDMI 0
+   key: alsa.subdevice, value: 0
+   key: alsa.subdevice_name, value: subdevice #0
+   key: alsa.device, value: 3
+   key: alsa.card, value: 1
+   key: alsa.card_name, value: HDA NVidia
+   key: alsa.long_card_name, value: HDA NVidia at 0xe5080000 irq 17
+   key: alsa.driver_name, value: snd_hda_intel
+   key: device.bus_path, value: pci-0000:01:00.1
+   key: sysfs.path, value: /devices/pci0000:00/0000:00:01.0/0000:01:00.1/sound/card1
+   key: device.bus, value: pci
+   key: device.vendor.id, value: 10de
+   key: device.vendor.name, value: nVidia Corporation
+   key: device.product.id, value: 0e08
+   key: device.product.name, value: HDMI Audio stub
+   key: device.string, value: hdmi:1
+   key: device.buffering.buffer_size, value: 352768
+   key: device.buffering.fragment_size, value: 176384
+   key: device.access_mode, value: mmap+timer
+   key: device.profile.name, value: hdmi-stereo
+   key: device.profile.description, value: Digital Stereo (HDMI)
+   key: device.description, value: HDMI Audio stub Digital Stereo (HDMI)
+   key: alsa.mixer_name, value: Nvidia GPU 1c HDMI/DP
+   key: alsa.components, value: HDA:10de001c,10281494,00100100
+   key: module-udev-detect.discovered, value: 1
+   key: device.icon_name, value: audio-card-pci
+Sink: name alsa_output.pci-0000_00_1b.0.analog-stereo, description Internal Audio Analog Stereo
+  Properties are: 
+  ...
+Sink: name alsa_output.usb-Creative_Technology_Ltd_SB_X-Fi_Surround_5.1_Pro_000003d0-00-Pro.analog-stereo, description SB X-Fi Surround 5.1 Pro Analog Stereo
+  Properties are: 
+  ...
+**No more sinks
+	</code>
+      </pre>
+
+      
+    <p>
+      An alternative program with the same effect is
+      <a href="http://www.ypass.net/blog/2009/10/pulseaudio-an-async-example-to-get-device-lists">
+	PulseAudio: An Async Example To Get Device Lists
+      </a> by Igor Brezac and Eric Connell.
+      It doesn't follow quite as complex a route as the above,
+      as it only queries the server for its devices.
+      However, it uses its own state machine to track where in the
+      callback process it is!
+    </p>
+
+    <!--
+    <p>
+      On my laptop this gives
+      <pre>
+	<code>
+=======[ Output Device #1 ]=======
+Description: HDMI Audio stub Digital Stereo (HDMI)
+Name: alsa_output.pci-0000_01_00.1.hdmi-stereo
+Index: 0
+
+=======[ Output Device #2 ]=======
+Description: Internal Audio Analog Stereo
+Name: alsa_output.pci-0000_00_1b.0.analog-stereo
+Index: 2
+
+=======[ Output Device #3 ]=======
+Description: SB X-Fi Surround 5.1 Pro Analog Stereo
+Name: alsa_output.usb-Creative_Technology_Ltd_SB_X-Fi_Surround_5.1_Pro_000003d0-00-Pro.analog-stereo
+Index: 5
+
+=======[ Input Device #1 ]=======
+Description: Monitor of HDMI Audio stub Digital Stereo (HDMI)
+Name: alsa_output.pci-0000_01_00.1.hdmi-stereo.monitor
+Index: 0
+
+=======[ Input Device #2 ]=======
+Description: Monitor of Internal Audio Analog Stereo
+Name: alsa_output.pci-0000_00_1b.0.analog-stereo.monitor
+Index: 4
+
+=======[ Input Device #3 ]=======
+Description: Internal Audio Analog Stereo
+Name: alsa_input.pci-0000_00_1b.0.analog-stereo
+Index: 5
+
+=======[ Input Device #4 ]=======
+Description: Monitor of SB X-Fi Surround 5.1 Pro Analog Stereo
+Name: alsa_output.usb-Creative_Technology_Ltd_SB_X-Fi_Surround_5.1_Pro_000003d0-00-Pro.analog-stereo.monitor
+Index: 14
+
+=======[ Input Device #5 ]=======
+Description: SB X-Fi Surround 5.1 Pro Analog Stereo
+Name: alsa_input.usb-Creative_Technology_Ltd_SB_X-Fi_Surround_5.1_Pro_000003d0-00-Pro.analog-stereo
+Index: 15
+	</code>
+      </pre>
+      -->
+
+    <h3> Monitoring ongoing changes: new sources and sinks </h3>
+    <p>
+      The last program listed the source and sink devices registered
+      with PulseAudio at the time a connection to the server was established.
+      However, when a new device is connected or an existing device is
+      disconnected, PulseAudio registers a changes in the context and this
+      can also be monitored by callbacks.
+    </p>
+
+    <p>
+      The key to doing this is to <em>subscribe</em> to context changes by
+      <code>pa_context_subscribe</code>. This takes a context, a mask of
+      subscription events and user data. Possible values of the mask are
+      described at
+      <a href="http://freedesktop.org/software/pulseaudio/doxygen/def_8h.html#ad4e7f11f879e8c77ae5289145ecf6947">
+	Subscription event mask
+      </a>
+      and include <code>PA_SUBSCRIPTION_MASK_SINK</code> for changes in sinks
+      and <code>PA_SUBSCRIPTION_MASK_SINK_INPUT</code> for sink input events.
+    </p>
+
+    <p>
+      Setting the callback function to monitor these changes
+      is a bit odd.
+      The function <code>pa_context_subscribe</code> takes a callback function
+      of type <code>pa_context_success_cb</code> but this doesn't contain
+      information about what caused the callback.
+      Instead, it is better to first call 
+      <code>pa_context_set_subscribe_callback</code> which takes a
+      callback function of type <code> 	pa_context_subscribe_cb_t</code>
+      which <em>does</em> get passed such information and then use
+      <code>NULL</code> for the callback in<code>pa_context_subscribe</code>!
+    </p>
+
+    <p>
+      Within a  <code> 	pa_context_subscribe_cb_t</code>
+      subscription callback, the cause of the callback can be
+      examined and appropriate code called. If a new subscription to a sink
+      is found, then information about the sink can be found by
+      <code> pa_context_get_sink_info_by_index</code> which takes
+      another callback! after chasing through all these callbacks, you can
+      eventually get information about new devices.
+    </p>
+
+    <p>
+      Note that the callback function used by 
+      <code>pa_context_get_sink_info_list</code> and the callback
+      function used by <code>pa_context_get_sink_info_by_index</code>
+      are the same - the callback is called once per sink device
+      regardless of whether it is a singleton or one of a list
+      of devices.
+    </p>
+
+    <p>
+      A program to list devices on connection and also to list changes
+      as devices are connected or disconnected is
+      <a href="palist_devices_ongoing.c">
+	palist_devices_ongoing.c:
+      </a>
+    </p>
+      <pre class="sh_cpp">
+      <!--#exec cmd="/usr/local/bin/escape.pl . palist_devices_ongoing.c" -->
+      </pre>
+   
+
+      
+
+    <h3> Record a stream </h3>
+      
+    <p>
+      If you download the source for PulseAudio
+      from <a href="http://www.freedesktop.org/wiki/Software/PulseAudio/Download">
+	FreeDesktop.org</a>
+      you will find a program <code>pacat.c</code>  in the <code>utils</code>
+      directory. This program uses some of the "private" API and will not
+      compile using the "public" libraries. It also has
+      all the bells and whistles that you would expect from a production program. 
+      I've taken
+      this and stripped out the complexities so that you can find your
+      way into this API.
+      The file is <a href="parec.c">
+	parec.c:
+      </a>
+    </p>
+      <pre class="sh_cpp">
+      <!--#exec cmd="/usr/local/bin/escape.pl . parec.c" -->
+      </pre>
+    
+
+
+    <h3> Play a file </h3>
+    <p>
+      Recording  an input stream is done within a stream read callback by the
+      call <code>pa_stream_peek</code>.
+      Similarly, playing an output stream is done by a stream write callback
+      by the call <code>pa_stream_write</code>.
+    </p>
+    <p>
+      In the following program
+      the callback is set within the PA_CONTEXT_READY branch of the context
+      state change callback. The stream write callback is passed the number
+      of bytes the consuming stream is prepared to receive, so read that number
+      of bytes from the file and write them to the stream.
+    </p>
+
+  
+    <p>
+      Care has to be taken at the end of file. There may be unplayed material in
+      PulseAudio's output buffers. This needs to be drained before the program
+      can exit. This is done by the function <code>pa_stream_drain</code>.
+      On end of file, first set the stream write callback to null so that the
+      output stream doesn't keep calling for more input, and then drain the stream.
+      A stream drain complete callback will be called on completion of this, so the
+      program can then exit (or do something else).
+    </p>
+
+    <p>
+      In this program we include many more callbacks than in earlier ones, to show
+      the range of features that can be monitored.
+    </p>
+
+    <p>
+      The program is <a href="pacat2.c">pacat2.c:</a>
+    </p>
+      <pre class="sh_cpp">
+      <!--#exec cmd="/usr/local/bin/escape.pl . pacat2.c" -->
+      </pre>
+    
+
+    <p>
+      With the latency set to the default, the number of bytes that can be written on each
+      callback is 65470 bytes. This gives a minimum latency of 65470/44100 secs, or about
+      1500 msecs. 
+      With the latency and process time both set to 1msec, 
+      the buffer size is about 1440 bytes, for a latency
+      of 32 msecs.
+    </p>
+
+
+    <h3> Play a file using I/O callbacks </h3>
+
+    <p>
+      Writing a file to an output stream is simple:
+      read from a file into a buffer, and keep emptying the buffer by
+      writing to the stream.  Reading from a file is straightforward:
+      use the standard Unix <code>read</code> function. You request a read of a
+      number of bytes, and the <code>read</code> function returns the number of bytes
+      actually read.
+      This was discussed in the last section.
+    </p>
+
+  
+    <p>
+      The program in the PulseAudio distribution uses a more complex system.
+      It uses I/O-ready callbacks to pass some handling to an I/O callback.
+      This makes use of two functions:
+    </p>
+      <ul>
+	<li>
+	  <code> pa_stream_writable_size</code> tells how many bytes can be
+	  written to the stream
+	</li>
+	<li>
+	  <code>pa_stream_write</code> writes a number of bytes to a stream
+	</li>
+      </ul>
+    <p>
+      The logic becomes: fill a buffer by reading from the file, and at the
+      same time write as many bytes as possible from the buffer to the stream,
+      upto the limit
+      of the buffer size or however many bytes the stream can take, whichever
+      is smaller.
+    </p>
+
+    <p>
+      In PulseAudio this is done asynchronously,
+      using callback functions. The two relevant functions are
+    </p>
+      <ul>
+	<li>
+	  <p>
+	  The function <code>pa_stream_set_write_callback()</code> registers a
+	  callback that will be called whenever the stream is ready to be
+	  written to. Registering the callback looks like
+	  </p>
+	  <pre>
+	    <code>
+ pa_stream_set_write_callback(stream, stream_write_callback, NULL)
+	    </code>
+	  </pre>
+	  <p>
+	  The callback is passed the stream to write to (s) and the number
+	  of bytes that can be written (length):
+	  </p>
+	  <pre>
+	    <code>
+void stream_write_callback(pa_stream *s, size_t length, void *userdata)
+	    </code>
+	  </pre>
+
+	</li>
+	<li>
+	  <p>
+	  A callback to read from files is registered by one of the functions
+	  kept in the <code>mainloop_api</code> table. The registering function
+	  is <code>io_new</code> and is passed a Unix file descriptor for the file
+	  and the callback function. Reigstering the callback looks like
+	  </p>
+	  <pre>
+	    <code>
+ mainloop_api->io_new(mainloop_api,
+		      fdin,
+		      PA_IO_EVENT_INPUT,
+		      stdin_callback, NULL))
+	    </code>
+	  </pre>
+	  <p>
+	  The callback is passed the file descriptor (fd) to read from:
+	  </p>
+	  <pre>
+	    <code>
+void stdin_callback(pa_mainloop_api *mainloop_api, pa_io_event *stdio_event, 
+                    int fd, pa_io_event_flags_t f, void *userdata)
+	    </code>
+	  </pre>
+	  <p>
+	  (Note: the PulseAudio code does a <code>dup2</code> from the source file's
+	  descriptor to <code>STDIN_FILENO</code> - which matches the name of the
+	  function. I can't see the point of that, and their code uses <code>fd</code>
+	  anyway.)
+	  </p>
+	</li>
+      </ul>
+
+
+    <p>
+      When should these callbacks be registered? The stream write callback can
+      be registered at any time after the stream has been created which is done by
+      <code>pa_stream_new</code>. For the stdin callback, I could only get it
+      to work properly by registering it once the stream was ready i.e.
+      in the <code> PA_STREAM_READY</code> branch of the stream state callback
+      function.
+    </p>
+
+    <p>
+      So after all that, what is the logic of the program?
+    </p>
+      <ul>
+	<li>
+	  In the stdin callback:
+	  <ul>
+	    <li>
+	      if the buffer has stuff in it, then just return - no point in adding
+	      any more
+	    </li>
+	    <li>
+	      if the buffer is empty, then query the stream to see how much can be written
+	      to it
+	    </li>
+	    <li>
+	      if the stream says no more, then just read something into the buffer and return
+	    </li>
+	    <li>
+	      if the stream can be written to, then read from the file into the buffer
+	      and write it to the stream
+	    </li>
+	  </ul>
+	<li>
+	  In the stream write callback:
+	  <ul> 
+	    <li>
+	      if the buffer is non-empty, write its contents to the stream
+	    </li>
+	</ul>
+	</li>
+      </ul>
+
+    <p>
+      The program to play from a file presently looks like
+      <a href="pacat.c"> pacat.c:</a>
+    </p>
+      <pre class="sh_cpp">
+      <!--#exec cmd="/usr/local/bin/escape.pl . pacat.c" -->
+      </pre>
+    
+
+    <h3> Controlling latency </h3>
+    <p>
+      Managing latency is described at
+      <a href="http://www.freedesktop.org/wiki/Software/PulseAudio/Documentation/Developer/Clients/LactencyControl">
+	Software/PulseAudio/Documentation/Developer/Clients/LatencyControl
+      </a>. In brief:
+    <p>
+      <blockquote>
+	In your code you then have to do the following when calling pa_stream_connect_playback() 
+	resp. pa_stream_connect_record():
+	
+	<ul>
+	  <li>
+	    Pass PA_STREAM_ADJUST_LATENCY in the flags parameter. 
+	    Only if this flag is set PA will reconfigure the low-level 
+	    device's buffer size and adjust it to the latency you specify.
+	  </li>
+	  <li>
+	    Pass a pa_buffer_attr struct in the buffer_attr parameter. 
+	    In the fields of this struct make sure to initialize every 
+	    single field to (uint32_t) -1, with the exception of tlength (for playback) 
+	    resp. fragsize (for recording). Initialize those to the latency 
+	    you want to achieve. Use pa_usec_to_bytes(&ss, ...) to convert 
+	    the latency from a time unit to bytes. 
+	  </li>
+	</ul>
+      </blockquote>
+
+    <p>
+      The extra code is:
+    <p>
+      <pre class="sh_cpp">
+	<code>
+    // Set properties of the record buffer
+    pa_zero(buffer_attr);
+    buffer_attr.maxlength = (uint32_t) -1;
+    buffer_attr.prebuf = (uint32_t) -1;
+
+    if (latency_msec > 0) {
+      buffer_attr.fragsize = buffer_attr.tlength = pa_usec_to_bytes(latency_msec * PA_USEC_PER_MSEC, &amp;sample_spec);
+      flags |= PA_STREAM_ADJUST_LATENCY;
+    } else if (latency > 0) {
+      buffer_attr.fragsize = buffer_attr.tlength = (uint32_t) latency;
+      flags |= PA_STREAM_ADJUST_LATENCY;
+    } else
+      buffer_attr.fragsize = buffer_attr.tlength = (uint32_t) -1;
+
+    if (process_time_msec > 0) {
+      buffer_attr.minreq = pa_usec_to_bytes(process_time_msec * PA_USEC_PER_MSEC, &amp;sample_spec);
+    } else if (process_time > 0)
+      buffer_attr.minreq = (uint32_t) process_time;
+    else
+      buffer_attr.minreq = (uint32_t) -1;
+	</code>
+      </pre>
+
+    <p>
+      PulseAudio also has mechanisms to estimate the latency of the devices.
+      It uses information from timing events.
+      A timer event callback has to be declared, as in
+    <p>
+      <pre>
+	<code>
+ pa_context_rttime_new(context, pa_rtclock_now() + TIME_EVENT_USEC, time_event_callback, NULL))
+	</code>
+      </pre>
+    
+
+    <p>
+      The timer event callback is a "single shot" calback.  It installs a stream update timer callback
+      and sets up another timer callback:
+    </p>
+      <pre>
+	<code>
+void time_event_callback(pa_mainloop_api *m, 
+				pa_time_event *e, const struct timeval *t, 
+				void *userdata) {
+    if (stream && pa_stream_get_state(stream) == PA_STREAM_READY) {
+        pa_operation *o;
+        if (!(o = pa_stream_update_timing_info(stream, stream_update_timing_callback, NULL)))
+	  1; //pa_log(_("pa_stream_update_timing_info() failed: %s"), pa_strerror(pa_context_errno(context)));
+        else
+            pa_operation_unref(o);
+    }
+
+    pa_context_rttime_restart(context, e, pa_rtclock_now() + TIME_EVENT_USEC);
+	</code>
+      </pre>
+    
+
+    <p>
+      The stream update timer callback can then estimate the latency:
+    </p>
+      <pre>
+	<code>
+void stream_update_timing_callback(pa_stream *s, int success, void *userdata) {
+    pa_usec_t l, usec;
+    int negative = 0;
+
+    // pa_assert(s);
+
+    fprintf(stderr, "Update timing\n");
+
+    if (!success ||
+        pa_stream_get_time(s, &amp;usec) &lt; 0 ||
+        pa_stream_get_latency(s, &amp;l, &amp;negative) &lt; 0) {
+        fprintf(stderr, "Failed to get latency\n");
+        return;
+    }
+
+    fprintf(stderr, _("Time: %0.3f sec; Latency: %0.0f usec."),
+            (float) usec / 1000000,
+            (float) l * (negative?-1.0f:1.0f));
+    fprintf(stderr, "        \r");
+}
+	</code>
+      </pre>
+    
+
+    <p>
+      With latency left to PulseAudio by setting  fragsize and tlength to -1,
+      I got:
+    </p>
+      <pre>
+	<code>
+Time: 0.850 sec; Latency: 850365 usec.
+Time: 0.900 sec; Latency: 900446 usec.
+Time: 0.951 sec; Latency: 950548 usec.
+Time: 1.001 sec; Latency: 1000940 usec.
+Time: 1.051 sec; Latency: 50801 usec.
+Time: 1.101 sec; Latency: 100934 usec.
+Time: 1.151 sec; Latency: 151007 usec.
+Time: 1.201 sec; Latency: 201019 usec.
+Time: 1.251 sec; Latency: 251150 usec.
+Time: 1.301 sec; Latency: 301160 usec.
+Time: 1.351 sec; Latency: 351218 usec.
+Time: 1.401 sec; Latency: 401329 usec.
+Time: 1.451 sec; Latency: 451400 usec.
+Time: 1.501 sec; Latency: 501465 usec.
+Time: 1.551 sec; Latency: 551587 usec.
+Time: 1.602 sec; Latency: 601594 usec.
+	</code>
+      </pre>
+
+
+    <p>
+      With them set to 1 msec, I got:
+    </p>
+      <pre>
+	<code>
+Time: 1.599 sec; Latency: 939 usec.
+Time: 1.649 sec; Latency: 1105 usec.
+Time: 1.699 sec; Latency: -158 usec.
+Time: 1.750 sec; Latency: 1020 usec.
+Time: 1.800 sec; Latency: 397 usec.
+Time: 1.850 sec; Latency: -52 usec.
+Time: 1.900 sec; Latency: 1827 usec.
+Time: 1.950 sec; Latency: 529 usec.
+Time: 2.000 sec; Latency: -90 usec.
+Time: 2.050 sec; Latency: 997 usec.
+Time: 2.100 sec; Latency: 436 usec.
+Time: 2.150 sec; Latency: 866 usec.
+Time: 2.200 sec; Latency: 406 usec.
+Time: 2.251 sec; Latency: 1461 usec.
+Time: 2.301 sec; Latency: 107 usec.
+Time: 2.351 sec; Latency: 1257 usec.
+	</code>
+      </pre>
+
+    <p>
+      The program to do all this is
+      <a href="parec-latency.c">parec-latency.c:</a>
+    </p>
+      <pre class="sh_cpp">
+      <!--#exec cmd="/usr/local/bin/escape.pl . parec-latency.c" -->
+      </pre>
+    
+<!--
+    <p>
+      With the default latency values (of 0), the buffer size is about
+      2880 bytes, for a minimum latency of about 2880/44100 secs or 65 msec.
+      With the latency set to 1 msec, the buffer size is about 88 bytes,
+      so the minimum latency is about 2 msec.
+    </p>
+-->
+
+    <h3> Play microphone to speaker </h3>
+    <p>
+      Combining what we have so far, we get
+      <a href="pa-mic-2-speaker.c">pa-mic-2-speaker.c:</a>
+    </p>
+      <pre class="sh_cpp">
+      <!--#exec cmd="/usr/local/bin/escape.pl . pa-mic-2-speaker.c" -->
+      </pre>
+    
+
+    <p>
+      When the latency is set to 1 msec for everything, the actual latency is 
+      about 16-28 msec. I couldn't detect it.
+    </p>
+
+    <h3> Setting the volume on devices </h3>
+    <p>
+      Each device can have its input or output volume controlled by
+      PulseAudio. The principal calls for sinks are
+      <code>pa_context_set_sink_volume_by_name</code> and
+      <code> pa_context_set_sink_volume_by_index</code> with similar
+      calls for sources.
+    </p>
+
+    <p>
+      These calls make use of a structure <code>pa_cvolume</code>.
+      This stucture can be manipulated using calls such as
+    </p>
+      <ul>
+	<li>
+	  <code> pa_cvolume_init</code>
+	</li>
+	<li>
+	  <code>pa_cvolume_set</code>
+	</li>
+	<li>
+	  <code>pa_cvolume_mute</code>
+	</li>
+      </ul>
+    
+
+    <p>
+      In the following program we set the volume on a particular device
+      by reading integer values from stdin and using these to set the
+      value. Such a loop should probably best take place in a separate thread
+      to the PulseAudio framework. Rather than introducing application
+      threading here, we make use of an alternative set of PulseAudio
+      calls which set up a separate thread for the PulseAudio main loop.
+      These calls are
+    </p>
+      <ul>
+	<li>
+	  <code> pa_threaded_mainloop</code> instead of 
+	  <code> pa_mainloop</code>
+	</li>
+	<li>
+	  <code> pa_threaded_mainloop_get_api</code> instead of 
+	  <code> pa_mainloop_get_api</code>
+	</li>
+	<li>
+	  <code>pa_threaded_mainloop_start</code> instead of 
+	  <code>pa_mainloop_start</code>
+	</li>
+      </ul>
+    
+
+    <p>
+      The threaded calls allow us to start PulseAudio in its own thread,
+      and leave the current thread for reading volume values. This gives
+      the relatively simple program <a href="pavolume.c">pavolume.c:</a>
+    </p>
+      <pre class="sh_cpp">
+      <!--#exec cmd="/usr/local/bin/escape.pl . pavolume.c" -->
+      </pre>
+    
+
+    <h3> Listing clients </h3>
+    <p>
+      PulseAudio is a server that talks to devices at the bottom layer and to clients
+      at the top layer. The clients are producers and consumers of audio.
+      One of the roles of PulseAudio is to mix signals from different source clients
+      to shared output devices. In order to do this, PulseAudio keeps track
+      of registrations by clients, and can make these available to
+      <em>other</em> clients by suitbale callbacks.
+    </p>
+
+    <p>
+      The program palist_clients.c is very similar to the program
+      palist_devices.c. The principal difference is that when the 
+      context changes state to <code>PA_CONTEXT_READY</code>
+      the application subscribes to <code>PA_SUBSCRIPTION_MASK_CLIENT</code>
+      instead of <code>(PA_SUBSCRIPTION_MASK_SINK|PA_SUBSCRIPTION_MASK_SOURCE)</code>
+      and the subscription callback asks for <code>pa_context_get_client_info</code>
+      instead of <code>pa_context_get_source_info</code>.
+    </p>
+
+    <p>
+      The program <a href="palist_clients.c">palist_clients.c</a> is
+    </p>
+      <pre class="sh_cpp">
+      <!--#exec cmd="/usr/local/bin/escape.pl . palist_clients.c" -->
+      </pre>
+    
+
+    <p>
+      The output on my system is (elided)
+    </p>
+      <pre>
+	<code>
+Found a new client index 0 name ConsoleKit Session /org/freedesktop/ConsoleKit/Session2 eol 0
+  Properties are: 
+   key application.name, value ConsoleKit Session /org/freedesktop/ConsoleKit/Session2
+   key console-kit.session, value /org/freedesktop/ConsoleKit/Session2
+Found a new client index 4 name XSMP Session on gnome-session as 1057eba7239ba1ec3d136359809598590100000018790044 eol 0
+  Properties are: 
+   key application.name, value XSMP Session on gnome-session as 1057eba7239ba1ec3d136359809598590100000018790044
+   key xsmp.vendor, value gnome-session
+   key xsmp.client.id, value 1057eba7239ba1ec3d136359809598590100000018790044
+Found a new client index 5 name GNOME Volume Control Media Keys eol 0
+  Properties are: 
+   ...
+Found a new client index 7 name GNOME Volume Control Applet eol 0
+  Properties are: 
+   ...
+Found a new client index 53 name Metacity eol 0
+  Properties are: 
+  ...
+Found a new client index 54 name Firefox eol 0
+  Properties are: 
+    ...
+Found a new client index 248 name PulseAudio Volume Control eol 0
+  Properties are: 
+    ...
+Found a new client index 341 name test eol 0
+  Properties are: 
+    ...
+	</code>
+      </pre>
+   
+
+
+    <h3> Listing client sources and sinks </h3>
+    <p>
+      Clients can act as sources: programs such as <code>mplayer</code> and
+      <code>vlc</code> do just that, sending streams to PulseAudio.
+      Other clients can act as sinks. The clients themselves are monitored
+      by the previous program. To monitor their <em>activity</em>
+      you set the mask on <code>pa_subscribe_callback</code> to
+      <code>(PA_SUBSCRIPTION_MASK_CLIENT | PA_SUBSCRIPTION_MASK_SINK_INPUT | 					PA_SUBSCRIPTION_MASK_SOURCE_OUTPUT)</code>.
+      Within the subscription
+      callback you make calls to <code>pa_context_get_sink_input_info</code>
+      within the <code> PA_SUBSCRIPTION_EVENT_SINK_INPUT</code> branch
+      and similarly for the source output.
+    </p>
+
+    <p>
+      The sink input callback is passed the structure
+      <code>pa_sink_input_info</code>. This contains the familiar
+      <code>name</code> and <code>index</code> fields but also
+      has an integer field <code>client</code>. This links the sink input
+      back to the index of the client responsible for the sink.
+      In the following program we list all the clients as well, so that
+      these links can followed visually. Programatically, PulseAudio makes you
+      keep much information (such as what clients have what indices)
+      yourself: this is ignored here.
+    </p>
+
+    <p>
+      The program to list clients and monitor changes in their input and
+      output streams is <a href="pamonitor_clients.c">pamonitor_clients.c:</a>
+    </p>
+      <pre class="sh_cpp">
+      <!--#exec cmd="/usr/local/bin/escape.pl . pamonitor_clients.c" -->
+      </pre>
+    
+
+    <p>
+      The output on my system is
+    </p>
+      <pre>
+	<code>
+Found a new client index 0 name ConsoleKit Session /org/freedesktop/ConsoleKit/Session2 eol 0
+Found a new client index 4 name XSMP Session on gnome-session as 1057eba7239ba1ec3d136359809598590100000018790044 eol 0
+Found a new client index 5 name GNOME Volume Control Media Keys eol 0
+Found a new client index 7 name GNOME Volume Control Applet eol 0
+Found a new client index 53 name Metacity eol 0
+Found a new client index 54 name Firefox eol 0
+Found a new client index 248 name PulseAudio Volume Control eol 0
+Found a new client index 342 name test eol 0
+	</code>
+      </pre>
+
+
+    <h3> Controlling the volume of a sink client </h3>
+    <p>
+      One of the significant features of PulseAudio is that not only can it 
+      mix streams to a device, but it can also control the volume of each stream.
+      This is in addition to the volume control of each device.
+      In <code>pavucontrol</code> you can see this under the Playback
+      tab, where the volume of playback clients can be adjusted.
+    </p>
+
+    <p>
+      Programatically this is done by calling 
+      <code>pa_context_set_sink_input_volume</code> with parameters
+      the index of the sink input and the volume.
+      In the following program we follow what we did in the
+      pavolume_client.c program where we set PulseAudio to run
+      in a separate thread and input values for the volume in the
+      main thread. A slight difference is that we have to wait for a client
+      to start up a sink input, which we do by sleeping until the
+      sink input callback assigns a non-zero value to the
+      <code>sink_index</code> variable. Crude, yes. In a program such
+      as <code>pavucontrol</code> the GUI runs in separate threads
+      anyway and we do not need to rsort to such simple tricks.
+    </p>
+
+    <p>
+      The program is <a href="pavolume_sink.c">pavolume_sink.c</a>.
+      If you play a file using
+      e.g. <code>mplayer</code> then its volume can be adjusted
+      by this program.
+    </p>
+      <pre class="sh_cpp">
+      <!--#exec cmd="/usr/local/bin/escape.pl . pavolume_sink.c" -->
+      </pre>
+    
+
+    <h2> Conclusion</h2>
+    <p>
+      This chapter has looked at PulseAudio. This is currently the standard sound
+      system for consumer Linux. There are a number of utilities for exploring PulseAudio.
+      There are two APIs: the simple API and the asynchronous API. The chapter has looked
+      at playing and recording using these APIs. Some other aspects of PulseAudio were also
+      examined.
+    </p>
+
+    <p>
+      Latency is not a goal, and it is not designed for real-time audio.
+      However, you can request that the latency be made small, and if PulseAudio
+      can do it will give you reasonable performance. However, PulseAudio makes
+      no guarantees about latency, so if a maximum latency is critical then PulseAudio
+      may not be suitable.
+    </p>
+
+    <p>
+      PulseAudio is presently built on top of ALSA and usually interacts by making
+      itself the default ALSA plugin.
+    </p>
+
+    <!--#include virtual="../../footer.html" -->
+
+  </body>
+</html>

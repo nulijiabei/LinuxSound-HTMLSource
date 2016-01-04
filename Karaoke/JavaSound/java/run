@@ -1,0 +1,6 @@
+#!/bin/bash
+
+CLASSPATH=.:MidiSPI:TarsosDSP-1.1/TarsosDSP-1.1-bin.jar
+
+#jdb -classpath $CLASSPATH $*
+java -classpath $CLASSPATH $*

@@ -1,0 +1,6 @@
+#!/bin/bash
+
+PATH=/home/httpd/html/LinuxSound/Karaoke/FluidSynth/fluidsynth-1.1.6/src:$PATH
+export LD_LIBRARY_PATH=/home/httpd/html/LinuxSound/Karaoke/FluidSynth/fluidsynth-1.1.6/src/.libs/
+eval $*
+

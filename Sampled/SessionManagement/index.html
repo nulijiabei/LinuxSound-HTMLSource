@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="../../stylesheet.css" />
+
+    <title> Session Management</title>
+
+    <style type="text/css">
+      body { counter-reset: chapter 8; }
+    </style>
+
+    <script type="text/javascript" src="../../toc.js"> 
+      /* empty */
+    </script>
+
+    <script type="text/javascript">
+      /* <![CDATA[ */
+    (function() {
+        var s = document.createElement("script"), t = document.getElementsByTagName("script")[0];
+        s.type = "text/javascript";
+        s.async = true;
+        s.src = "http://api.flattr.com/js/0.6/load.js?mode=auto";
+        t.parentNode.insertBefore(s, t);
+    })();
+/* ]]> */
+    </script>
+
+
+    <link rel="stylesheet" type="text/css" href="../../js/doc/style.css">
+    <!-- <link rel="stylesheet" type="text/css" href="../../js/css/sh_emacs.css"> -->
+    <link rel="stylesheet" type="text/css" href="../../js/sh_style.css">
+    <script type="text/javascript" src="../../js/sh_main.min.js"></script>
+    <script type="text/javascript" src="../../js/lang/sh_cpp.min.js"></script>
+    
+
+  </head>
+  <body onload="sh_highlightDocument();">
+
+    <!--#include virtual="../../header.html" -->
+
+
+    <div class="chapter">
+      <h1> Session Management</h1>
+    </div>
+
+    <div class="preface">
+      <p>
+	A complex sound system may consist of multiple sound sources,
+	multiple filters and multiple outputs. If they have to be set up
+	afresh each time they are used, then there can be errors,
+	wasted time, etc. Session management attempts to solve these
+	problems.
+      </p>
+    </div>
+
+    <div id="generated-toc" class="generate_from_h2"></div>
+
+    <h2> Resources </h2>
+    
+      <ul>
+	<li>
+	  Dave Phillips has 
+	  <a href="http://lwn.net/Articles/533594/">
+	    A brief survey of Linux audio session managers
+	  </a>
+	</li>
+	<li>
+	  <a href="http://wiki.linuxaudio.org/wiki/session_management">
+	    Session Management Overview
+	  </a> contains links to many resources
+	</li>
+	<li>
+	  <a href="http://ladish.org/wiki/ladi">
+	    LADI Session Handler
+	  </a>
+	<li>
+	  <a href="http://trac.jackaudio.org/wiki/WalkThrough/Dev/JackSession">
+	    the Jack session API
+	  </a> at trac
+	</li>
+	<li>
+	  <a href="http://jackaudio.org/files/docs/html/group__SessionClientFunctions.html">
+	    JACK-AUDIO-CONNECTION-KIT - Session API for clients
+	  </a>
+	<li>
+	  How to build LADISH-aware apps at
+	  <a href="http://ladish.org/wiki/code_examples">
+	    Level 1 app examples
+	  </a>
+	</li>
+	<li>
+	  and also see
+	  <a href="http://ladish.org/">
+	    LADI Session Handler
+	  </a>
+	</li>
+	<li>
+	  <a href="http://non.tuxfamily.org/nsm/API.html">
+	    Non Session Management API
+	  </a>
+	</li>
+      </ul>
+    
+
+    <h2> Session management issues </h2>
+    <p>
+      Whenever there are multiple modules linked in some way, there can be a need to 
+      manage the modules and their linkages. These arise quite quickly in the Jack
+      environment, which is designed for multiple linkages.
+      It doesn't take a very complex arrangement of Jack modules for management to become tedious.
+      For example, consider the mixer session of the previous chapter:
+      <br/><img alt="" src="mixer.png"/><br/>
+      To set this up from the beginning requires
+    </p>
+      <ul>
+	<li>
+	  Start <code>jackd</code> and <code>qjackctl</code>
+	</li>
+	<li>
+	  Start <code>jack_mixer</code>
+	</li>
+	<li>
+	  Open up two new sets of input ports on the mixer
+	</li>
+	<li>
+	  Connect the MAIN mixer output ports to the playback ports
+	</li>
+	<li>
+	  Connect the microphone ports to one set of mixer input ports
+	</li>
+	<li>
+	  Start <code>mplayer</code>, which automatically connects to the playback ports
+	</li>
+	<li>
+	  Disconnect the <code>mplayer</code> output ports from the playback ports
+	  and reconnect them to the other set of mixer input ports
+	</li>
+      </ul>
+    <p>
+      You don't want to do this every time you play a song!
+    </p>
+
+    <p>
+      The LADISH session manager identifies 
+      <a href="http://ladish.org/wiki/levels">
+	different levels of control of applications by session managers.
+      </a>
+      Removing the explicit references to particular managers and frameworks, they are:
+    </p>
+      <ul>
+	<li>
+	  level 0 - an application is not linked to a session handling library. 
+	  User has to save application projects manually or rely on autosave support from application.
+	</li>
+	<li>
+	  level 1 - an application is not linked to a session handling library. 
+	  Application saves when particular messages or signals are received.
+	</li>
+	<li>
+	  level 2, an application is linked to a session management library. 
+	  Limited interaction with session handler because of limitations in the session manager
+	</li>
+	<li>
+	  level 3 - an application is linked to a sophisticated session manager. 
+	  Full interaction with the session handler 
+	</li>
+      </ul>
+    
+
+    <p>
+      As <a href="http://lwn.net/Articles/533594">
+	Dave Phillips
+      </a> points out, "The use of these levels is an attempt to sort and regulate the various 
+      possible conditions for any Linux audio application. 
+      Those conditions include the degree of JACK compliance, 
+      any WINE or DOS requirements, network operation, the multiplicity of existing APIs, and so forth. "
+    </p>
+
+    <p>
+      The current batch of session management frameworks
+      used for Linux audio includes
+    </p>
+      <ul>
+	<li>
+	  LASH
+	</li>
+	<li>
+	  Jack session management
+	</li>
+	<li>
+	  LADISH
+	</li>
+	<li>
+	  Non-session manager
+	</li>
+	<li>
+	  Chino
+	</li>
+      </ul>
+    <p>
+      The existence of multiple managers means that most applications will only support
+      the protocols of only one or at most a few. If you choose a particular manager
+      then you will be restricted to the applications you can run under its control.
+    </p>
+
+    <h2>jack_connect</h2>
+    <p>
+      The programs <code>jack_connect</code> and <code>jack_disconnect</code>
+      canbe used to reconfigure connections between clients. For example,
+      the MIDI player <code>TiMidity</code> will connect its output ports to the first
+      available Jack input ports, which are generally the system ports connected
+      to the sound card. If you wish to connect <code>TiMidity</code> to, say,
+      <code>jack-rack</code> then its output ports have to be first disconnected
+      and then connected to the correct ones. On the other hand,
+      <code>jack-rack</code> does not connect to anything by default
+      so may need to be connected to the system ports. This is done by e.g.
+    </p>
+      <pre class="sh_cpp">
+jack_disconnect TiMidity:port_1 system:playback_1
+jack_disconnect TiMidity:port_2 system:playback_2
+
+jack_connect TiMidity:port_1 jack_rack:in_1
+jack_connect TiMidity:port_2 jack_rack:in_2
+
+jack_connect jack_rack:out_1 system:playback_1
+jack_connect jack_rack:out_2 system:playback_2
+      </pre>
+    
+
+    <h2> LASH </h2>
+    <p>
+      This was the earliest successful session mananager for Linux audio but has since
+      fallen out of use. It does not seem to be in the Ubuntu repositories any more.
+    </p>
+
+    <p>
+      One of the applications requiring LASH is  <code>jack_mixer</code>.
+      Even worse, it uses the Python 
+      <code>LASH</code> module from the <code>python-lash.2.7.4-0ubuntu</code> package.
+      The only copy I can find requires
+      a version of Python less than 2.7 and the installed  version of Python
+      is 2.7.4. This is an application which at present will not benefit from
+      current session management tools - while it might run 
+      as Level 1 with LASH, it can only run at Level 0 with other session managers.
+    </p>
+
+    <p>
+      So there are Jack applications which require LASH for session management
+      but no such support seems to exist any more.
+    </p>
+
+
+    <h2> Jack sessions </h2>
+    <p>
+      A list of Jack session aware applications as at 2010 is at
+      <a href="http://trac.jackaudio.org/wiki/WalkThrough/User/jack_session">
+	apps supporting jack-session 
+      </a> and
+      <a href="http://wiki.linuxaudio.org/apps/categories/jack_session">
+	Jack Session
+      </a>
+    <p>
+      <code>qjackctl</code> has a session manager which will allow you to save and restore sessions.
+      You save a session by clicking on the Session button and then choosing a session
+      name and directory.
+      It stores the session information as an XML file in whatever directory you save it. For the session above,
+      this looks like
+    </p>
+      <pre>
+	<!--#exec cmd="/usr/local/bin/escape.pl . qjackctl-session.xml" -->
+      </pre>
+   
+    
+    <p>
+      On loading the session, it looks like
+      <br/><img alt="" src="qjackctl-session.png"/><br/>
+      There are many red crosses - restoring a session doesn't start these particular
+      applications. If you re-start <code>jack_mixer</code> by hand, 
+      then it establishes the links
+      between its MAIN output ports and system playback ports, and several of the red crosses
+      disappear. But it doesn't create the extra ports that we created earlier.
+      We need to repeat the work of creating new input ports with the right names
+      and then <code>qjackctl</code> does re-establish the connections, and more red
+      crosses disappear.
+    </p>
+
+    <p>
+      If we run <code>mplayer</code> again, it just establishes its own default
+      connections to the playback ports and has to be re-mapped by hand.
+      It doesn't even seem to meet Level 0, as <code>qjackctl</code>
+      doesn't remap its connections automatically.
+    </p>
+
+    <p>
+      The issue here is that the <code>mplayer</code> and <code>jack_mixer</code>
+      do not talk the Jack session management protocol.
+      The session manager does reset
+      any connections made by some applications, but not all of them.
+      An example is given later of adding Jack session management to an
+      application and then it will be restarted and reconnected properly.
+    </p>
+
+    <h2> LADISH </h2>
+    <p>
+      LADISH is designed as the successor to LASH and is available in the repositories.
+    </p>
+
+    <p>
+      LADISH can start, stop and configure sessions. In particular, it can setup
+      different Jack configurations. This means that you do not start Jack and then
+      start LADISH, but the other way around: start the GUI tool <code>gladish</code>,
+      configure Jack and then start a session.
+      The process is described in the
+      <a href="http://ladish.org/wiki/tutorial">
+	LADI Session Handler
+      </a> Wiki - follow it, in particular connecting Jack to, say, ALSA.
+      Otherwise you will get no sound!
+      See also
+      <a href="http://www.penguinproducer.com/Blog/2011/12/the-ladi-session-handler/">
+	The LADI Session Handler
+      </a> by the Penguin Producer.
+    </p>
+
+    <p>
+      Once set up, start a new Studio and then start applications from its
+      Applications menu. To run <code>mplayer</code> you need to give the full
+      command such as
+    </p>
+      <pre>
+	<code>
+	  mplayer -ao jack 54154.mp3
+	</code>
+      </pre>
+    <p>
+      You can start <code>jack_mixer</code> from the Applications menu
+      and then add two new sets of input ports, as in the Jack chapter.
+      After reconnecting them, you end with a connection graph like
+      <br/><img alt="" src="ladish-session.png"/><br/>
+    </p>
+
+    <p>
+      Connection graphs are stored as an XML file in <code>$HOME/.ladish</code>.
+      For example, the above graph is stored as
+    </p>
+      <pre>
+	<!--#exec cmd="/usr/local/bin/escape.pl . ladish-session.xml" -->
+      </pre>
+    <p>
+      The full command to restart <code>mplayer</code> is stored in this file,
+      as are all the connections made.
+    </p>
+
+    <p>
+      On stopping and restarting a session, <code>mplayer</code> is started
+      with the same MP3 file, but has the default connections. 
+      It ignores the connections of the LADISH session.
+      Similarly, <code>jack_mixer</code> is restarted, but the 
+      additional ports have to be recreated by hand - this is not a LADISH
+      aware application so it runs at Level 0.
+      However, once created, the LADISH reconnections are made okay.
+    </p>
+
+    <p>
+      A list of LADISH-aware applications is at
+      <a href="http://wiki.linuxaudio.org/apps/all/ladish">
+	ladish: LADI Session Handler
+      </a>
+    </p>
+
+    <p>
+      From the user's viewpoint, the difference between these session managers are
+    </p>
+      <ul>
+	<li>
+	  Jack applications can be started in any manner and will be picked up
+	  by the Jack session manager.
+	  However, any specific command-line parameters will be lost
+	</li>
+	<li>
+	  Applications need to be started by the LADISH session manager in
+	  order to be managed by it.
+	  However, it can record command line parameters and restart the
+	  application using them
+	</li>
+      </ul>
+    
+
+    <p>
+      From the developer's viewpoint (see later), the difference between these session managers are
+    </p>
+      <ul>
+	<li>
+	  Jack session aware applications can be started in any manner 
+	  and will encode the command line required to restart them
+	  in the program
+	</li>
+	<li>
+
+	</li>
+      </ul>
+    
+
+    <h2> Non-session manager </h2>
+    <p>
+      List of NSM applications at
+      <a href="http://wiki.linuxaudio.org/apps/categories/nsm">
+	NSM - Non Session Management
+      </a>
+    </p>
+
+    <p>
+	<a href="http://non.tuxfamily.org/nsm/API.html">
+	   Non Session Management API
+	</a>
+    </p>
+
+    <h2> Jack session API </h2>
+    <p>
+      See
+      <a href="http://trac.jackaudio.org/wiki/WalkThrough/Dev/JackSession">
+	the session API
+      </a> at trac.
+    </p>
+
+    <p>
+      Applications that can be managed by Jack Sessions (JS) may be JS aware at Level 1
+      or JS unaware. For the unaware ones, the best that can be done is for the session
+      manager to maybe start and stop them. For the JS aware applications, they must
+      be set up to
+    </p>
+      <ul>
+	<li>
+	  Register with a JS manager
+	</li>
+	<li>
+	  Respond to messages from the JS manager
+	</li>
+	<li>
+	  Be startable with session information
+      </ul>
+    
+
+    <p>
+      Response to a JS message will generally
+    </p>
+      <ul>
+	<li>
+	  Save the application's state into a file,
+	  where the directory is given by the session manager
+	</li>
+	<li>
+	  Reply to the session manager with a command that can be used to restart
+	  the application, with enough information that it can restore its state
+	  (typically the name of the file in which it stored its state information)
+	</li>
+      </ul>
+    
+
+    <p>
+      JS aware clients identify themselves to the session manager by a UUID 
+      (unique universal identifier). It doesn't seem to matter what this is
+      or how it is generated: the client application just makes it up as 
+      long as it is an integer represented as a string.
+      This is passed to the session manager when registering, but should
+      also be passed back to the client when it is restarted by the
+      session manager. This is done by a command line argument
+      to the application, and the format of the command line is also
+      up to the client.
+    </p>
+
+    <p>
+      A simple case might be two options <code>-u</code> for UUID and
+      <code>-f</code> for saved state file. This would be parsed 
+      using <code>getopt</code> by
+    </p>
+      <pre class="sh_cpp">
+int main(int argc, char **argv) {
+  int c;
+  char *file = NULL;
+  char *uuid = "13";
+  while ((c = getopt (argc, argv, "f:u:")) != -1)
+    switch (c) {
+      case 'u':
+        uuid = optarg;
+        break;
+      case 'f':
+        file = optarg;
+        break;
+      ...
+    }
+  }    
+  ...
+}
+      </pre>
+   
+
+    <p>
+      The application could then restore its state using the information
+      it has previously stored in the state file, and then
+      register again with a session manager by
+    </p>
+      <pre class="sh_cpp">
+jack_client *client;
+client = jack_client_open("myapp", JackSessionID, NULL, uuid);
+jack_set_session_callback(client, session_callback, NULL); 
+      </pre>
+   
+
+    
+    <p>
+      The callback function <code>session_callback</code> is invoked whenever
+      the session manager needs to communicate with the application. It takes
+      a <code>jack_session_event</code> and whatever was passed as the
+      last argument to <code>jack_set_session_callback</code>.
+    </p>
+
+    <p>
+      The job of the callback is then to save state information,
+      pass information back to the session manager and perhaps exit
+      (from <a href="http://trac.jackaudio.org/wiki/WalkThrough/Dev/JackSession">
+	trac - the session API</a>):
+    </p>
+      <pre class="sh_cpp">
+int session_callback(jack_session_event_t *ev) {
+  char filename[256];
+  char command[256];
+
+  snprintf(filename, sizeof(filename), "%smyfile.state", ev->session_dir);
+  snprintf(command,  sizeof(command),  
+           "my_app -u %s -f ${SESSION_DIR}myfile.state", ev->client_uuid);
+  your_save_function(filename);
+  ev-&gt;command_line = strdup(command);
+  jack_session_reply(jack_client, ev);
+  if(ev-&gt;type == JackSessionSaveAndQuit)
+      quit();
+  jack_session_event_free(ev);
+  return 0;
+}
+     </pre>
+    <p>
+      <a href="http://trac.jackaudio.org/wiki/WalkThrough/Dev/JackSession">
+	trac</a> suggests that if this is run in a
+      multi-threaded environment such as GTK, it should be run when other
+      threads are idle e.g. by <code>g_idel_add</code>.
+    </p>
+    
+    <p>
+      WE can illustrate this with the <code>delay</code> program from the
+      Jack chapter. Adding in the extra code gives a revised <code>delay.c</code>.
+      I have enclosed the extra code with <code>#ifdef JACK_SESSION</code>
+      for ease in seeing the changes.
+    </p>
+      <pre class="sh_cpp">
+	<!--#exec cmd="/usr/local/bin/escape.pl . delay.c" -->
+      </pre>
+     
+    
+
+    <h2> LADISH API </h2>
+    <p>
+      If an application is Jack session aware, then the LADISH GUI tool
+      <code>gladish</code> can manage the applicaiton as a Level 1
+      application. In other words, <code>gladish</code> can manage
+      Jack session and LADISH clients equally.
+      In that sense, there is no need to additionally add LADISH
+      awareness to an application unless you prefer the LADISH
+      way of managing sessions.
+    </p>
+
+    <p>
+      How to build LADISH-aware apps at
+      <a href="http://ladish.org/wiki/code_examples">
+	Level 1 app examples
+      </a>
+      and also see
+      <a href="http://ladish.org/">
+	LADI Session Handler
+      </a>
+    </p>
+
+    <h2> Non-session management API</h2>
+    <p>
+      See <a href="http://non.tuxfamily.org/nsm/API.html">
+	Non Session Management API
+      </a>
+    </p>
+      
+    <h2> Conclusion </h2>
+    <p>
+      This chapter has looked at some of the session management
+      systems. The situation is not particularly satisfactory
+      and there is substantial room for improvement.
+    </p>
+
+    <!--#include virtual="../../footer.html" -->
+
+  </body>
+</html>

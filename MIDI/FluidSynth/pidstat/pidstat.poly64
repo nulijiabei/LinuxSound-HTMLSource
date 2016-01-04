@@ -1,0 +1,731 @@
+Linux 3.2.27+ (raspberrypi) 	19/11/12 	_armv6l_	(1 CPU)
+
+18:26:55          PID    %usr %system  %guest    %CPU   CPU  Command
+
+18:26:56          PID    %usr %system  %guest    %CPU   CPU  Command
+
+18:26:57          PID    %usr %system  %guest    %CPU   CPU  Command
+
+18:26:58          PID    %usr %system  %guest    %CPU   CPU  Command
+
+18:26:59          PID    %usr %system  %guest    %CPU   CPU  Command
+
+18:27:00          PID    %usr %system  %guest    %CPU   CPU  Command
+
+18:27:01          PID    %usr %system  %guest    %CPU   CPU  Command
+
+18:27:02          PID    %usr %system  %guest    %CPU   CPU  Command
+
+18:27:03          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:04         3340   27.27    3.03    0.00   30.30     0  lt-fluidsynth
+
+18:27:04          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:05         3340   53.00   29.00    0.00   82.00     0  lt-fluidsynth
+
+18:27:05          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:06         3340   52.48   12.87    0.00   65.35     0  lt-fluidsynth
+
+18:27:06          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:07         3340   14.89    1.06    0.00   15.96     0  lt-fluidsynth
+
+18:27:07          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:08         3340   17.39    1.09    0.00   18.48     0  lt-fluidsynth
+
+18:27:08          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:09         3340   17.39    2.17    0.00   19.57     0  lt-fluidsynth
+
+18:27:09          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:10         3340   17.89    2.11    0.00   20.00     0  lt-fluidsynth
+
+18:27:10          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:11         3340   27.08    0.00    0.00   27.08     0  lt-fluidsynth
+
+18:27:11          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:12         3340   44.68    0.00    0.00   44.68     0  lt-fluidsynth
+
+18:27:12          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:13         3340   41.67    0.00    0.00   41.67     0  lt-fluidsynth
+
+18:27:13          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:14         3340   55.21    0.00    0.00   55.21     0  lt-fluidsynth
+
+18:27:14          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:15         3340   58.59    0.00    0.00   58.59     0  lt-fluidsynth
+
+18:27:15          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:16         3340   58.00    0.00    0.00   58.00     0  lt-fluidsynth
+
+18:27:16          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:17         3340   58.00    0.00    0.00   58.00     0  lt-fluidsynth
+
+18:27:17          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:18         3340   57.00    0.00    0.00   57.00     0  lt-fluidsynth
+
+18:27:18          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:19         3340   58.16    0.00    0.00   58.16     0  lt-fluidsynth
+
+18:27:19          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:20         3340   53.92    1.96    0.00   55.88     0  lt-fluidsynth
+
+18:27:20          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:21         3340   66.34    0.99    0.00   67.33     0  lt-fluidsynth
+
+18:27:21          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:22         3340   51.49    0.00    0.00   51.49     0  lt-fluidsynth
+
+18:27:22          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:23         3340   48.48    0.00    0.00   48.48     0  lt-fluidsynth
+
+18:27:23          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:24         3340   53.54    0.00    0.00   53.54     0  lt-fluidsynth
+
+18:27:24          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:25         3340   57.84    0.00    0.00   57.84     0  lt-fluidsynth
+
+18:27:25          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:26         3340   53.85    0.00    0.00   53.85     0  lt-fluidsynth
+
+18:27:26          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:27         3340   48.00    0.00    0.00   48.00     0  lt-fluidsynth
+
+18:27:27          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:28         3340   53.06    0.00    0.00   53.06     0  lt-fluidsynth
+
+18:27:28          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:29         3340   51.00    1.00    0.00   52.00     0  lt-fluidsynth
+
+18:27:29          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:30         3340   60.00    0.00    0.00   60.00     0  lt-fluidsynth
+
+18:27:30          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:31         3340   48.04    0.00    0.00   48.04     0  lt-fluidsynth
+
+18:27:31          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:32         3340   54.08    0.00    0.00   54.08     0  lt-fluidsynth
+
+18:27:32          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:33         3340   53.00    0.00    0.00   53.00     0  lt-fluidsynth
+
+18:27:33          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:34         3340   57.84    0.98    0.00   58.82     0  lt-fluidsynth
+
+18:27:34          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:35         3340   50.00    0.00    0.00   50.00     0  lt-fluidsynth
+
+18:27:35          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:36         3340   51.49    1.98    0.00   53.47     0  lt-fluidsynth
+
+18:27:36          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:37         3340   53.00    0.00    0.00   53.00     0  lt-fluidsynth
+
+18:27:37          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:38         3340   61.00    1.00    0.00   62.00     0  lt-fluidsynth
+
+18:27:38          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:39         3340   47.06    0.00    0.00   47.06     0  lt-fluidsynth
+
+18:27:39          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:41         3340   58.00    0.00    0.00   58.00     0  lt-fluidsynth
+
+18:27:41          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:42         3340   76.92    0.00    0.00   76.92     0  lt-fluidsynth
+
+18:27:42          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:43         3340   76.00    1.00    0.00   77.00     0  lt-fluidsynth
+
+18:27:43          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:44         3340   64.36    0.00    0.00   64.36     0  lt-fluidsynth
+
+18:27:44          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:45         3340   54.37    0.00    0.00   54.37     0  lt-fluidsynth
+
+18:27:45          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:46         3340   52.43    0.97    0.00   53.40     0  lt-fluidsynth
+
+18:27:46          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:47         3340   90.20    0.00    0.00   90.20     0  lt-fluidsynth
+
+18:27:47          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:48         3340   72.73    0.00    0.00   72.73     0  lt-fluidsynth
+
+18:27:48          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:49         3340   50.50    0.00    0.00   50.50     0  lt-fluidsynth
+
+18:27:49          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:50         3340   59.22    0.00    0.00   59.22     0  lt-fluidsynth
+
+18:27:50          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:51         3340   51.46    0.00    0.00   51.46     0  lt-fluidsynth
+
+18:27:51          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:52         3340   77.00    0.00    0.00   77.00     0  lt-fluidsynth
+
+18:27:52          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:53         3340   53.92    0.00    0.00   53.92     0  lt-fluidsynth
+
+18:27:53          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:54         3340   60.78    0.00    0.00   60.78     0  lt-fluidsynth
+
+18:27:54          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:55         3340   57.84    0.00    0.00   57.84     0  lt-fluidsynth
+
+18:27:55          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:56         3340   65.05    0.00    0.00   65.05     0  lt-fluidsynth
+
+18:27:56          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:57         3340   59.05    0.00    0.00   59.05     0  lt-fluidsynth
+
+18:27:57          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:58         3340   67.65    0.00    0.00   67.65     0  lt-fluidsynth
+
+18:27:58          PID    %usr %system  %guest    %CPU   CPU  Command
+18:27:59         3340   68.69    0.00    0.00   68.69     0  lt-fluidsynth
+
+18:27:59          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:00         3340  141.35    0.00    0.00  141.35     0  lt-fluidsynth
+
+18:28:00          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:02         3340   68.47    0.00    0.00   68.47     0  lt-fluidsynth
+
+18:28:02          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:03         3340   88.35    0.00    0.00   88.35     0  lt-fluidsynth
+
+18:28:03          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:04         3340   64.08    0.00    0.00   64.08     0  lt-fluidsynth
+
+18:28:04          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:06         3340  272.04    0.00    0.00  272.04     0  lt-fluidsynth
+
+18:28:06          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:12         3340   68.74    0.18    0.00   68.92     0  lt-fluidsynth
+
+18:28:12          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:16         3340   25.69    0.25    0.00   25.94     0  lt-fluidsynth
+
+18:28:16          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:17         3340   54.46    0.00    0.00   54.46     0  lt-fluidsynth
+
+18:28:17          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:18         3340   56.73    0.00    0.00   56.73     0  lt-fluidsynth
+
+18:28:18          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:19         3340   82.69    0.00    0.00   82.69     0  lt-fluidsynth
+
+18:28:19          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:20         3340   74.51    0.00    0.00   74.51     0  lt-fluidsynth
+
+18:28:20          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:21         3340   56.00    1.00    0.00   57.00     0  lt-fluidsynth
+
+18:28:21          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:22         3340   45.19    0.00    0.00   45.19     0  lt-fluidsynth
+
+18:28:22          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:23         3340   70.48    0.00    0.00   70.48     0  lt-fluidsynth
+
+18:28:23          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:24         3340   76.47    0.00    0.00   76.47     0  lt-fluidsynth
+
+18:28:24          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:25         3340   56.00    0.00    0.00   56.00     0  lt-fluidsynth
+
+18:28:25          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:26         3340   70.87    0.00    0.00   70.87     0  lt-fluidsynth
+
+18:28:26          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:27         3340   49.02    0.00    0.00   49.02     0  lt-fluidsynth
+
+18:28:27          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:28         3340   55.24    0.95    0.00   56.19     0  lt-fluidsynth
+
+18:28:28          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:29         3340   69.31    0.99    0.00   70.30     0  lt-fluidsynth
+
+18:28:29          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:30         3340   64.71    0.00    0.00   64.71     0  lt-fluidsynth
+
+18:28:30          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:31         3340   43.69    0.00    0.00   43.69     0  lt-fluidsynth
+
+18:28:31          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:32         3340   55.34    0.00    0.00   55.34     0  lt-fluidsynth
+
+18:28:32          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:33         3340   55.45    0.00    0.00   55.45     0  lt-fluidsynth
+
+18:28:33          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:34         3340   60.58    0.00    0.00   60.58     0  lt-fluidsynth
+
+18:28:34          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:35         3340   53.00    0.00    0.00   53.00     0  lt-fluidsynth
+
+18:28:35          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:36         3340   65.05    0.00    0.00   65.05     0  lt-fluidsynth
+
+18:28:36          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:37         3340   86.54    0.96    0.00   87.50     0  lt-fluidsynth
+
+18:28:37          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:38         3340   67.33    0.00    0.00   67.33     0  lt-fluidsynth
+
+18:28:38          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:39         3340   56.44    0.00    0.00   56.44     0  lt-fluidsynth
+
+18:28:39          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:40         3340   45.63    0.00    0.00   45.63     0  lt-fluidsynth
+
+18:28:40          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:41         3340   80.37    0.00    0.00   80.37     0  lt-fluidsynth
+
+18:28:41          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:42         3340   77.69    7.44    0.00   85.12     0  lt-fluidsynth
+
+18:28:42          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:43         3340   50.60    0.00    0.00   50.60     0  lt-fluidsynth
+
+18:28:43          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:44         3340   55.88    0.00    0.00   55.88     0  lt-fluidsynth
+
+18:28:44          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:45         3340   47.52    0.00    0.00   47.52     0  lt-fluidsynth
+
+18:28:45          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:46         3340   56.60    0.00    0.00   56.60     0  lt-fluidsynth
+
+18:28:46          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:47         3340   69.23    0.00    0.00   69.23     0  lt-fluidsynth
+
+18:28:47          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:48         3340   60.19    0.00    0.00   60.19     0  lt-fluidsynth
+
+18:28:48          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:49         3340   47.57    0.97    0.00   48.54     0  lt-fluidsynth
+
+18:28:49          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:50         3340   69.61    0.00    0.00   69.61     0  lt-fluidsynth
+
+18:28:50          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:51         3340   55.34    0.00    0.00   55.34     0  lt-fluidsynth
+
+18:28:51          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:52         3340   72.22    0.00    0.00   72.22     0  lt-fluidsynth
+
+18:28:52          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:53         3340   65.35    1.98    0.00   67.33     0  lt-fluidsynth
+
+18:28:53          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:54         3340   80.95    5.71    0.00   86.67     0  lt-fluidsynth
+
+18:28:54          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:55         3340  142.31    7.69    0.00  150.00     0  lt-fluidsynth
+
+18:28:55          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:58         3340   63.73    1.47    0.00   65.20     0  lt-fluidsynth
+
+18:28:58          PID    %usr %system  %guest    %CPU   CPU  Command
+18:28:59         3340   81.55    0.00    0.00   81.55     0  lt-fluidsynth
+
+18:28:59          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:00         3340  387.38    0.97    0.00  388.35     0  lt-fluidsynth
+
+18:29:00          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:04         3340   94.04    0.00    0.00   94.04     0  lt-fluidsynth
+
+18:29:04          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:08         3340   72.49    0.24    0.00   72.73     0  lt-fluidsynth
+
+18:29:08          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:12         3340   19.22    0.00    0.00   19.22     0  lt-fluidsynth
+
+18:29:12          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:13         3340   56.44    0.00    0.00   56.44     0  lt-fluidsynth
+
+18:29:13          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:14         3340   46.08    0.00    0.00   46.08     0  lt-fluidsynth
+
+18:29:14          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:15         3340   41.84    0.00    0.00   41.84     0  lt-fluidsynth
+
+18:29:15          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:16         3340   43.30    0.00    0.00   43.30     0  lt-fluidsynth
+
+18:29:16          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:17         3340   48.45    0.00    0.00   48.45     0  lt-fluidsynth
+
+18:29:17          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:18         3340   52.53    0.00    0.00   52.53     0  lt-fluidsynth
+
+18:29:18          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:19         3340   55.45    0.00    0.00   55.45     0  lt-fluidsynth
+
+18:29:19          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:20         3340   53.61    1.03    0.00   54.64     0  lt-fluidsynth
+
+18:29:20          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:21         3340   55.00    0.00    0.00   55.00     0  lt-fluidsynth
+
+18:29:21          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:22         3340   53.54    0.00    0.00   53.54     0  lt-fluidsynth
+
+18:29:22          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:23         3340   56.00    1.00    0.00   57.00     0  lt-fluidsynth
+
+18:29:23          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:24         3340   55.00    0.00    0.00   55.00     0  lt-fluidsynth
+
+18:29:24          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:25         3340   55.45    0.00    0.00   55.45     0  lt-fluidsynth
+
+18:29:25          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:26         3340   60.00    0.00    0.00   60.00     0  lt-fluidsynth
+
+18:29:26          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:27         3340   59.60    0.00    0.00   59.60     0  lt-fluidsynth
+
+18:29:27          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:28         3340   61.86    0.00    0.00   61.86     0  lt-fluidsynth
+
+18:29:28          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:29         3340   58.00    0.00    0.00   58.00     0  lt-fluidsynth
+
+18:29:29          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:30         3340   58.00    0.00    0.00   58.00     0  lt-fluidsynth
+
+18:29:30          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:31         3340   60.20    0.00    0.00   60.20     0  lt-fluidsynth
+
+18:29:31          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:32         3340   67.00    0.00    0.00   67.00     0  lt-fluidsynth
+
+18:29:32          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:33         3340   58.42    0.00    0.00   58.42     0  lt-fluidsynth
+
+18:29:33          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:34         3340   80.39    0.00    0.00   80.39     0  lt-fluidsynth
+
+18:29:34          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:35         3340   68.00    0.00    0.00   68.00     0  lt-fluidsynth
+
+18:29:35          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:36         3340   62.75    0.00    0.00   62.75     0  lt-fluidsynth
+
+18:29:36          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:37         3340   74.00    0.00    0.00   74.00     0  lt-fluidsynth
+
+18:29:37          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:38         3340   58.42    0.00    0.00   58.42     0  lt-fluidsynth
+
+18:29:38          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:39         3340   75.96    0.00    0.00   75.96     0  lt-fluidsynth
+
+18:29:39          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:40         3340   60.78    0.98    0.00   61.76     0  lt-fluidsynth
+
+18:29:40          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:41         3340   75.25    0.00    0.00   75.25     0  lt-fluidsynth
+
+18:29:41          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:42         3340   69.00    0.00    0.00   69.00     0  lt-fluidsynth
+
+18:29:42          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:43         3340   62.00    1.00    0.00   63.00     0  lt-fluidsynth
+
+18:29:43          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:44         3340   65.35    7.92    0.00   73.27     0  lt-fluidsynth
+
+18:29:44          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:45         3340   55.56    0.00    0.00   55.56     0  lt-fluidsynth
+
+18:29:45          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:46         3340   66.34    0.99    0.00   67.33     0  lt-fluidsynth
+
+18:29:46          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:47         3340   64.36    0.00    0.00   64.36     0  lt-fluidsynth
+
+18:29:47          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:48         3340   70.59    0.00    0.00   70.59     0  lt-fluidsynth
+
+18:29:48          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:49         3340   57.00    2.00    0.00   59.00     0  lt-fluidsynth
+
+18:29:49          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:50         3340   72.28    0.00    0.00   72.28     0  lt-fluidsynth
+
+18:29:50          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:51         3340   70.30    0.99    0.00   71.29     0  lt-fluidsynth
+
+18:29:51          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:53         3340   68.32    0.00    0.00   68.32     0  lt-fluidsynth
+
+18:29:53          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:54         3340   78.43    0.00    0.00   78.43     0  lt-fluidsynth
+
+18:29:54          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:55         3340   61.00    0.00    0.00   61.00     0  lt-fluidsynth
+
+18:29:55          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:56         3340   71.57    0.00    0.00   71.57     0  lt-fluidsynth
+
+18:29:56          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:57         3340   68.32    0.00    0.00   68.32     0  lt-fluidsynth
+
+18:29:57          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:58         3340   71.29    0.00    0.00   71.29     0  lt-fluidsynth
+
+18:29:58          PID    %usr %system  %guest    %CPU   CPU  Command
+18:29:59         3340   77.45    0.00    0.00   77.45     0  lt-fluidsynth
+
+18:29:59          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:00         3340  104.81    0.96    0.00  105.77     0  lt-fluidsynth
+
+18:30:00          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:01         3340   91.00    0.00    0.00   91.00     0  lt-fluidsynth
+
+18:30:01          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:02         3340  166.67    0.95    0.00  167.62     0  lt-fluidsynth
+
+18:30:02          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:04         3340   58.75    0.42    0.00   59.17     0  lt-fluidsynth
+
+18:30:04          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:06         3340   69.61    0.00    0.00   69.61     0  lt-fluidsynth
+
+18:30:06          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:07         3340   71.57    0.00    0.00   71.57     0  lt-fluidsynth
+
+18:30:07          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:08         3340   56.00    0.00    0.00   56.00     0  lt-fluidsynth
+
+18:30:08          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:09         3340   53.40    0.00    0.00   53.40     0  lt-fluidsynth
+
+18:30:09          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:10         3340   63.73    0.00    0.00   63.73     0  lt-fluidsynth
+
+18:30:10          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:11         3340  107.77    0.97    0.00  108.74     0  lt-fluidsynth
+
+18:30:11          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:12         3340   43.56    0.99    0.00   44.55     0  lt-fluidsynth
+
+18:30:12          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:13         3340   49.02    0.00    0.00   49.02     0  lt-fluidsynth
+
+18:30:13          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:14         3340   71.84    0.00    0.00   71.84     0  lt-fluidsynth
+
+18:30:14          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:15         3340   75.96    0.00    0.00   75.96     0  lt-fluidsynth
+
+18:30:15          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:16         3340   65.35    0.00    0.00   65.35     0  lt-fluidsynth
+
+18:30:16          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:17         3340   61.39    0.00    0.00   61.39     0  lt-fluidsynth
+
+18:30:17          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:18         3340   65.69    7.84    0.00   73.53     0  lt-fluidsynth
+
+18:30:18          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:19         3340   35.29    0.00    0.00   35.29     0  lt-fluidsynth
+
+18:30:19          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:20         3340   70.00    0.00    0.00   70.00     0  lt-fluidsynth
+
+18:30:20          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:21         3340   60.40    0.00    0.00   60.40     0  lt-fluidsynth
+
+18:30:21          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:23         3340   48.54    0.00    0.00   48.54     0  lt-fluidsynth
+
+18:30:23          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:24         3340   60.40    0.00    0.00   60.40     0  lt-fluidsynth
+
+18:30:24          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:25         3340   54.81    0.00    0.00   54.81     0  lt-fluidsynth
+
+18:30:25          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:26         3340   66.35    0.00    0.00   66.35     0  lt-fluidsynth
+
+18:30:26          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:27         3340   59.41    0.00    0.00   59.41     0  lt-fluidsynth
+
+18:30:27          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:28         3340   48.51    0.00    0.00   48.51     0  lt-fluidsynth
+
+18:30:28          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:29         3340   82.86    0.00    0.00   82.86     0  lt-fluidsynth
+
+18:30:29          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:30         3340   92.16    0.00    0.00   92.16     0  lt-fluidsynth
+
+18:30:30          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:31         3340   45.54    0.00    0.00   45.54     0  lt-fluidsynth
+
+18:30:31          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:32         3340   53.92    0.00    0.00   53.92     0  lt-fluidsynth
+
+18:30:32          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:33         3340   61.90    0.00    0.00   61.90     0  lt-fluidsynth
+
+18:30:33          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:34         3340   84.47    0.00    0.00   84.47     0  lt-fluidsynth
+
+18:30:34          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:35         3340   60.40    0.00    0.00   60.40     0  lt-fluidsynth
+
+18:30:35          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:36         3340   64.08    0.97    0.00   65.05     0  lt-fluidsynth
+
+18:30:36          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:37         3340   57.43    0.00    0.00   57.43     0  lt-fluidsynth
+
+18:30:37          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:38         3340   49.52    0.95    0.00   50.48     0  lt-fluidsynth
+
+18:30:38          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:39         3340   77.14    0.00    0.00   77.14     0  lt-fluidsynth
+
+18:30:39          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:40         3340   50.98    1.96    0.00   52.94     0  lt-fluidsynth
+
+18:30:40          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:41         3340   63.37    0.00    0.00   63.37     0  lt-fluidsynth
+
+18:30:41          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:42         3340   59.05    2.86    0.00   61.90     0  lt-fluidsynth
+
+18:30:42          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:43         3340   65.69    0.00    0.00   65.69     0  lt-fluidsynth
+
+18:30:43          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:44         3340   66.35    0.00    0.00   66.35     0  lt-fluidsynth
+
+18:30:44          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:45         3340   73.08    0.00    0.00   73.08     0  lt-fluidsynth
+
+18:30:45          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:46         3340  125.96    0.00    0.00  125.96     0  lt-fluidsynth
+
+18:30:46          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:47         3340  385.29    2.94    0.00  388.24     0  lt-fluidsynth
+
+18:30:47          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:52         3340   51.26    0.21    0.00   51.46     0  lt-fluidsynth
+
+18:30:52          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:54         3340   41.31    0.00    0.00   41.31     0  lt-fluidsynth
+
+18:30:54          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:56         3340  123.15    0.49    0.00  123.65     0  lt-fluidsynth
+
+18:30:56          PID    %usr %system  %guest    %CPU   CPU  Command
+18:30:59         3340   92.83    0.45    0.00   93.27     0  lt-fluidsynth
+
+18:30:59          PID    %usr %system  %guest    %CPU   CPU  Command
+18:31:01         3340   42.72    0.00    0.00   42.72     0  lt-fluidsynth
+
+18:31:01          PID    %usr %system  %guest    %CPU   CPU  Command
+18:31:02         3340   66.67    0.98    0.00   67.65     0  lt-fluidsynth
+
+18:31:02          PID    %usr %system  %guest    %CPU   CPU  Command
+18:31:03         3340   46.60    0.00    0.00   46.60     0  lt-fluidsynth
+
+18:31:03          PID    %usr %system  %guest    %CPU   CPU  Command
+18:31:04         3340  171.57    0.00    0.00  171.57     0  lt-fluidsynth
+
+18:31:04          PID    %usr %system  %guest    %CPU   CPU  Command
+18:31:06         3340   50.00    0.00    0.00   50.00     0  lt-fluidsynth
+
+18:31:06          PID    %usr %system  %guest    %CPU   CPU  Command
+18:31:07         3340   87.25    0.98    0.00   88.24     0  lt-fluidsynth
+
+18:31:07          PID    %usr %system  %guest    %CPU   CPU  Command
+18:31:08         3340   71.84    0.00    0.00   71.84     0  lt-fluidsynth
+
+18:31:08          PID    %usr %system  %guest    %CPU   CPU  Command
+18:31:09         3340   76.64    0.00    0.00   76.64     0  lt-fluidsynth
+
+18:31:09          PID    %usr %system  %guest    %CPU   CPU  Command
+18:31:10         3340   64.76    0.00    0.00   64.76     0  lt-fluidsynth
+
+18:31:10          PID    %usr %system  %guest    %CPU   CPU  Command
+18:31:11         3340  191.35    0.96    0.00  192.31     0  lt-fluidsynth
+
+18:31:11          PID    %usr %system  %guest    %CPU   CPU  Command
+18:31:14         3340  128.28    0.00    0.00  128.28     0  lt-fluidsynth
+
+18:31:14          PID    %usr %system  %guest    %CPU   CPU  Command
+18:31:17         3340   19.66    0.34    0.00   20.00     0  lt-fluidsynth
+
+18:31:17          PID    %usr %system  %guest    %CPU   CPU  Command
+18:31:18         3340  164.00    0.00    0.00  164.00     0  lt-fluidsynth
+
+18:31:18          PID    %usr %system  %guest    %CPU   CPU  Command
+18:31:20         3340   69.64    0.00    0.00   69.64     0  lt-fluidsynth
+
+18:31:20          PID    %usr %system  %guest    %CPU   CPU  Command
+18:31:23         3340   74.21    0.00    0.00   74.21     0  lt-fluidsynth
+
+18:31:23          PID    %usr %system  %guest    %CPU   CPU  Command
+18:31:24         3340  202.78    1.85    0.00  204.63     0  lt-fluidsynth
+
+18:31:24          PID    %usr %system  %guest    %CPU   CPU  Command
+18:31:26         3340   45.41    0.00    0.00   45.41     0  lt-fluidsynth
+
+18:31:26          PID    %usr %system  %guest    %CPU   CPU  Command
+18:31:27         3340   30.39    0.00    0.00   30.39     0  lt-fluidsynth
+
+18:31:27          PID    %usr %system  %guest    %CPU   CPU  Command
+18:31:28         3340   60.19    0.00    0.00   60.19     0  lt-fluidsynth
+
+18:31:28          PID    %usr %system  %guest    %CPU   CPU  Command
+18:31:29         3340   89.90   10.10    0.00  100.00     0  lt-fluidsynth
+
+18:31:29          PID    %usr %system  %guest    %CPU   CPU  Command
+18:31:30         3340   71.84    0.00    0.00   71.84     0  lt-fluidsynth
+
+18:31:30          PID    %usr %system  %guest    %CPU   CPU  Command
+18:31:31         3340   42.42    0.00    0.00   42.42     0  lt-fluidsynth
+
+18:31:31          PID    %usr %system  %guest    %CPU   CPU  Command
+18:31:32         3340   54.08    0.00    0.00   54.08     0  lt-fluidsynth
+
+18:31:32          PID    %usr %system  %guest    %CPU   CPU  Command
+18:31:33         3340   70.19    0.00    0.00   70.19     0  lt-fluidsynth
+
+18:31:33          PID    %usr %system  %guest    %CPU   CPU  Command
+18:31:34         3340   65.00    0.00    0.00   65.00     0  lt-fluidsynth
+
+18:31:34          PID    %usr %system  %guest    %CPU   CPU  Command
+18:31:35         3340   64.08    0.00    0.00   64.08     0  lt-fluidsynth
+
+18:31:35          PID    %usr %system  %guest    %CPU   CPU  Command
+18:31:36         3340   92.23    0.00    0.00   92.23     0  lt-fluidsynth
+
+18:31:36          PID    %usr %system  %guest    %CPU   CPU  Command
+18:31:37         3340   47.00    0.00    0.00   47.00     0  lt-fluidsynth
+
+18:31:37          PID    %usr %system  %guest    %CPU   CPU  Command
+18:31:38         3340   64.65    0.00    0.00   64.65     0  lt-fluidsynth
+
+18:31:38          PID    %usr %system  %guest    %CPU   CPU  Command
+18:31:39         3340   36.00    0.00    0.00   36.00     0  lt-fluidsynth
+
+18:31:39          PID    %usr %system  %guest    %CPU   CPU  Command
+18:31:40         3340   38.61    0.99    0.00   39.60     0  lt-fluidsynth
+
+18:31:40          PID    %usr %system  %guest    %CPU   CPU  Command
+18:31:41         3340   26.00    1.00    0.00   27.00     0  lt-fluidsynth
+
+18:31:41          PID    %usr %system  %guest    %CPU   CPU  Command
+18:31:42         3340   25.00    0.00    0.00   25.00     0  lt-fluidsynth
+
+18:31:42          PID    %usr %system  %guest    %CPU   CPU  Command
+18:31:43         3340    1.01    0.00    0.00    1.01     0  lt-fluidsynth
+
+18:31:43          PID    %usr %system  %guest    %CPU   CPU  Command
+
+18:31:44          PID    %usr %system  %guest    %CPU   CPU  Command
+
+18:31:45          PID    %usr %system  %guest    %CPU   CPU  Command

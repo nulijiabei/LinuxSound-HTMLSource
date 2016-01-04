@@ -1,0 +1,54 @@
+Component name: OMX.broadcom.audio_decode:70 version 0.0, Spec version 1.1
+Audio ports:
+  Ports start on 120
+  There are 2 open ports
+    Port 120 requires 4 buffers
+    Port 120 is an input port
+    Port 120 is an audio port
+    Port mimetype (null)
+    Port encoding is MP3
+      Supported audio formats are:
+      Supported encoding is MP3
+          MP3 default sampling rate 0
+          MP3 default bits per sample 0
+          MP3 default number of channels 0
+      Supported encoding is PCM
+          PCM default sampling rate 0
+          PCM default bits per sample 0
+          PCM default number of channels 0
+      Supported encoding is AAC
+      Supported encoding is WMA
+      Supported encoding is Ogg Vorbis
+      Supported encoding is RA
+      Supported encoding is AMR
+      Supported encoding is EVRC
+      Supported encoding is G726
+      Supported encoding is FLAC
+      Supported encoding is DDP
+      Supported encoding is DTS
+      Supported encoding is WMAPRO
+      Supported encoding is ATRAC3
+      Supported encoding is ATRACX
+      Supported encoding is ATRACAAL
+      Supported encoding is MIDI
+      No more formats supported
+    Port 121 requires 1 buffers
+    Port 121 is an output port
+    Port 121 is an audio port
+    Port mimetype (null)
+    Port encoding is PCM
+      Supported audio formats are:
+      Supported encoding is PCM
+          PCM default sampling rate 44100
+          PCM default bits per sample 16
+          PCM default number of channels 2
+      Supported encoding is DDP
+      Supported encoding is DTS
+      No more formats supported
+Video ports:
+  No ports of this type
+Image ports:
+  No ports of this type
+Other ports:
+  No ports of this type
+

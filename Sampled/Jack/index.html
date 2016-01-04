@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="../../stylesheet.css" />
+
+    <title> Jack </title>
+
+    <style type="text/css">
+        body { counter-reset: chapter 7; }
+    </style>
+
+    <script type="text/javascript" src="../../toc.js"> 
+   /* empty */
+   </script>
+
+    <script type="text/javascript" src="../../populateFrame.js"> 
+   /* empty */
+   </script>
+
+    <script type="text/javascript" src="http://code.jquery.com/jquery-latest.pack.js"></script>
+
+   <script type="text/javascript">
+/* <![CDATA[ */
+    (function() {
+        var s = document.createElement("script"), t = document.getElementsByTagName("script")[0];
+        s.type = "text/javascript";
+        s.async = true;
+        s.src = "http://api.flattr.com/js/0.6/load.js?mode=auto";
+        t.parentNode.insertBefore(s, t);
+    })();
+/* ]]> */
+    </script>
+
+   <link rel="stylesheet" type="text/css" href="../../js/doc/style.css">
+   <!-- <link rel="stylesheet" type="text/css" href="../../js/css/sh_emacs.css"> -->
+   <link rel="stylesheet" type="text/css" href="../../js/sh_style.css">
+   <script type="text/javascript" src="../../js/sh_main.min.js"></script>
+   <script type="text/javascript" src="../../js/lang/sh_cpp.min.js"></script>
+   
+
+  </head>
+  <body onload="sh_highlightDocument();">
+
+
+    <div class="chapter">
+        <h1> Jack </h1>
+    </div>
+
+    <div class="preface">
+    <p>
+      Jack is intended for professional audio, connecting many devices in arbitrary
+      configurations. All software components run synchronously, with effectively
+      zero latency.
+    </p>
+
+    </div>
+
+    <div id="generated-toc" class="generate_from_h2"></div>
+
+    <h2> Introduction </h2>
+
+
+    <p>
+      The article
+      <a href="http://linux-sound.org/knowing-jack.html">
+	Knowing Jack
+      </a>
+      gives a gentle introduction to Jack.
+    </p>
+
+    <h2> Resources </h2>
+
+      <ul>
+	<li>
+	  The Jack <a href="http://jackaudio.org/files/docs/html/index.html"> API </a>
+	</li>
+	<li>
+	  <a href="http://linux-sound.org/knowing-jack.html">
+	    Knowing Jack
+	  </a>
+	</li>
+
+	<li>
+	  <a href="https://wiki.archlinux.org/index.php/Pro_Audio">ArchLinux Pro Audio</a>
+	</li>
+	<li>
+	  <a href="http://en.gentoo-wiki.com/wiki/JACK#Cannot_use_real-time_scheduling"> 
+	    Gentoo Jack
+	  </a>
+	</li>
+	<li>
+	  <a href="http://lac.linuxaudio.org/2003/zkm/recordings/paul_davis-jack.ogg">
+	    Paul Davis talk on Jack architecture
+	  </a>
+	</li>
+	<li>
+	  <a href="http://w3.linux-magazine.com/issue/67/JACK_Audio_Server.pdf">
+	    Knowing Jack
+	  </a> by Dave Phillips in Linux Magazine
+	</li>
+
+      </ul>
+
+    
+    <h2> Starting Jack </h2>
+    <p>
+      The Jack server is <code>jackd</code>. It has one required parameter which
+      is the sound backend such as ALSA. The minimal command is
+    </p>
+      <pre>
+	<code>
+jackd -dalsa
+	</code>
+      </pre>
+    
+
+    <p>
+      if you are using a normal Linux distro such as Fedora or Ubuntu, this will
+      quite likely fail if the PulseAudio system is running. This may need to be
+      stopped, or at least paused while you run Jack. See the previous chapter
+      for stopping PulseAudio, To pause it, I usually run this in a terminal window:
+    </p>
+      <pre>
+	<code>
+pasuspender cat
+	</code>
+      </pre>
+    <p>
+      This will pause PulseAudio until <code>cat</code> terminates, which it will do when
+      you enter ctrl-d.
+    </p>
+
+    <p>
+      <code>jackd</code> will try to start using the Linux real-time scheduler. If you want
+      to run without it, use the option
+    </p>
+      <pre>
+	<code>
+jackd --no-realtime -dalsa
+	</code>
+      </pre>
+    
+
+    <p>
+      If you want to run with the realtime scheduler, there are several ways:
+    </p>
+      <ul>
+	<li>
+	  Run the server from the root user
+	  <pre>
+	    <code>
+sudo jackd -dalsa
+	    </code>
+	  </pre>
+	</li>
+	<li>
+	  Add a user to the <code>audio</code> and 
+	  <code>jackuser</code> group by e.g.
+	  <pre>
+	    <code>
+useradd -G audio newmarch
+useradd -G jackuser newmarch
+	    </code>
+	  </pre>
+	  (You will need to logout and back in before this takes effect.)
+	</li>
+      </ul>
+
+
+    <p>
+      Note that if you run the server as the root user, then you will not be able to
+      connect to it from clients that are not in the <code>jackuser</code> group.
+    </p>
+
+
+<!--
+/etc/security/limits.d/99-jack.conf:
+
+# Default limits for users of jack-audio-connection-kit
+
+@jackuser - rtprio 20
+@jackuser - memlock 4194304
+
+@pulse-rt - rtprio 20
+@pulse-rt - nice -20
+-->
+
+
+
+    <p>
+      No apparent systemd or upstart scripts exist for Jack, but there are
+      instructions about starting Jack at boot time from
+      <a href="http://en.gentoo-wiki.com/wiki/JACK#Starting_jack_manually">
+	Gentoo jack
+      </a>:
+    </p>
+      <pre>
+	<code>
+#!/sbin/runscript
+ # This programm will be used by init in order to launch jackd with the privileges
+ # and id of the user defined into /etc/conf.d/jackd
+
+ depend() {
+	need alsasound
+ }
+
+ start() {
+	if ! test -f "${JACKDHOME}/.jackdrc"; then
+		eerror "You must start and configure jackd before launch it. Sorry."
+		eerror "You can use qjackctl for that."
+		return 1
+	else JACKDOPTS=$(cat "${JACKDHOME}/.jackdrc"|sed -e 's\/usr/bin/jackd \\')
+	fi
+
+	if [ -e /var/run/jackd.pid ]; then
+		 rm /var/run/jackd.pid
+	fi
+
+	ebegin "Starting JACK Daemon"
+	env HOME="${JACKDHOME}" start-stop-daemon --start \
+		--quiet --background \
+		--make-pidfile --pidfile /var/run/jackd.pid \
+		-c ${JACKDUSER} \
+		-x /usr/bin/jackd -- ${JACKDOPTS} >${LOG}
+	
+	sleep 2
+	if ! pgrep -u ${JACKDUSER} jackd > /dev/null; then
+ 		eerror "JACK daemon can't be started! Check logfile: ${LOG}"
+ 	fi
+ 	eend $?
+ }
+
+ stop() {
+ 	ebegin "Stopping JACK daemon -- please wait"
+ 	start-stop-daemon --stop --pidfile /var/run/jackd.pid &>/dev/null
+ 	eend $?
+ }
+
+ restart() {
+ 	svc_stop
+ 	while `pgrep -u ${JACKDUSER} jackd >/dev/null`; do
+ 		sleep 1
+ 	done
+ 	svc_start
+ }
+	</code>
+      </pre>
+<p>
+  File: /etc/conf.d/jackd:
+</p>
+<pre>
+  <code>
+
+
+ # owner of jackd process (Must be an existing user.)
+ JACKDUSER="dom"
+
+ # .jackdrc location for that user (Must be existing, JACKDUSER can use
+ # qjackctl in order to create it.) 
+ JACKDHOME="/home/${JACKDUSER}" 
+
+ # logfile (/dev/null for nowhere)
+ LOG=/var/log/jackd.log
+
+</code>
+</pre>
+<p>
+Create and save those 2 files. Don't forget to adjust JACKDUSER to the wanted user name (the same as yours I guess).
+
+We need to make /etc/init.d/jackd executable:
+</p>
+<pre>
+<code>
+
+# chmod +x /etc/init.d/jackd
+
+</code>
+</pre>
+
+<p>
+Adding the script into the default run-level:
+</p>
+<pre>
+<code>
+# rc-update add jackd default
+
+</code>
+</pre>
+<p>
+Before restarting your system or starting this script, you must be sure that jackd is configured for 
+$JACKUSER or jackd will fail. This is because the script will read /home/${USER}/.jackdrc.
+If this file doesn't exist, the easiest way to create it is to run QJackCtl as explained above. 
+    </p>	  
+    <p>
+      Note on Realtime: Due to a limitation in the implementation of start-stop-daemon, 
+      it is not possible to start jackd in realtime mode as a non-root user by this method 
+      if using pam_limits. start-stop-daemon does not implement support for pam_sessions, 
+      meaning that changes to limits.conf have no effect in this context. 
+    </p>
+
+    <h2> User tools </h2>
+    <p>
+      There is really only one tool that you need to use with Jack: 
+      <code>qjackctl</code>.
+      This gives a graphical view of which Jack applications are playing
+      and allows you to link inputs and outputs.
+    </p>
+
+    <p>
+      A simple tutorial on using qjackctl is
+      <a href="https://help.ubuntu.com/community/HowToQjackCtlConnections">
+	HowToQjackCtlConnections
+      </a>
+      It is actually amazingly simple to use: click on a source,
+      link it to a destination by clicking on that. A line
+      will be shown linking them - and that's all you have
+      to do. Many Jack applications will do this for you,
+      so you just observe the results.
+    </p>
+
+    <h2> Applications using Jack </h2>
+    <p>      
+      There are many pieces of software using Jack, described in
+      <a href="http://jackaudio.org/applications">
+	Applications using JACK
+      </a>
+    </p>
+
+    <h3> mplayer </h3>
+    <p>
+      To run <code>mplayer</code> using Jack, add the
+      option <code>-ao jack</code>:
+    </p>
+      <pre>
+	<code>
+mplayer -ao jack 54154.mp3
+	</code>
+      </pre>
+   
+
+    <p>
+      <code>mplayer</code> used in this way will connect to the
+      Jack <code>system</code> output device. To output to
+      another Jack application such as <code>jack-rack</code>,
+      append the output application to the audio output command
+    </p>
+      <pre>
+	<code>
+mplayer -ao jack:port=jack_rack 54154.mp3
+	</code>
+      </pre>
+
+
+    <h3> VLC </h3>
+    <p>
+      VLC will play to Jack output if the 
+      <a href="https://wiki.videolan.org/Documentation:Modules/jack/">Jack module</a>
+      is included.
+      This is available as a downloadable Debian package
+      <code>vlc-plugin-jack</code>. You can check if you have it by
+      seeing if jack is listed as a module in
+      <code>vlc --list</code> shows ALSA but not Jack.
+    </p>
+
+    <p>
+      Play a file using Jack by e.g.
+    </p>
+      <pre>
+	<code>
+vlc --aout jack 54154.mp3
+	</code>
+      </pre>
+<p>
+      You should be able to connect to a particular Jack application
+      using the option <code>--jack-connect-regex &lt;string&gt;</code>.
+    </p>
+
+    <h3> TiMidity</h3>
+    <p>
+      TiMidity is a MIDI player discussed later. It can play
+      to Jack output devices by
+    </p>
+      <pre>
+	<code>
+timidity -Oj 54154.mid
+	</code>
+      </pre>
+    
+
+    <h3> Jack-supplied programs </h3>
+    <p>
+      Jack comes with a large number of clients:
+    <p>
+      <pre>
+	<code>
+jack_alias                  jack_midisine
+jack_bufsize                jack_monitor_client
+jack_connect                jack_multiple_metro
+jack_control                jack_net_master
+jack_cpu                    jack_net_slave
+jack_cpu_load               jack_netsource
+jackd                       jack_rec
+jackdbus                    jack_samplerate
+jack_disconnect             jack_server_control
+jack_evmon                  jack_session_notify
+jack_freewheel              jack_showtime
+jack_iodelay                jack_simple_client
+jack_latent_client          jack_simple_session_client
+jack_load                   jack_test
+jack_lsp                    jack_thru
+jack_metro                  jack_transport
+jack_midi_dump              jack_unload
+jack_midi_latency_test      jack_wait
+jack_midiseq                jack_zombie
+	</code>
+      </pre>
+    <p>
+      For many of these the source code is available in the Jack
+      source code distribution and there is a <code>man</code>
+      page for each one.
+    </p>
+
+    <p>
+      Running, say, <code>jack_thru</code> connects the
+      system capture ports to the <code>jack_thru</code>
+      input ports and the <code>jack_thru</code> output
+      ports to the system playback ports. You can 
+      then do things such as disconnect ports using "client:port"
+      for the port name as in
+      <pre>
+	<code>
+jack_disconnect jack_thru:output_1 system:playback_1
+	</code>
+      </pre>
+    <p>
+      These command line tools allow you to do the same kind
+      of actions as <code>qjackctl</code>
+    </p>
+
+    <h3> Other Jack programs </h3>
+    <p>
+      The page
+      <a href="http://jackaudio.org/applications">
+	Applications using JACK
+      </a> lists many applications using Jack.
+    </p>
+
+    <p>
+      The page
+      <a href="http://apps.linuxaudio.org/apps/categories/jack_midi">
+	Jack MIDI Apps
+      </a> at linuxaudio.org
+      lists many MIDI applications using Jack
+    </p>
+
+    <h2> Using a different soundcard </h2>
+    <p>
+      The default ALSA device for Jack will be hw:0.
+      If you wish to use a different soundcard then you can
+      spcecify this when starting Jack as in
+    </p>
+      <pre>
+	<code>
+jackd -dalsa -dhw:0
+	</code>
+      </pre>
+    
+
+    <p>
+      I have a USB Sound Blaster card, which requires some extra
+      parameters
+    </p>
+      <pre>
+	<code>
+jackd -dalsa -dhw:2 -r 48000 -S
+	</code>
+      </pre>
+    <p>
+      This doesn't work great - I get a regular "ticking" sound.
+    </p>
+
+    <p> 
+      Without the <code>-S</code> (16-bit) flag I just get the
+      cryptic
+    </p>
+      <pre>
+	<code>
+ALSA: cannot set hardware parameters for playback
+	</code>
+      </pre>
+    <p>
+      Alternatively, I can run
+    </p>
+      <pre>
+	<code>
+jackd -dalsa -dplughw:2 -r 48000
+	</code>
+      </pre>
+    <p>
+      When I start it this way, Jack advises against using
+      ALSA plug devices but it works best so far.
+    </p>
+
+
+    <h2> How can I use multiple soundcards with JACK? </h2>
+    <p>
+      See <a href="http://jackaudio.org/multiple_devices">
+	How can I use multiple soundcards with JACK?
+      </a>
+    </p>
+
+    <h2> Mixing audio </h2>
+    <p>
+      If two output ports from two different sources are connected to the same input port,
+      then Jack will mix them for you. This allows you to sing along to your favourite MP3 file
+      with no effort:
+    </p>
+      <ul>
+	<li>
+	  Connect the microphone capture ports to the playback ports - avoid setting up a feedback 
+	  loop between your laptop's microphone and speakers by e.g plugging in headphones
+	</li>
+	<li>
+	  Start a player such as <code>mplayer</code> which will also connect to the
+	  playback ports by e.g.
+	  <pre>
+	    <code>
+mplayer -ao jack &lt;MP3 file &gt;
+	    </code>
+	  </pre>
+	</li>
+	<li>
+	  Start singing
+	</li>
+      </ul>
+
+
+    <p>
+      Of course, there is no volume control on each source. You can insert a mixer such as
+      <a href="http://home.gna.org/jackmixer/">jack_mixer</a> (maybe in your distro too), 
+      and then use that to control the volume of each source, as shown in this
+      <code>qjackctl</code> screen:
+      <br/><img alt="" src="mixer.png"/><br/>
+    </p>
+
+
+    <h2> Writing Audio Applications With JACK </h2>
+    <p>
+      See
+      <a href="http://dis-dot-dat.net/index.cgi?item=/jacktuts/starting/">
+	Writing Audio Applications With JACK - A tutorial/journal
+      </a>
+    </p>
+
+    <p>
+      The design of Jack is discussed at
+      <a href="http://lac.linuxaudio.org/2003/zkm/slides/paul_davis-jack/title.html">
+	The JACK Audio Connection Kit 
+      </a> by its primary author Paul Davis.
+      The goals are
+    </p>
+      <ul>
+	<li>
+	  Jack should allow streaming of low-latency, high-bandwidth data between independent applications.
+	</li>
+	<li>
+	  Although not a requirement, Jack should support any streaming data type, not just audio.
+	</li>
+	<li>
+	  In an active Jack setup, there will be one server and one or more Jack plugins. It will be possible to run multiple Jack servers, but each server will form an independent Jack setup. Jack will not define any interfaces between Jack servers.
+	</li>
+	<li>
+	  Applications connected using Jack may have their own graphical interfaces. Jack will not make any specifications as to different GUI toolkits or libraries. As a consequence of this requirement, different parts of a running Jack setup may be spread across multiple processes.
+	</li>
+	<li>
+	  Jack should provide full, sample accurate synchronation (ie. totally synchronous execution of all client plugins)
+	</li>
+	<li>
+	  To represent audio data, Jack should use 32 bit IEEE floats, normalized to value range [-1,1].
+	</li>
+	<li>
+	  Only noninterleaved audio streams will be supported. 
+	</li>
+	<li>
+	  One Jack client may consume or produce multiple data streams.
+	</li>
+	<li>
+	  The Jack API should be specified in ANSI C. There are no restrictions on how servers and clients are to be implemented.
+	</li>
+	<li>
+	  It should be possible to connect already running applications.
+	</li>
+	<li>
+	  It should be possible to add or remove Jack clients while the server is running. 
+	</li>
+      </ul>
+
+
+    <p>
+      To pick the eyes out of this, the principal goals are
+    </p>
+      <ul>
+	<li>
+	  Jack should allow streaming of low-latency, high-bandwidth data between independent applications.
+	</li>
+	<li>
+	  Jack should provide full, sample accurate synchronation (ie. totally synchronous execution of all client plugins)
+	</li>
+      </ul>
+    <p>
+      The second is guaranteed by the Jack framework.
+      The first is supplied by the Jack framework - as long
+      as the applications are coded correctly.
+    </p>
+
+    <p>
+      Under the hood Jack uses fast Linux (Unix) pipelines to stream
+      data from one aplication to another. Within each Jack application
+      is a realtime loop which takes data off the input pipe
+      and sends data to the output pipe. To avoid latency delays,
+      there should essentially be no (or as little as possible) 
+      processing between reading and writing data - the ideal
+      would be to pass pointer data from input to output,
+      or at most to just do a <code>memcpy</code>.
+    </p>
+
+    <p>
+      So how can processing be done? Copy the data read to another
+      data structure and pass processing off to another thread,
+      or copy data processed in another thread to the ouput pipe.
+      Anything else will cause latency which may become noticeable.
+      In particular, certain system calls are essentially banned:
+      <code>malloc</code> can cause swapping;
+      <code>sleep</code> is an obvious no-no;
+      <code>read/write</code> etc can cause disk I/O;
+      <code>pthread_cond_wait</code> will ... wait.
+    </p>
+
+    <p>
+      Jack applications are inherently multi-threaded.
+      In  a Linux world this means Posix threads,
+      and fortunately there is a book 
+      <a href="http://www8.cs.umu.se/kurser/TDBC64/VT03/pthreads/pthread-primer.pdf">
+	PThreads Primer
+      </a> by Bil Lewis and Daniel J Berg
+      to tell you all about Posix threads!
+    </p>
+
+    <p>
+      There are mechanisms to set up a Jack application:
+    </p>
+      <ul>
+	<li>
+	  Open a  connection to a Jack server: <code>jack_client_open</code>
+	</li>
+	<li>
+	  Examine the status of the connection and bail out if
+	  needed
+	</li>
+	<li>
+	  Install a process callback handler to manage I/O:
+	  <code>jack_set_process_callback</code>
+ 	</li>
+	<li>
+	  Install a shutdown callback: <code>jack_on_shutdown</code>
+	</li>
+	<li>
+	  Register input and output ports
+	  with the Jack server: <code>jack_port_register</code>.
+	  Note that each port only carries a mono channel,
+	  so for stereo you will get two input ports, etc.
+	  This does <em>not</em> as yet link them to the 
+	  pipelines
+	</li>
+	<li>
+	  Activate the ports i.e. tell Jack to start its processing
+	  thread:
+	  <code>jack_activate</code>
+	</li>
+	<li>
+	  Connect the ports to the pipelines:
+	  <code>jack_connect</code>
+	</li>
+	<li>
+	  Sit there in some way - for a text client just sleep in
+	  a loop. A GUI client might have a GUI processing loop
+	</li>
+      </ul>
+
+
+    <h2> Libraries </h2>
+    <p>
+      The following examples need to be linked to various libraries.
+      So far, they need to be
+    </p>
+      <pre>
+	<code>
+ LIBS = -ljack -ljackserver -lasound -lm -lpthread -lsndfile
+	</code>
+      </pre>
+    
+
+    <h2> Port information </h2>
+    <p>
+      Jack uses ports which carry mono 32-bit data. Each port has a name as a string,
+      and poperties such as input and output.
+      Once a connection to a Jack server has been made, queries for ports known
+      to the server can be made using <code>jack_get_ports</code>.
+      If the arguments are <code>NULL</code> or zero then al ports are
+      returned, or patterns can be used to restrict the port names returned.
+      Once a port name is found it can be turned into a <code>jack_port_t</code>
+      and its properties can be queried. 
+    </p>
+
+  
+    <p>
+      A program to do this is <code>listports.c</code>:
+    </p>
+       <pre class="sh_cpp">
+<!--#exec cmd="/usr/local/bin/escape.pl . listports.c" -->
+      </pre>
+    
+
+    <h2> Copy input to output </h2>
+    <p>
+      The Jack source code distribution has an "example clients"
+      subdirectory. Included in there is a client
+      <code>thru_client.c</code> which just copies
+      input to output. The processing heart of
+      this example is the function <code>process</code>.
+      This takes a number of frames available on
+      both input and output as parameter.
+      This loops through the (stereo) channels,
+      gets corresponding input and output buffers (for
+      input and output pipelines) and copies
+      data from input to corresponding output.
+    </p>
+    <p>
+       The code is
+    </p>
+       <pre class="sh_cpp">
+<!--#exec cmd="/usr/local/bin/escape.pl . thru_client.c" -->
+      </pre>
+
+    <h2> Delaying audio </h2>
+    <p>
+      While this book is not about audio effects, we can easily
+      introduce one effect - latency - by just delaying sounds.
+      Now this - and any time consuming actions - are against
+      the spirit (and implementation!) of Jack, so it can only
+      be done in co-operation with the Jack model.
+    </p>
+
+    <p>
+      The simplest idea is just to throw in <code>sleep</code>
+      commands at the right places. This would assume that
+      calls to the <code>process</code> callback happen
+      asynchronously but they don't - they happen 
+      synchronously within the Jack processing thread.
+      Activities which cost time aren't allowed.
+      If you try it, you will will end up with lots
+      of xruns at best, seizures of Jack at worst.
+    </p>
+
+    <p>
+      In this case the solution is straightforward: keep a buffer
+      in which previous inputs are kept, and read older entries
+      out of this buffer when output is requested. A "big enough"
+      wrap-around array will do this, where old entries are read out
+      and new entries read in.
+    </p>
+
+    <p>
+      The following program <code>delay.c</code> will copy
+      the left channel in real time, but delay the left channel
+      by 4096 samples:
+    </p>
+       <pre class="sh_cpp">
+<!--#exec cmd="/usr/local/bin/escape.pl . delay.c" -->
+      </pre>
+    
+
+    <h2> Audacity with Jack </h2>
+    <p>
+      Audacity is Jack aware. You can use it to capture and display
+      Jack streams. But that doesn't mean that for the user it plays
+      in a <em>nice</em> way! With a running Jack system, starting
+      Audacity registers it with Jack - but there are no input nor
+      output ports. These only show up when you start a record
+      session with Audacity. It then establishes its own links
+      within Jack.
+    </p>
+ 
+    <p>
+      For example, with <code>thru_client</code> as the only client
+      within Jack, <code>qjackctl</code> shows the connections
+      <br/>
+      <img alt="" src="thru.png"/>
+      <br/>
+      In this, the capture devices are connected to the 
+      <code>thru_client</code> inputs, and the   <code>thru_client</code>
+      outputs are connected to the playback outputs.
+    </p>
+
+    <p>
+      Just starting Audacity but not recording anything makes no
+      changes to this connection graph.
+    </p>
+
+    <p>
+      But when Audacity starts recording with 
+      <code>thru_client</code> already running, <code>qjackctl</code>
+      shows the links established as in this figure:
+      <br/>
+      <img alt="" src="audacity-thru.png"/>
+      <br/>
+      This is a lot messier: Audacity shows as Port Audio devices
+      and the capture devices are linked to the Port Audio inputs
+      while the Port Audio outputs are linked to the playback
+      devices.
+      The existing <code>thru_client</code> links are basically
+      discarded.
+      To set up your desired situation,
+      these have to be relinked as needed.
+    </p>
+
+    <p>
+      To demonstrate the effects of delaying one channel, start
+      Jack, start <code>delay</code> and then start Audacity.
+      Relink the ports according to the following
+      <code>qjackctl</code> figure:
+      <br/>
+      <img alt="" src="jack-delay.png">
+      <br/>
+      That is, capture ports are linked to <code>delay</code>
+      input ports, <code>delay</code> output ports are linked
+      to Port Audio (Audacity) input ports and Port Audio
+      output ports are linked to playback ports.
+    </p>
+
+    <p>
+      The waveforms captured by Audacity clearly show the delay
+      on the left channel compared to the right:
+      <br/>
+      <img alt="" src="audacity-delay.png"/>
+    </p>
+
+    <h2> Play a sine wave </h2>
+    <p>
+      The copy example does not show the detail of what is
+      in the buffers: the contents are 
+      <code>jack_default_audio_sample_t</code>'s.
+      What these are is described in the macro
+      <code>JACK_DEFAULT_AUDIO_TYPE</code> with
+      default value "32 bit float mono audio"
+    </p>
+
+    <p>
+      To do anything more than simply pass audio through,
+      you need to handle the data in this format.
+      The example program <code>simple_client.c</code>
+      fills an array with 32-bit floating point sine
+      curve values. On each call to <code>process</code>
+      it copies data from the sine curve array into
+      the output buffers. The increment into the sine
+      curve array is different for left and right channels
+      to give a different note on each channel.
+    </p>
+
+    <p>
+      Note that the calculation of the sine curve array
+      is <em>not</em> done within the <code>process</code>
+      function - that would be too slow and would cause
+      latency.
+    </p>
+
+    <p>
+      The program is 
+    </p>
+       <pre class="sh_cpp">
+<!--#exec cmd="/usr/local/bin/escape.pl . simple_client.c" -->
+      </pre>
+    
+
+    <h2> Saving input to disk </h2>
+    <p>
+      Disk I/O cannot be performed within the Jack processing
+      loop: it is just too slow.
+      To save input to file requires use of a separate thread
+      to manage disk I/O and pass control between the
+      Jack and disk threads.
+    </p>
+
+    <p>
+      The program <code>capture_client.c</code> from the
+      examples does this:
+    </p>
+       <pre class="sh_cpp">
+<!--#exec cmd="/usr/local/bin/escape.pl . capture_client.c" -->
+      </pre>
+    
+
+    <h2> Interacting with ALSA devices </h2>
+    <p>
+      Jack will eventually get its input from, and send its
+      output to, devices. Currently, they are most likely
+      to be ALSA devices. Consequently there must be a bridge
+      between Jack processing and ALSA input and output.
+      This will involve all the complexity of ALSA programming.
+    </p>
+
+    <p>
+      Fortunately there are Jack clients that do this.
+      The Jack framework will talk to these as
+      specified on starting the Jack server
+    </p>
+      <pre>
+	<code>
+jackd -dalsa
+	</code>
+      </pre>
+      so you don't need to worry about that.
+   
+
+    <p>
+      If you do want to worry, the examples directory
+      contains ALSA examples. The program <code>alsa_in.c.ok</code>
+      brings an ALSA input device into the Jack world
+    </p>
+      <pre class="sh_cpp">
+<!--#exec cmd="/usr/local/bin/escape.pl . alsa_in.c.ok" -->
+      </pre>
+    
+
+    <h2> Conclusion </h2>
+    <p>
+      This chapter has considered using Jack from a user
+      viewpoint and also looked at programming Jack
+      clients.
+    </p>
+      
+
+<!--#exec cmd="/usr/local/bin/dataprogram.pl . a.c" -->
+
+
+<hr/>
+ <!--#include virtual="../../footer.html" -->
+
+  </body>
+</html>

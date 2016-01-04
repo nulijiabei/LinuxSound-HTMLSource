@@ -1,0 +1,5 @@
+#!/bin/bash
+set -x
+VLC_OPTS="--play-and-exit -f"
+
+java -jar SongTable.jar $1| Table/client 192.168.1.110

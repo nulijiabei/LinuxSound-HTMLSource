@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title> Programming and Using Linux Sound</title>
+    <link rel="stylesheet" type="text/css" href="contents-stylesheet.css" />
+    <meta name="keywords" content="book, ebook, tutorial, linux, audio, ALSA, PulseAudio, Jack, Java Sound, GStreamer, MIDI, FluidSynth, Timidity, HTML5, Icecast, DLNA, Android, Raspberry Pi, OpenMAX, OpenSL" />
+    
+  </head>
+  <body>
+    <div class="center">
+    <h1> Programming and Using Linux Sound -  in depth</h1>
+    <h2> Version 1.02, 4 January, 2016</h2>
+    <h2> <a href="http://jan.newmarch.name"> Jan Newmarch </a>, 
+      <a href="mailto:jan@newmarch.name"> jan.newmarch.name </a>
+    </h2>
+    <h3>
+      Academic Course Manager (ICT),
+      <a href="http://www.boxhill.edu.au"> Box Hill Institute</a>
+      <br/>
+      <!--
+      Adjunct Senior Research Fellow, Faculty of IT,
+      <a href="http://www.monash.edu"> Monash University</a>
+      <br/>
+      -->
+	Adjunct Professor,
+	<a href="http://www.canberra.edu.au"> University of Canberra </a>
+	<br/>
+      Adjunct Lecturer, School of Computing and Mathematics
+      <a href="http://www.csu.edu.au/"> Charles Sturt University </a>
+    </h3>
+    </div>
+
+<!--
+<a href="http://www.wholinks2me.com/" title="Click here to see who's linking to my site."><img src="http://www.wholinks2me.com/images/code.png" style="border:0px;" alt="Who links to my website?"></a> 
+-->
+
+    <p>
+      The book is now available on
+      <a href="https://www.gitbook.com/book/jannewmarch/programming-and-using-linux-sound-systems/details">
+	Gitbook </a>
+      using Markdown format.
+      It mirrors the content of this site
+      but gives you alternative ways of viewing and
+      printing it.
+    </p>
+
+    <p>
+      If a chapter is labelled "minimal" then there isn't much content there
+      now, but may be later.</em>
+    </p>
+
+    <h2> Contents </h2>
+    <ol>
+      <h3> Introduction </h3>
+      <p>
+	See below
+      </p>
+      <h3> PART 1: SAMPLED AUDIO </h3>
+      <li>
+	<!--#exec cmd="/usr/local/bin/h2.pl Sampled/Basic/ 'Basic concepts of  digital sound' '(last modified v0.9)'"-->
+      </li>
+      <li>
+	<!--#exec cmd="/usr/local/bin/h2.pl Sampled/User/ 'User level sound tools' '(minimal)  (last modified v0.1)'"-->
+      </li>
+      <li>
+	<!--#exec cmd="/usr/local/bin/h2.pl Sampled/Codecs/ 'Sound codecs and file formats' '(minimal)  (last modified v0.12)'"-->
+
+      </li>
+      <li>
+	<!--#exec cmd="/usr/local/bin/h2.pl Sampled/Architecture/ 'Overview of Linux sound architecture'  '(last modified v0.9)'"-->
+      </li>
+      <li>
+	<!--#exec cmd="/usr/local/bin/h2.pl Sampled/Alsa/ 'ALSA' '(last modified v0.9)'" -->
+      </li>
+      <li>
+	<!--#exec cmd="/usr/local/bin/h2.pl Sampled/PulseAudio/ 'Pulse Audio' '(last modified v0.10)'"-->
+      </li>
+      <li>
+	<!--#exec cmd="/usr/local/bin/h2.pl Sampled/Jack/ Jack  '(last modified v0.18)'"-->
+      </li>
+      <li>
+	<!--#exec cmd="/usr/local/bin/h2.pl Sampled/SessionManagement/ 'Session Management'  '(last modified v0.22)'"-->
+      </li>
+      <li>
+	<!--#exec cmd="/usr/local/bin/h2.pl Sampled/JavaSound/ 'Java Sound' '(last modified v0.19)'"-->
+      </li>
+      <li>
+	<!--#exec cmd="/usr/local/bin/h2.pl Sampled/GStreamer/ GStreamer '(minimal) (last modified v0.5)'"-->
+      </li>
+      <li>
+	<!--#exec cmd="/usr/local/bin/h2.pl Sampled/libao/ libao '(last modified v0.9)'"-->
+      </li>
+      <li>
+	<!--#exec cmd="/usr/local/bin/h2.pl Sampled/FFmpeg/ FFmpeg '(last modified v0.9)'"-->
+      </li>
+      <li>
+	<!--#exec cmd="/usr/local/bin/h2.pl Sampled/OpenMAX/ 'OpenMAX and OpenSL' '(last modified v0.8)'"-->
+      </li>
+
+   <h3> PART 2: DIGITAL SIGNAL PROCESSING </h3>
+      <li>
+	<!--#exec cmd="/usr/local/bin/h2.pl DSP/LADSPA/ LADSPA '(last modified v0.20)'"-->
+      </li>
+     
+   <h3> PART 3: DIVERSIONS </h3>
+      <p>
+	Any chapters in here are nothing to do with sound,
+	but may be useful in applications which use sound.
+      </p>
+      <li>
+	<!--#exec cmd="/usr/local/bin/h2.pl Diversions/Gtk/ 'Displaying video with overlays using Gtk and FFMpeg' '(last modified v0.14)'"-->
+      </li>
+      <li>
+	<!--#exec cmd="/usr/local/bin/h2.pl Diversions/RaspberryPiOpenGL/ 'Using the Raspberry Pi GPU with OpenGL' '(last modified v1.02)'"-->
+      </li>
+      <li>
+	<!--#exec cmd="/usr/local/bin/h2.pl Diversions/RaspberryPiOpenMAX/ 'Using the Raspberry Pi GPU	 with OpenMAX' '(last modified v1.02)'"-->
+      </li>
+
+
+    <h3> PART 4: MIDI </h3>
+
+      <li>
+	<!--#exec cmd="/usr/local/bin/h2.pl MIDI/MIDI/ MIDI  '(minimal)  (last modified v0.3)'"-->
+
+      </li>
+      <li>
+	<!--#exec cmd="/usr/local/bin/h2.pl MIDI/User/ 'User level MIDI tools' '(minimal)  (last modified v0.13)'"-->
+      </li>
+      <li>
+	<!--#exec cmd="/usr/local/bin/h2.pl MIDI/JavaSound/ JavaSound '(last modified v0.3)'"-->
+      </li>
+
+      <li>
+	<!--#exec cmd="/usr/local/bin/h2.pl MIDI/Alsa/ ALSA  '(last modified v0.6)'"-->
+      </li>
+
+      <li>
+	<!--#exec cmd="/usr/local/bin/h2.pl MIDI/GStreamer/  GStreamer  '(minimal) (last modified v0.5)'"-->
+      </li>
+
+    <div class="disable">
+    </div>
+      <li>
+	<!--#exec cmd="/usr/local/bin/h2.pl MIDI/FluidSynth/ FluidSynth  ' (minimal) (last modified v0.6)'"-->
+      </li>
+      <li>
+	<!--#exec cmd="/usr/local/bin/h2.pl MIDI/Timidity/ Timidity  '(last modified v0.16)'"-->
+      </li>
+
+
+    <h3> PART 5: KARAOKE </h3>
+      <li>
+	<!--#exec cmd="/usr/local/bin/h2.pl Karaoke/Overview/ Overview '(last modified v0.16)'"-->
+      </li>
+      <li>
+	<!--#exec cmd="/usr/local/bin/h2.pl Karaoke/User/ 'User Level Tools'  '(last modified v0.11)'"-->
+      </li>
+
+<!--
+      <li>
+	<!--#exec cmd="/usr/local/bin/h2.pl Karaoke/XBMC/  XBMC  '(last modified v-1.4)'"-->
+
+      </li>
+-->
+
+      <li>
+	<!--#exec cmd="/usr/local/bin/h2.pl Karaoke/MP3+G/ 'Playing MP3+G files' '(last modified v0.19)'"-->
+      </li>
+      <li>
+	<!--#exec cmd="/usr/local/bin/h2.pl Karaoke/Sonken/ 'Decoding the DKD files on the Sonken Karaoke DVD'   '(last modified v0.19)'"-->
+
+      </li>
+
+      <li>
+	<!--#exec cmd="/usr/local/bin/h2.pl Karaoke/Malata/ 'Decoding the DKD files on the Malata Karaoke DVD'   '(last modified v1.01)'"-->
+
+      </li>
+
+      <li>
+	<!--#exec cmd="/usr/local/bin/h2.pl Karaoke/JavaSound/ JavaSound 	'(last modified 0.4)'"-->
+
+      </li>
+
+      <li>
+	<!--#exec cmd="/usr/local/bin/h2.pl Karaoke/Subtitles/ Subtitles '(last modified v0.12)'"-->
+      </li>
+      <li>
+	<!--#exec cmd="/usr/local/bin/h2.pl Karaoke/FluidSynth/ FluidSynth  ' (last modified v0.15)'"-->
+      </li>
+      <li>
+	<!--#exec cmd="/usr/local/bin/h2.pl Karaoke/Timidity/ Timidity  '(last modified v1.0)'"-->
+      <li>
+	<!--#exec cmd="/usr/local/bin/h2.pl Karaoke/Jack/ Jack  '(last modified v1.0)'"-->
+      </li>
+
+    <h3> PART 6: STREAMING AUDIO </h3>
+      <li>
+	<!--#exec cmd="/usr/local/bin/h2.pl Streaming/HTTP/ HTTP  '(minimal) (last modified v0.5)'"-->
+      </li>
+      <li>
+	<!--#exec cmd="/usr/local/bin/h2.pl Streaming/Icecast/ Icecast  '(minimal) (last modified v0.5)'"-->
+      </li>
+      <li>
+	<!--#exec cmd="/usr/local/bin/h2.pl Streaming/DLNA/ DLNA  '(minimal) (last modified v0.5)'"->
+      </li>
+      <li>
+	<!--#exec cmd="/usr/local/bin/h2.pl Streaming/HTML5/ 'HTML 5' '(minimal) (last modified v0.6)'"-->
+      </li>
+      <li>
+	<!--#exec cmd="/usr/local/bin/h2.pl Streaming/Flumotion/ Flumotion  ' (minimal) (last modified v0.11)'"-->
+      </li>
+
+    <h3> PART 7: MISCELLANEOUS </h3>
+
+      <li>
+	<!--#exec cmd="/usr/local/bin/h2.pl Miscellaneous/Android/ Android '(last modified v0.7)'"-->
+
+      </li>
+      <li>
+	<!--#exec cmd="/usr/local/bin/h2.pl Miscellaneous/RaspberryPi/ 'Raspberry Pi' '(last modified v0.11)'"-->
+      </li>
+
+    <h3> PART 8: CONCLUSION </h3>
+
+      <li>
+	<!--#exec cmd="/usr/local/bin/h2.pl Conclusion/Conclusion/ Conclusion '(last modified v1.0)'"-->
+
+      </li>
+
+    </ol>
+
+
+
+
+    <h2> Introduction</h2>    
+    <p>
+      Linux is a major operating system that can not only do what
+      every other operating system can do, but can also do a lot more.
+      But because of its size and complexity it can be hard to learn
+      how to do any particular task. This is reinforced by its development
+      model: <em>anyone</em> can develop new components, and indeed Linux
+      relies on a huge army of paid and unpaid volunteers to do just that.
+      But that can lead to confusion: if two methods are developed for
+      one task, which one should be chosen? or more subtly, what are the
+      distinguishing features of one solution that make it more appropriate
+      for <em>your </em> problem?
+    </p>
+
+    <p>
+      The Linux sound system is a major example of this: there is a large
+      variety of tools and approaches for almost every aspect of sound.
+      This ranges from audio codecs, to audio players, to audio support
+      both within and outside of the Linux kernel.
+    </p>
+
+    <p>
+      I've been using Linux since kernel 0.99. I'm not a kernel hacker,
+      more of a user and a programmer at the application layer. But I've
+      always got lost whenever I want to do something complex involving Linux
+      sound. So I've decided out of sheer bravado to try to describe
+      the range of solutions to Linux sound issues. Of course, I'm way
+      out of my depth, but that makes it a challenge, not a hindrance!
+    </p>
+
+    <p>
+      I'm going to rely on the people who really know what they
+      are doing. So rather than re-invent everything from scratch
+      I'm going to borrow the words of experts whenever I can.
+      But the responsibility will still be mine, so
+      please forgive and correct all the errors that I will make...
+    </p>
+
+    <h2> Acknowledgements </h2>
+    <p>
+      I have used the following in these pages
+      <ul>
+	<li>
+	  <a href="http://shjs.sourceforge.net/">SHJS</a> - 
+	  Syntax Highlighting in JavaScript to highlight programs
+	</li>
+	<li>
+	  <a href="http://www.kryogenix.org/code/browser/generated-toc/">
+	    Generated tables of contents
+	  </a> by Stuart Langridge
+	</li>
+	<li>
+	  <a href="http://stackoverflow.com/questions/5950395/makefile-to-compile-multiple-c-programs">
+	    A Generic Makefile for Building Multiple main() Targets in $PWD
+	  </a> by Robert A Nader
+	</li>
+      </ul>
+    </p>
+
+<hr/>
+<p> 
+
+    <!--#include virtual="footer.html" -->
+
+<hr/>
+    <h2> CHANGES </h2>
+    <ul>
+      <li>
+	In v1.02
+	<ul>
+	  <li>
+		Added chapters on using GPU on Raspberry Pi
+          </li>
+	  <li>
+	    Added sections on using different synthesizers under
+	    JavaSound
+	  </li>
+	  <li>
+	    Added section on Alsa raw MIDI devices to Alsa
+	    MIDI chapter.
+	  </li>
+	  <li>
+	    Converted to Markdown format and hosted on Gitbook
+	  </li>
+        </ul>
+      </li>
+      <li>
+	In v1.01
+	<ul>
+	  <li>
+		Added chapter on decoding Malata
+          </li>
+        </ul>
+      </li>
+      <li>
+	In v1.00
+	<ul>
+	  <li>
+	    Added section on jack_connect to session management
+	  </li>
+	  <li>
+	    Added basic karaoke display interface to TiMidity
+	  </li>
+	</ul>
+      </li>
+ 
+      <li>
+	In v0.22
+	<ul>
+	  <li>
+	    Added chapter on Jack with Karaoke
+	  </li>
+	</ul>
+      </li>
+      <li>
+	In v0.20
+	<ul>
+	  <li>
+	    Added examples of LADSPA clients to LADSPA chapter
+	  </li>
+	</ul>
+      </li>
+    
+      <li>
+	In v0.19
+	<ul>
+	  <li>
+	    Added material showing links from JavaSound to underlying sound system
+	  </li>
+	  <li>
+	    Added section on Sonken disk for playing the files using
+	    PyKaraoke
+	  </li>
+	  <li>
+	    Added chapter on playing MP3+G files
+	  </li>
+      </ul>
+     <li>
+        In v0.18
+        <ul>
+          <li>
+	    Added examples to Jack Sampled chapter
+	  </li>
+	  <li>
+	    Added chapter on LADSPA
+	  </li>
+	  <li>
+	    Added chapter on (Jack) session managment
+	</ul>
+     </li>
+     <li>
+        In v0.17
+        <ul>
+          <li>
+	    Revised chapter on TiMidity Karaoke to include using an
+	    interface
+	  </li>
+          <li>
+	    Expanded the Jack chapter to include the progamming
+	    model and sample programs
+	  </li>
+	</ul> 
+     </li>
+     <li>
+        In v0.16
+        <ul>
+          <li>
+             Added Overview chapter to Karaoke
+          </li>
+          <li>
+ 	     Added section on building interfaces to TiMidity chapter          
+          </li>
+     <li>
+        In v0.15
+        <ul>
+          <li>
+            Added chapter on FluidSynth as a Karaoke player
+          </li>
+          <li>
+            Added chapter on TiMidity as a Karaoke player
+          </li>
+        </ul>
+      </li>
+ 
+      <li>
+	In v0.14
+	<ul>
+	  <li>
+	    Added chapter on Gtk, and new part "Diversions" to hold it
+	  </li>
+	</ul>
+      </li>
+      <li>
+	In v0.13
+	<ul>
+	  <li>
+	    Added stuff to MIDI user tools
+	  </li>
+	  <li>
+	    Added chapter on programming with Timidity
+	  </li>
+	</ul>
+      </li>
+      <li>
+	In v0.12
+	<ul>
+	  <li>
+	    Section on Matroska container format added to Codecs
+	  </li>
+	  <li>
+	    Chapter on Subtitles added to Karaoke section
+	  </li>
+      </ul>
+      </li>
+      <li>
+	In v0.11
+	<ul>
+	  <li>
+	   New (stub) chapter on Flumotion
+	   (thanks to David Marceau, uticdmarceau2007 at yahoo.ca)
+	  </li>
+	  <li>
+	   Updated Raspberry Pi
+	  </li>
+	  <li>
+	   Updated Karaoke user level
+	  </li>
+	</ul>
+      </li>
+      <li>
+	In v0.10
+	<ul>
+	  <li>
+	    Many updates to the chapter on PulseAudio to include volume control, mixing
+	    and application clients
+	  </li>
+	</ul>
+      </li>
+      <li>
+	In v0.9
+	<ul>
+	  <li>
+	    Updated chapter on Architecture
+	  </li>
+	  <li>
+	    Updated chapter on Basic concepts
+	  </li>
+	  <li>
+	    Section on mixing added to ALSA
+	  </li>
+	  <li>
+	    Chapter on libao added
+	  </li>
+	  <li>
+	    Chapter on FFmpeg added
+	  </li>
+	</ul>
+      </li>
+      <li>
+	In v0.8
+	<ul>
+	  <li>
+	    Added more stuff on ALSA to Raspberry Pi chapter
+	  </li>
+	  <li>
+	    Added more on OpenMAX IL to the OpenMAX chapter
+	  </li>
+	  <li>
+	    Added in the LIM implementation of OpenMAX IL
+	  </li>
+	  <li>
+	    Started changing the program listing colouring to
+	    SHJS JavaScript rather than my old Perl program
+	    (which could only cope with my programming style)
+	</ul>
+      </li>
+      <li>
+	In v0.7
+	<ul>
+	  <li>
+	    New chapter on OpenMAX AL, OpenMAX IL and OpenSL ES as used in the
+	    Raspberry Pi and on Android
+	  </li>
+	</ul>
+      </li>
+
+      <li>
+	In v0.6
+	<ul>
+	  <li>
+	    Update to Timidity as a MIDI sequencer server.
+	  </li>
+	  <li>
+	    New chapter on FluidSynth
+	  </li>
+	  <li>
+	    Updated Raspberry Pi 
+	  </li>
+	  <li>
+	    Updated Android
+	  </li>
+	</ul>
+      </li>
+
+      <li>
+	In v0.5
+	<ul>
+	  <li>
+	    Chapters on streaming audio, the beginning of one on Android
+	    and one on the Raspberry Pi.
+	  </li>
+	</ul>
+      </li>
+
+      <li>
+	In v0.4
+	<ul>
+	  <li>
+	    Chapters on Karaoke added
+	  </li>
+      </ul>
+      </li>
+      <li>
+	In v0.3
+	<ul>
+	  <li>
+	    Added chapter on MIDI overview - pointers to other stuff for now
+	  </li>
+	  <li>
+	    Added chapter on JavaSound MIDI API
+	  </li>
+	  <li>
+	    Added minimal chapter on MIDI user tools
+	  </li>
+	</ul>
+      </li>
+
+      <li>
+	In v0.2
+	<ul>
+	  <li>
+	    ALSA playback of captured audio finally works after hours
+	    figuring out what the undocumented stuff does :-(
+	  </li>
+	</ul>
+      </li>
+    </ul>
+
+  </body>
+</html>

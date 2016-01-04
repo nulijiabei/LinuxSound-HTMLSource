@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="../../stylesheet.css" />
+
+    <title>User level sound tools for Linux </title>
+
+    <style type="text/css">
+        body { counter-reset: chapter 2; }
+    </style>
+
+    <script type="text/javascript" src="../../toc.js"> 
+      /* empty */
+   </script>
+
+   <script type="text/javascript">
+/* <![CDATA[ */
+    (function() {
+        var s = document.createElement("script"), t = document.getElementsByTagName("script")[0];
+        s.type = "text/javascript";
+        s.async = true;
+        s.src = "http://api.flattr.com/js/0.6/load.js?mode=auto";
+        t.parentNode.insertBefore(s, t);
+    })();
+/* ]]> */
+    </script>
+
+
+  </head>
+  <body>
+
+    <!--#include virtual="../../header.html" -->
+
+
+
+    <div class="chapter">
+        <h1> User level tools </h1>
+    </div>
+
+    <div id="generated-toc" class="generate_from_h2"></div>
+
+    <div class="preface">
+      <p>
+	This chapter looks at the user-level tools that are typical
+	under  a Linux system, including players, various sound
+	manipulation tools and editors.
+      </p>
+    </div>
+
+    <h2> Players </h2>
+
+    <h3> Mplayer </h3>
+    <p>
+      I think mplayer is fantastic and probably use it more than any other player.
+      I usually run it from the command line but there are GUI versions available.
+      It will play almost any media type, video as well as audio. I use it for
+      both.
+    </p>
+
+    <p>
+      The man page for mplayer is
+      <a href="http://www.mplayerhq.hu/DOCS/man/en/mplayer.1.html">
+	MPlayer
+      </a>
+      and the reference page is
+      <a href="http://www.mplayerhq.hu/DOCS/HTML/en/index.html">
+	MPlayer - The Movie Player
+      </a>
+    </p>
+
+    <h3> VLC </h3>
+    <p>
+      VLC is my second favourite.
+    </p>
+
+    <p>
+      Its main page is 
+      <a href="http://www.videolan.org/vlc/index.html">
+	VideoLAN
+      </a>
+      and some documentation is at
+      <a href="http://wiki.videolan.org/Documentation:Documentation">
+	Welcome to VideoLAN's Documentation
+      </a>
+    </p>
+
+    <h3> Totem </h3>
+  
+    <p>
+      Very commonly used
+    </p>
+  
+
+    <h2> Sound tools </h2>
+
+    <h3> sox </h3>
+    <p>
+      SoX is the Swiss Army knife of sound processing programs. 
+    </p>
+
+    <p>
+      Its home page is 
+      <a href="http://sox.sourceforge.net/">
+	SoX - Sound eXchange
+      </a>
+    </p>
+
+    <h3> FFmpeg/avconv </h3>
+    <p>
+      ffmpeg is generally used as a converter from one format to another.
+      There is a nice series of tutorials at
+      <a href="http://linuxers.org/tutorial/ffmpeg-tutorial-beginners">
+	A FFmpeg Tutorial For Beginners
+      </a> by shredder12
+    </p>
+
+    <p>
+      It can also be used to record from ALSA devices such as hw:0 or the default device.
+      Recording from hw:0 can be done by
+    </p>
+      <pre>
+	<code>
+ffmpeg -f alsa -i hw:0 test.mp3
+	</code>
+      </pre>
+    <p>
+      and from the default ALSA input by
+    </p>
+      <pre>
+	<code>
+ffmpeg -f alsa -i default test.mp3
+	</code>
+      </pre>
+
+    <p>
+      There was a fork some years ago of ffmpeg to give avconv.
+      avconv is the default on Ubuntu systems. There are
+      some differences between the two, not enough to
+      justify the nuisance factor to us users.
+    </p>
+
+
+
+
+    <h3> GStreamer </h3>
+    <p>
+      GStreamer allows you to build "pipelines" that can be played using
+      <code>gst-launch</code>.
+      For example, to play an MP3 file using ALSA you would have the pipeline
+    </p>
+      <pre>
+	<code>
+gst-launch filesrc location="concept.mp3" ! decodebin ! alsasink
+	</code>
+      </pre>
+
+    <p>
+      The pipelines can do more complex tasks such as format conversion, mixing, etc.
+      A tutorial is
+      <a href="http://www.ibm.com/developerworks/aix/library/au-gstreamer.html?ca=dgr-lnxw07GStreamer">
+	Multipurpose multimedia processing with GStreamer
+      </a> by Maciej Katafiasz
+    </p>
+
+    <p>
+      It can also play MIDI files by e.g.
+    </p>
+      <pre>
+	<code>
+gst-launch filesrc location="rehab.mid" ! decodebin ! alsasink
+	</code>
+      </pre>
+
+    <h2> Recorders, editors, etc </h2>
+
+    <h3> Audacity </h3>
+    <p>
+      "Audacity is a free, easy-to-use and multilingual audio editor and recorder 
+      for Windows, Mac OS X, GNU/Linux and other operating systems"
+      This is a fantastic tool and well worth using.
+    </p>
+ 
+    <p>
+      Its home page is
+      <a href="http://audacity.sourceforge.net">
+	Audacity
+      </a>
+    </p>
+
+    <h2> Conclusion </h2>
+    <p>
+      This short chapter has looked at some of the user level
+      tools available under Linux. While we have listed several 
+      of the major tools, a casual search will turn up far more.
+    </p>
+
+<hr/>
+ <!--#include virtual="../../footer.html" -->
+
+  </body>
+</html>

@@ -1,0 +1,1641 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title> ALSA </title>
+    <link rel="stylesheet" type="text/css" href="../../stylesheet.css" />
+
+    <style type="text/css">
+        body { counter-reset: chapter 5; }
+    </style>
+
+    <script type="text/javascript" src="../../toc.js"> 
+      /* empty */
+   </script>
+
+   <script type="text/javascript">
+/* <![CDATA[ */
+    (function() {
+        var s = document.createElement("script"), t = document.getElementsByTagName("script")[0];
+        s.type = "text/javascript";
+        s.async = true;
+        s.src = "http://api.flattr.com/js/0.6/load.js?mode=auto";
+        t.parentNode.insertBefore(s, t);
+    })();
+/* ]]> */
+    </script>
+
+   <link rel="stylesheet" type="text/css" href="../../js/doc/style.css">
+   <!-- <link rel="stylesheet" type="text/css" href="../../js/css/sh_emacs.css"> -->
+   <link rel="stylesheet" type="text/css" href="../../js/sh_style.css">
+   <script type="text/javascript" src="../../js/sh_main.min.js"></script>
+   <script type="text/javascript" src="../../js/lang/sh_cpp.min.js"></script>
+   
+
+  </head>
+  <body onload="sh_highlightDocument();">
+
+    <!--#include virtual="../../header.html" -->
+
+
+    <div class="chapter">
+      <h1> ALSA </h1>
+    </div>
+
+   <div id="generated-toc" class="generate_from_h2"></div>
+
+    <div class="preface">
+    
+    <p>
+      ALSA is a low-level interface to the sound cards. If you are building your
+      own sound server system, or writing device drivers, then you would be 
+      interested in ALSA. 
+      It sits at the bottom of most of the current Linux systems so to understand
+      them you may need to understand aspects of ALSA.
+      Otherwise, you are probably not interested so should move on.
+    </p>
+    </div>
+
+    <h2> Resources </h2>
+
+    <ul>
+      <li>
+	<a href="http://www.linuxjournal.com/article/6735?page=0,1">
+	  Introduction to Sound Programming with ALSA
+	</a> by Jeff Tranter
+      </li>
+      <li>
+	<a href="http://www.volkerschatz.com/noise/alsa.html">
+	  A close look at ALSA
+	</a> by Volker Schatz
+      </li>
+      <li>
+	<a href="http://www.alsa-project.org/alsa-doc/alsa-lib/">
+	  ALSA API
+	</a>
+      </li>
+      <li>
+	<a href="http://www.suse.de/~mana/alsa090_howto.html">
+	  ALSA Programming HOWTO
+	</a> by Matthias Nagorni
+      </li>
+      <li>
+	<a href="http://techpatterns.com/forums/about1813.html">
+	  Linux sound HOWTO for ALSA users
+	</a> from Tech Patterns
+    </ul>
+
+    <h2> User space tools </h2>
+
+    <h3> alsamixer </h3> 
+    <p>
+      <code>alsamixer</code> runs within a terminal window and allows
+      you to select sound cards and controls interfaces on those cards.
+      It looks like
+      <img src="alsamixer.png" alt="ALSA mixer"/>
+    </p>
+
+    <p>
+      <code>amixer</code> is a command line applications with similar functions.
+    </p>
+
+    <p>
+      Compared to the general mixer functions described in
+      <a href="../Basic/">
+	 the Basic chapter
+      </a>, the mixer functions are quite limited:
+    </p>
+      <ul>
+	<li>
+	  Setting the playback and capture volumes on output and input channels
+	</li>
+	<li>
+	  Muting or unmuting a card
+	</li>
+      </ul>
+    <p>
+      The document
+      <a href="http://blog.scphillips.com/2013/01/sound-configuration-on-raspberry-pi-with-alsa/">
+	Sound configuration on Raspberry Pi with ALSA
+      </a> by Stephen C Phillips
+      is applicable
+      to all other ALSA systems and not just the Raspberry Pi.
+    </p>
+
+
+    <h3> alsactl </h3>
+    <p>
+      Simple control programs for ALSA configurations.
+    </p>
+
+    <h3> speaker-test </h3>
+    <p>
+      This command allows you to test which outputs go where. 
+      For e.g. 5 channel sound, running
+    </p>
+      <pre>
+	<code>
+speaker-test -t wav -c 5
+	</code>
+      </pre>
+    <p>
+      will produce on my default sound card the text and audio of
+    </p>
+      <pre>
+	<code>
+speaker-test 1.0.25
+
+Playback device is default
+Stream parameters are 48000Hz, S16_LE, 5 channels
+WAV file(s)
+Rate set to 48000Hz (requested 48000Hz)
+Buffer size range from 39 to 419430
+Period size range from 12 to 139810
+Using max buffer size 419428
+Periods = 4
+was set period_size = 104857
+was set buffer_size = 419428
+ 0 - Front Left
+ 1 - Front Right
+ 2 - Rear Left
+ 3 - Rear Right
+ 4 - Center
+Time per period = 12.948378
+	</code>
+      </pre>
+    <p>
+      It will also play the phrases "Front Left" etc to the relevant spekaer.
+    </p>
+
+
+    <h3> aplay/arecord </h3>
+    <p>
+      Play a file or record to a file. To play the microphone to the speaker,
+    </p>
+      <pre>
+	<code>
+arecord -r 44100 --buffer-size=128 | aplay --buffer-size=128
+	</code>
+      </pre>
+    <p>
+     or to record it to file
+    </p>
+<pre>
+<code>
+	arecord -f dat -d 20 -D hw:0,0 test.wav
+</code>
+</pre>	
+<p>
+will record a 20-second WAV file at DAT quality on your first available soundcard (hw:0,0). DAT quality is defined as stereo digital audio recorded with a 48 kHz samping rate and 16-bit resolution. 
+    </p>
+
+    <h3> Identifying ALSA cards </h3>
+    <p>
+      The simplest ways are to run <code>aplay</code> and
+      <code>arecord</code> with the '-l' option:
+      </p> <ul>
+	<li>
+	  <code>arecord -l</code>
+	  <pre>
+	    <code>
+**** List of CAPTURE Hardware Devices ****
+card 0: PCH [HDA Intel PCH], device 0: STAC92xx Analog [STAC92xx Analog]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+card 2: Pro [SB X-Fi Surround 5.1 Pro], device 0: USB Audio [USB Audio]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+	    </code>
+	  </pre>
+	</li>	
+	<li>
+	  <code>aplay -l</code>
+	  <pre>
+	    <code>
+**** List of PLAYBACK Hardware Devices ****
+card 0: PCH [HDA Intel PCH], device 0: STAC92xx Analog [STAC92xx Analog]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+card 1: NVidia [HDA NVidia], device 3: HDMI 0 [HDMI 0]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+card 1: NVidia [HDA NVidia], device 7: HDMI 1 [HDMI 1]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+card 1: NVidia [HDA NVidia], device 8: HDMI 2 [HDMI 2]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+card 2: Pro [SB X-Fi Surround 5.1 Pro], device 0: USB Audio [USB Audio]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+card 2: Pro [SB X-Fi Surround 5.1 Pro], device 1: USB Audio [USB Audio #1]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+	    </code>
+	  </pre>
+	</li>
+      </ul> <p>
+
+
+    </p>
+
+    <h3> Device names </h3>
+    <p>
+      The cards are often given names such as "hw:0" or "hw:2.2"
+      in programs such as <code>qjackctl</code> (see the chapter on Jack).
+      The term "hw" refers to hardware devices. The major number refers to the
+      card number, the minor number to the device number.
+      The <em>name</em> of the device is in [...] brackets.
+    </p>
+
+
+    <p>
+      Devices may also be known by <em>aliases</em>.
+      The command <code>aplay -L</code> lists <em>device aliases</em>.
+      For example, the "hdmi" alias is defined on my system in
+      the configuration file <code> /etc/asound.conf</code>
+      </p> <pre>
+	<code>
+pcm.hdmi0 {
+        type hw
+        card 1
+        device 3 }
+
+pcm.hdmi1 {
+        type hw
+        card 1
+        device 7 }
+
+pcm.hdmi2 {
+        type hw
+        card 1
+        device 8 }
+	</code>
+      </pre> <p>
+      so that "hdmi:0" is really "hw:1,3": card 1, device 3.
+    </p>
+
+    <p>
+      Other aliases may be defined to cover a range of devices, parameterised by
+      card and device. For example,
+      <code>/usr/share/alsa/pcm/surround40.conf</code> defines
+      </p> <pre>
+	<code>
+pcm.!surround40 {
+        @args [ CARD DEV ]
+        @args.CARD {
+                type string
+                default {
+                        @func getenv
+                        vars [
+                                ALSA_SURROUND40_CARD
+                                ALSA_PCM_CARD
+                                ALSA_CARD
+                        ]
+                        default {
+                                @func refer
+                                name defaults.pcm.surround40.card
+                        }
+                }
+        }
+        @args.DEV {
+                type integer
+                default {
+                        @func igetenv
+                        vars [
+                                ALSA_SURROUND40_DEVICE
+                        ]
+                        default {
+                                @func refer
+                                name defaults.pcm.surround40.device
+                        }
+                }
+        }
+        ...
+}
+	</code>
+      </pre> <p>
+      This defines for example "surround40:CARD=PCH,DEV=0" as an alias for hw:0,0
+      on my system (PCH is card 0).
+    </p>
+
+    <p>
+      I don't know an easy programmatic way to go from "card 1, device 3" to "hdmi:0".
+    </p>
+
+    <p>
+      The set of aliases can be shown using <code>aplay</code> and <code>arecord</code>:
+      </p> <ul>
+	<li>
+	  The output from <code>aplay -L</code> on my system is
+      <pre>
+	<code>
+default
+    Default
+sysdefault:CARD=PCH
+    HDA Intel PCH, STAC92xx Analog
+    Default Audio Device
+front:CARD=PCH,DEV=0
+    HDA Intel PCH, STAC92xx Analog
+    Front speakers
+surround40:CARD=PCH,DEV=0
+    HDA Intel PCH, STAC92xx Analog
+    4.0 Surround output to Front and Rear speakers
+surround41:CARD=PCH,DEV=0
+    HDA Intel PCH, STAC92xx Analog
+    4.1 Surround output to Front, Rear and Subwoofer speakers
+surround50:CARD=PCH,DEV=0
+    HDA Intel PCH, STAC92xx Analog
+    5.0 Surround output to Front, Center and Rear speakers
+surround51:CARD=PCH,DEV=0
+    HDA Intel PCH, STAC92xx Analog
+    5.1 Surround output to Front, Center, Rear and Subwoofer speakers
+surround71:CARD=PCH,DEV=0
+    HDA Intel PCH, STAC92xx Analog
+    7.1 Surround output to Front, Center, Side, Rear and Woofer speakers
+hdmi:CARD=NVidia,DEV=0
+    HDA NVidia, HDMI 0
+    HDMI Audio Output
+hdmi:CARD=NVidia,DEV=1
+    HDA NVidia, HDMI 1
+    HDMI Audio Output
+hdmi:CARD=NVidia,DEV=2
+    HDA NVidia, HDMI 2
+    HDMI Audio Output
+sysdefault:CARD=Pro
+    SB X-Fi Surround 5.1 Pro, USB Audio
+    Default Audio Device
+front:CARD=Pro,DEV=0
+    SB X-Fi Surround 5.1 Pro, USB Audio
+    Front speakers
+surround40:CARD=Pro,DEV=0
+    SB X-Fi Surround 5.1 Pro, USB Audio
+    4.0 Surround output to Front and Rear speakers
+surround41:CARD=Pro,DEV=0
+    SB X-Fi Surround 5.1 Pro, USB Audio
+    4.1 Surround output to Front, Rear and Subwoofer speakers
+surround50:CARD=Pro,DEV=0
+    SB X-Fi Surround 5.1 Pro, USB Audio
+    5.0 Surround output to Front, Center and Rear speakers
+surround51:CARD=Pro,DEV=0
+    SB X-Fi Surround 5.1 Pro, USB Audio
+    5.1 Surround output to Front, Center, Rear and Subwoofer speakers
+surround71:CARD=Pro,DEV=0
+    SB X-Fi Surround 5.1 Pro, USB Audio
+    7.1 Surround output to Front, Center, Side, Rear and Woofer speakers
+iec958:CARD=Pro,DEV=0
+    SB X-Fi Surround 5.1 Pro, USB Audio
+    IEC958 (S/PDIF) Digital Audio Output
+	</code>
+      </pre>
+	</li>
+
+
+	<li>
+	  The output from <code>arecord -L</code> is
+	  <pre>
+	    <code>
+default
+    Default
+sysdefault:CARD=PCH
+    HDA Intel PCH, STAC92xx Analog
+    Default Audio Device
+front:CARD=PCH,DEV=0
+    HDA Intel PCH, STAC92xx Analog
+    Front speakers
+surround40:CARD=PCH,DEV=0
+    HDA Intel PCH, STAC92xx Analog
+    4.0 Surround output to Front and Rear speakers
+surround41:CARD=PCH,DEV=0
+    HDA Intel PCH, STAC92xx Analog
+    4.1 Surround output to Front, Rear and Subwoofer speakers
+surround50:CARD=PCH,DEV=0
+    HDA Intel PCH, STAC92xx Analog
+    5.0 Surround output to Front, Center and Rear speakers
+surround51:CARD=PCH,DEV=0
+    HDA Intel PCH, STAC92xx Analog
+    5.1 Surround output to Front, Center, Rear and Subwoofer speakers
+surround71:CARD=PCH,DEV=0
+    HDA Intel PCH, STAC92xx Analog
+    7.1 Surround output to Front, Center, Side, Rear and Woofer speakers
+sysdefault:CARD=Pro
+    SB X-Fi Surround 5.1 Pro, USB Audio
+    Default Audio Device
+front:CARD=Pro,DEV=0
+    SB X-Fi Surround 5.1 Pro, USB Audio
+    Front speakers
+surround40:CARD=Pro,DEV=0
+    SB X-Fi Surround 5.1 Pro, USB Audio
+    4.0 Surround output to Front and Rear speakers
+surround41:CARD=Pro,DEV=0
+    SB X-Fi Surround 5.1 Pro, USB Audio
+    4.1 Surround output to Front, Rear and Subwoofer speakers
+surround50:CARD=Pro,DEV=0
+    SB X-Fi Surround 5.1 Pro, USB Audio
+    5.0 Surround output to Front, Center and Rear speakers
+surround51:CARD=Pro,DEV=0
+    SB X-Fi Surround 5.1 Pro, USB Audio
+    5.1 Surround output to Front, Center, Rear and Subwoofer speakers
+surround71:CARD=Pro,DEV=0
+    SB X-Fi Surround 5.1 Pro, USB Audio
+    7.1 Surround output to Front, Center, Side, Rear and Woofer speakers
+iec958:CARD=Pro,DEV=0
+    SB X-Fi Surround 5.1 Pro, USB Audio
+    IEC958 (S/PDIF) Digital Audio Output
+	    </code>
+	  </pre>
+	</li>
+      </ul> <p>
+    </p>
+
+
+    <h3> ALSA configuration files </h3>
+    <p>
+      This tutorial by Volker Schatz explains what is going on in ALSA
+      configuration files and looks really good:
+      <a href="http://www.volkerschatz.com/noise/alsa.html">
+	A close look at ALSA
+      </a>
+    </p>
+
+    <p>
+      We just note one thing: the default ALSA device is "hw:0". This is
+      hard-coded into ALSA. But it can be overridden in configuration files.
+      This is done for example by PulseAudio - see next chapter.
+    </p>
+
+      <h3> alsa-info </h3>
+    <p>
+      This will collect information about your system and save it in a file.
+      It is a shell script that gives an enormous amount of information.
+      Here is a heavily elided subset of the information:
+      </p> <pre>
+	<code>
+upload=true&amp;script=true&amp;cardinfo=
+!!################################
+!!ALSA Information Script v 0.4.60
+!!################################
+
+!!Script ran on: Tue Jun 12 04:50:22 UTC 2012
+
+
+!!Linux Distribution
+!!------------------
+
+Fedora release 16 (Verne) Fedora release 16 (Verne) Fedora release 16 (Verne) Fedora release 16 (Verne)
+
+...
+
+!!ALSA Version
+!!------------
+
+Driver version:     1.0.24
+Library version:    1.0.25
+Utilities version:  1.0.25
+
+
+!!Loaded ALSA modules
+!!-------------------
+
+snd_hda_intel
+snd_hda_intel
+
+
+!!Sound Servers on this system
+!!----------------------------
+
+Pulseaudio:
+      Installed - Yes (/usr/bin/pulseaudio)
+      Running - Yes
+
+Jack:
+      Installed - Yes (/usr/bin/jackd)
+      Running - No
+
+
+!!Soundcards recognised by ALSA
+!!-----------------------------
+
+ 0 [PCH            ]: HDA-Intel - HDA Intel PCH
+                      HDA Intel PCH at 0xe6e60000 irq 47
+ 1 [NVidia         ]: HDA-Intel - HDA NVidia
+                      HDA NVidia at 0xe5080000 irq 17
+
+
+!!PCI Soundcards installed in the system
+!!--------------------------------------
+
+00:1b.0 Audio device: Intel Corporation 6 Series/C200 Series Chipset Family High Definition Audio Controller (rev 04)
+01:00.1 Audio device: nVidia Corporation HDMI Audio stub (rev a1)
+
+
+...
+
+!!HDA-Intel Codec information
+!!---------------------------
+
+...
+
+Default PCM:
+    rates [0x5e0]: 44100 48000 88200 96000 192000
+    bits [0xe]: 16 20 24
+    formats [0x1]: PCM
+
+Node 0x0a [Pin Complex] wcaps 0x400583: Stereo Amp-In
+  Control: name="Mic Jack Mode", index=0, device=0
+    ControlAmp: chs=0, dir=In, idx=0, ofs=0
+  Control: name="Mic Capture Volume", index=0, device=0
+    ControlAmp: chs=3, dir=In, idx=0, ofs=0
+  Control: name="Mic Jack", index=0, device=0
+  Amp-In caps: N/A
+  Amp-In vals:  [0x01 0x01]
+  Pincap 0x0001173c: IN OUT HP EAPD Detect
+    Vref caps: HIZ 50 GRD 80
+  EAPD 0x2: EAPD
+  Pin Default 0x03a11020: [Jack] Mic at Ext Left
+    Conn = 1/8, Color = Black
+    DefAssociation = 0x2, Sequence = 0x0
+  Pin-ctls: 0x24: IN VREF_80
+  Unsolicited: tag=03, enabled=1
+  Power: setting=D0, actual=D0
+  Connection: 3
+     0x13* 0x14 0x1c
+
+
+
+!!ALSA configuration files
+!!------------------------
+
+!!System wide config file (/etc/asound.conf)
+
+#
+# Place your global alsa-lib configuration here...
+#
+
+@hooks [
+	{
+		func load
+		files [
+			"/etc/alsa/pulse-default.conf"
+		]
+		errors false
+	}
+]
+
+pcm.hdmi0 {
+        type hw
+        card 1
+        device 3 }
+
+pcm.hdmi1 {
+        type hw
+        card 1
+        device 7 }
+
+pcm.hdmi2 {
+        type hw
+        card 1
+        device 8 }
+
+
+!!Aplay/Arecord output
+!!------------
+
+APLAY
+
+**** List of PLAYBACK Hardware Devices ****
+card 0: PCH [HDA Intel PCH], device 0: STAC92xx Analog [STAC92xx Analog]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+card 1: NVidia [HDA NVidia], device 3: HDMI 0 [HDMI 0]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+card 1: NVidia [HDA NVidia], device 7: HDMI 1 [HDMI 1]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+card 1: NVidia [HDA NVidia], device 8: HDMI 2 [HDMI 2]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+
+ARECORD
+
+**** List of CAPTURE Hardware Devices ****
+card 0: PCH [HDA Intel PCH], device 0: STAC92xx Analog [STAC92xx Analog]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+
+!!Amixer output
+!!-------------
+
+!!-------Mixer controls for card 0 [PCH]
+
+Card hw:0 'PCH'/'HDA Intel PCH at 0xe6e60000 irq 47'
+  Mixer name	: 'IDT 92HD90BXX'
+  Components	: 'HDA:111d76e7,10280494,00100102'
+  Controls      : 19
+  Simple ctrls  : 10
+Simple mixer control 'Master',0
+  Capabilities: pvolume pvolume-joined pswitch pswitch-joined penum
+  Playback channels: Mono
+  Limits: Playback 0 - 64
+  Mono: Playback 62 [97%] [-1.50dB] [on]
+Simple mixer control 'Headphone',0
+  Capabilities: pvolume pswitch penum
+  Playback channels: Front Left - Front Right
+  Limits: Playback 0 - 64
+  Mono:
+  Front Left: Playback 64 [100%] [0.00dB] [on]
+  Front Right: Playback 64 [100%] [0.00dB] [on]
+Simple mixer control 'PCM',0
+  Capabilities: pvolume penum
+  Playback channels: Front Left - Front Right
+  Limits: Playback 0 - 255
+  Mono:
+  Front Left: Playback 254 [100%] [0.20dB]
+  Front Right: Playback 254 [100%] [0.20dB]
+Simple mixer control 'Front',0
+  Capabilities: pvolume pswitch penum
+  Playback channels: Front Left - Front Right
+  Limits: Playback 0 - 64
+  Mono:
+  Front Left: Playback 64 [100%] [0.00dB] [on]
+  Front Right: Playback 64 [100%] [0.00dB] [on]
+Simple mixer control 'Mic',0
+  Capabilities: cvolume penum
+  Capture channels: Front Left - Front Right
+  Limits: Capture 0 - 3
+  Front Left: Capture 1 [33%] [10.00dB]
+  Front Right: Capture 1 [33%] [10.00dB]
+Simple mixer control 'Mic Jack Mode',0
+  Capabilities: enum
+  Items: 'Mic In' 'Line In'
+  Item0: 'Mic In'
+Simple mixer control 'Beep',0
+  Capabilities: pvolume pvolume-joined pswitch pswitch-joined penum
+  Playback channels: Mono
+  Limits: Playback 0 - 3
+  Mono: Playback 1 [33%] [-12.00dB] [on]
+Simple mixer control 'Capture',0
+  Capabilities: cvolume cswitch penum
+  Capture channels: Front Left - Front Right
+  Limits: Capture 0 - 46
+  Front Left: Capture 46 [100%] [30.00dB] [on]
+  Front Right: Capture 46 [100%] [30.00dB] [on]
+Simple mixer control 'Dock Mic',0
+  Capabilities: cvolume penum
+  Capture channels: Front Left - Front Right
+  Limits: Capture 0 - 3
+  Front Left: Capture 0 [0%] [0.00dB]
+  Front Right: Capture 0 [0%] [0.00dB]
+Simple mixer control 'Internal Mic',0
+  Capabilities: cvolume penum
+  Capture channels: Front Left - Front Right
+  Limits: Capture 0 - 3
+  Front Left: Capture 0 [0%] [0.00dB]
+  Front Right: Capture 0 [0%] [0.00dB]
+
+!!-------Mixer controls for card 1 [NVidia]
+
+Card hw:1 'NVidia'/'HDA NVidia at 0xe5080000 irq 17'
+  Mixer name	: 'Nvidia GPU 1c HDMI/DP'
+  Components	: 'HDA:10de001c,10281494,00100100'
+  Controls      : 18
+  Simple ctrls  : 3
+Simple mixer control 'IEC958',0
+  Capabilities: pswitch pswitch-joined penum
+  Playback channels: Mono
+  Mono: Playback [on]
+Simple mixer control 'IEC958',1
+  Capabilities: pswitch pswitch-joined penum
+  Playback channels: Mono
+  Mono: Playback [off]
+Simple mixer control 'IEC958',2
+  Capabilities: pswitch pswitch-joined penum
+  Playback channels: Mono
+  Mono: Playback [off]
+
+
+!!Alsactl output
+!!-------------
+
+--startcollapse--
+state.PCH {
+	control.1 {
+		iface MIXER
+		name 'Front Playback Volume'
+		value.0 64
+		value.1 64
+		comment {
+			access 'read write'
+			type INTEGER
+			count 2
+			range '0 - 64'
+			dbmin -4800
+			dbmax 0
+			dbvalue.0 0
+			dbvalue.1 0
+		}
+	}
+...
+	</code>
+      </pre> <p>
+    </p>
+
+    <h3> Applications using ALSA </h3>
+    <p>
+      Many applications can directly use ALSA
+      by appropriate commandline arguments.
+    </p>
+
+    <h4> MPlayer </h4>
+    <p>
+      To play a file to an ALSA device using <code>mplayer</code>,
+      use code such as
+      </p> <pre>
+	<code>
+mplayer -ao alsa:device=hw=1.0 -srate 48000  bryan.mp3
+	</code>
+      </pre> <p>
+    </p>
+
+    <h4> VLC </h4>
+    <p>
+      To play a file to an ALSA device using <code>vlc</code>,
+      use code such as
+      </p> <pre>
+	<code>
+vlc --aout alsa ...
+	</code>
+      </pre> <p>
+    </p>
+
+    <h4> TiMidity </h4>
+    <p>
+      To play a file to an ALSA device using <code>timidity</code>,
+      use code such as
+      </p> <pre>
+	<code>
+timidity -Os ...
+	</code>
+      </pre> <p>
+    </p>
+
+    <h2> Programming ALSA </h2>
+    <p>
+      There are several tutorials, including
+      <a href="http://equalarea.com/paul/alsa-audio.html">
+	A Tutorial on Using the ALSA Audio API
+      </a>
+      by Paul Davis (who is the lead on Jack).
+    </p>
+
+    <p>
+      An overview of the API is at
+      <a href="http://www.alsa-project.org/alsa-doc/alsa-lib/pcm.html">
+	PCM (digital audio) interface
+      </a>.
+      The ALSA API is large and complex. It is not clear to me how it all hangs together
+      or what part to use where. Jeff Tranter
+      <a href="http://www.linuxjournal.com/article/6735">
+	Introduction to Sound Programming with ALSA
+      </a> states
+    </p>
+      <blockquote>
+	<p>
+	The ALSA API can be broken down into the major interfaces it supports:
+
+	</p> <ul>
+	  <li>
+	    Control interface: a general-purpose facility for managing registers of 
+	    sound cards and querying the available devices.
+	  </li>
+	  <li>
+	    PCM interface: the interface for managing digital audio capture and playback. 
+	    [...]  it is the one most 
+	    commonly used for digital audio applications.
+	  </li>
+	  <li>
+	    Raw MIDI interface: supports MIDI (Musical Instrument Digital Interface),
+	    a standard for electronic musical instruments. This API provides access to a
+	    MIDI bus on a sound card. The raw interface works directly with the MIDI events, 
+	    and the programmer is responsible for managing the protocol and timing.
+	  </li>
+	  <li>
+	    Timer interface: provides access to timing hardware on sound cards used for 
+	    synchronizing sound events.
+	  </li>
+	  <li>
+	    Sequencer interface: a higher-level interface for MIDI programming and sound 
+	    synthesis than the raw MIDI interface. It handles much of the MIDI protocol and timing.
+	  </li>
+	  <li>
+	    Mixer interface: controls the devices on sound cards that route signals and control
+	    volume levels. It is built on top of the control interface. 
+	  </li>
+	</ul>
+      </blockquote>
+
+    <h3> Hardware device information </h3>
+
+    <p>
+      Finding information about hardware cards and devices is a multi-step operation.
+      The hardware cards first have to be identified. This is done using the
+      <a href="http://www.alsa-project.org/alsa-doc/alsa-lib/group___control.html">
+	Control interface
+      </a>
+      functions. The ones used are
+      </p> <pre>
+	<code>
+snd_card_next
+snd_ctl_open
+snd_ctl_pcm_next_device
+snd_ctl_card_info_get_id
+snd_ctl_card_info_get_name
+	</code>
+      </pre> <p>
+    </p>
+
+    <p>
+      Cards are identified by an integer from zero upwards. The <em>next</em>
+      card number is found using <code>snd_card_next</code>, and the first card
+      is found using a seed value of -1. The card is then opened using its ALSA
+      name such as hw:0, hw:1, etc by <code>snd_ctl_open</code> which fills in a
+      <code>handle</code> value. In turn, this handle is used to fill in card
+      information using <code>snd_ctl_card_info</code> and fields are extracted
+      from that using functions such as <code>snd_ctl_card_info_get_name</code>.
+      In the program that follows, this gives information such as
+      </p> <pre>
+	<code>
+card 0: PCH [HDA Intel PCH]
+	</code>
+      </pre> <p>
+    </p>
+
+    <p>
+      For further information you need to switch to the PCM functions for the card.
+      The function linking the control and PCM interfaces is <code>snd_ctl_pcm_info</code>
+      which fills in a structure of type <code>snd_pcm_info_t</code> with PCM-related
+      information. Unfortunately, this function is documented neither in the Control
+      Interface nor the PCM interface sections of the ALSA documentation but is instead in the Files section
+      under <a href="http://www.alsa-project.org/alsa-doc/alsa-lib/control_8c.html">
+	control.c
+      </a>
+      The structure  <code>snd_pcm_info_t</code> is barely documented in the
+      <a href="http://www.alsa-project.org/alsa-doc/alsa-lib/group___p_c_m.html#g2226bdcc6e780543beaadc319332e37b">
+	PCM Interface
+      </a> section, and only has  a few fields of interest.
+      (see <a href="http://www.qnx.com/developers/docs/6.4.0/neutrino/audio/libs/snd_pcm_info_t.html">
+	here for the structure</a>). These fields are accessed using the PCM functions
+      <code>snd_pcm_info_get_id</code> and <code>snd_pcm_info_get_name</code>.
+    </p>
+
+    <p>
+      The main value of the  <code>snd_pcm_info_t</code> structure is that it is the principal
+      parameter into the functions of the 
+      <a href="http://www.alsa-project.org/alsa-doc/alsa-lib/group___p_c_m___info.html">
+	PCM Stream
+      </a>.
+      In particular this allows you to get devices and subdevices and information about them.
+    </p>
+
+<!--
+      This program use the control API to find the available cards. It borrows code
+      from <code>aplay</code> to give the same results as <code>aplay -l</code>.
+      The first step is to find a card and then iterate through the remaining cards.
+      This is started by passing the value -1 as seed to <code>snd_card_next</code>
+      which will return an int result of success/fail and fill in the first card value.
+      Each successive call will find the index value of the next card.
+    </p>
+    <p>
+      For each card, create its name by appending its index to "hw:" and 
+      opening it by name as a control device by <code>snd_ctl_open</code>. 
+      This fills in a <code>handle</code>
+      which is used to find values for <code>info</code> and <code>pcminfo</code>
+      which give the device information.
+    </p>
+-->
+  
+    <p>
+      The program to find and display card and hardware device information is
+      aplay-l.c:
+    </p> 
+    <pre class="sh_cpp">
+<!--#exec cmd="/usr/local/bin/escape.pl . aplay-l.c" -->
+      </pre> 
+    <p>
+    </p>
+
+    <p>
+      The output from running <code>aplay-l</code> on my system is
+      </p> <pre>
+	<code>
+**** List of CAPTURE Hardware Devices ****
+card 0: [hw:0,0] PCH [HDA Intel PCH], device 0: STAC92xx Analog [STAC92xx Analog]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+**** List of PLAYBACK Hardware Devices ****
+card 0: [hw:0,0] PCH [HDA Intel PCH], device 0: STAC92xx Analog [STAC92xx Analog]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+card 1: [hw:1,3] NVidia [HDA NVidia], device 3: HDMI 0 [HDMI 0]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+card 1: [hw:1,7] NVidia [HDA NVidia], device 7: HDMI 1 [HDMI 1]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+card 1: [hw:1,8] NVidia [HDA NVidia], device 8: HDMI 2 [HDMI 2]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+	</code>
+      </pre>
+
+
+    <h3> PCM device information</h3>
+    <p>
+      PCM alias information may be found from the devices by <code>aplay -L</code>.
+      This uses the "hints" mechanism from the device API.
+      Note that the program is responsible for freeing memory allocated
+      by the ALSA library. This means that if a string or table is returned then not
+      only do you have to walk through the string/table but you have to retain
+      a pointer to the start of the string/table so that it can be freed.
+    </p>
+    <p>
+      The source for this is aplay-L.c:
+      </p> <pre class="sh_cpp">
+<!--#exec cmd="/usr/local/bin/escape.pl . aplay-L.c" -->
+      </pre> <p>
+    </p>
+
+    <p>
+      The outputfrom running <code>aplay-L</code> on my system is
+      </p> <pre>
+	<code>
+*********** CAPTURE ***********
+default
+    Default
+sysdefault:CARD=PCH
+    HDA Intel PCH, STAC92xx Analog
+    Default Audio Device
+front:CARD=PCH,DEV=0
+    HDA Intel PCH, STAC92xx Analog
+    Front speakers
+surround40:CARD=PCH,DEV=0
+    HDA Intel PCH, STAC92xx Analog
+    4.0 Surround output to Front and Rear speakers
+surround41:CARD=PCH,DEV=0
+    HDA Intel PCH, STAC92xx Analog
+    4.1 Surround output to Front, Rear and Subwoofer speakers
+surround50:CARD=PCH,DEV=0
+    HDA Intel PCH, STAC92xx Analog
+    5.0 Surround output to Front, Center and Rear speakers
+surround51:CARD=PCH,DEV=0
+    HDA Intel PCH, STAC92xx Analog
+    5.1 Surround output to Front, Center, Rear and Subwoofer speakers
+surround71:CARD=PCH,DEV=0
+    HDA Intel PCH, STAC92xx Analog
+    7.1 Surround output to Front, Center, Side, Rear and Woofer speakers
+hdmi:CARD=NVidia,DEV=0
+    HDA NVidia, HDMI 0
+    HDMI Audio Output
+hdmi:CARD=NVidia,DEV=1
+    HDA NVidia, HDMI 1
+    HDMI Audio Output
+hdmi:CARD=NVidia,DEV=2
+    HDA NVidia, HDMI 2
+    HDMI Audio Output
+
+
+*********** PLAYBACK ***********
+null
+    Discard all samples (playback) or generate zero samples (capture)
+pulse
+    PulseAudio Sound Server
+default
+    Default
+sysdefault:CARD=PCH
+    HDA Intel PCH, STAC92xx Analog
+    Default Audio Device
+front:CARD=PCH,DEV=0
+    HDA Intel PCH, STAC92xx Analog
+    Front speakers
+surround40:CARD=PCH,DEV=0
+    HDA Intel PCH, STAC92xx Analog
+    4.0 Surround output to Front and Rear speakers
+surround41:CARD=PCH,DEV=0
+    HDA Intel PCH, STAC92xx Analog
+    4.1 Surround output to Front, Rear and Subwoofer speakers
+surround50:CARD=PCH,DEV=0
+    HDA Intel PCH, STAC92xx Analog
+    5.0 Surround output to Front, Center and Rear speakers
+surround51:CARD=PCH,DEV=0
+    HDA Intel PCH, STAC92xx Analog
+    5.1 Surround output to Front, Center, Rear and Subwoofer speakers
+surround71:CARD=PCH,DEV=0
+    HDA Intel PCH, STAC92xx Analog
+    7.1 Surround output to Front, Center, Side, Rear and Woofer speakers
+	</code>
+      </pre> <p>
+    </p>
+
+    <p>
+      Note that this does not include the "plug" devices such as "plughw:0".
+      The list of plug devices does not seem to be accessible. 
+    </p>
+
+    <h3> Configuration space information </h3>
+    <p>
+      In addition to general  characteristics, each PCM device is able to
+      support a range of parameters such as the number of channels, sampling
+      rates, etc. The full set and range of parameters form the "configuration space"
+      of each device. For example, a device may support between 2 and 6 channels
+      and a number of different sampling rates. These two parameters form a
+      2-dimensional space. The full set form an N-dimensional space.
+    </p>
+
+    <p>
+      ALSA has functions to query this space and to set values within this space.
+      The space is initialised by <code>snd_pcm_hw_params_any</code>.
+      To find the possible values of parameters there are functions
+      <code>snd_pcm_hw_params_get...</code>.
+    </p>
+
+    <p>
+      The different parameters are
+    </p>
+      <dl>
+	<dt>
+	  Channels
+	</dt>
+	<dd>
+	  The number of channels supported - zero for mono, etc
+	</dd>
+	<dt>
+	  Rate
+	</dt>
+	<dd>
+	  The sampling rate in hertz, that is, samples per second.
+	  Typically CD audio has a sampling rate of 44,100hz per
+	  channel, so that
+	  each channel has 44,100 samples per second 
+	</dd>
+	<dt>
+	  Frames
+	</dt>
+	<dd>
+	  Each frame contains one sample for each channel. 
+	  Stereo audio will contain 2 samples in each frame.
+	  The frame rate is the same as the sampling rate.
+	  That is, suppose the sampling rate for stereo audio
+	  is 44,100hz. Then each channel will have 44,100
+	  samples per second. But there will also be 44,100
+	  frames per second, so that the overall density
+	  of the two channels will be 88,200 samples per second.
+	</dd>
+
+	<dt>
+	  Period time
+	</dt>
+	<dd>
+	  The time in microseconds between hardware interrupts to refresh the
+	  buffer
+	</dd>
+
+	<dt>
+	  Period size
+	</dt>
+	<dd>
+	  The number of frames in between each hardware interrupt.
+	  These are related in the following way:
+	  <pre>
+Period time = period size x time per frame
+            = period size x time per sample
+            = period size / sampling rate
+	  </pre>
+	  So for example if the sampling rate is 48000hz stereo
+	  and the period size is 8192 frames, then the time between
+	  hardware interrupts is 8192 / 48000 seconds = 170.5 millseconds
+	</dd>
+
+	<dt>
+	  Periods
+	</dt>
+	<dd>
+	  Number of periods per buffer
+	</dd>
+
+	<dt>
+	  Buffer time
+	</dt>
+	<dd>
+	  Time for one buffer
+	</dd>
+
+	<dt>
+	  Buffer size
+	</dt>
+	<dd>
+	  Size of the buffer in frames. Again there is a relationship
+	  <pre>
+Time of one buffer =  buffer size in frames x time for one frame
+                   = buffer size x number of channels x time for one sample
+                   = buffer size x number of channels / sample rate
+	  </pre>
+	The buffer size should be a multiple of the period size, and is typically
+	twice as big.
+	</dd>
+
+      </dl>
+    <p>
+      For further examples, see
+      <a href="http://www.alsa-project.org/main/index.php/FramesPeriods">
+	FramesPeriods
+      </a>
+    </p>
+
+    <p>
+      A program to find the range of values of various parameters from the
+      initial state is device-info.c:
+      </p> <pre class="sh_cpp">
+<!--#exec cmd="/usr/local/bin/escape.pl . device-info.c" -->
+      </pre> <p>
+    </p>
+    <p>
+      The output from <code>device-info hw:0</code> on my system is 
+      </p> <pre>
+	<code>
+*********** CAPTURE ***********
+max channels 2
+min channels 2
+min rate 44100 hz
+max rate 192000 hz
+min period time 83 usecs
+max period time 11888617 usecs
+min period size in frames 16
+max period size in frames 524288
+min periods per buffer 2
+max periods per buffer 32
+min buffer time 166 usecs
+max buffer time 23777234 usecs
+min buffer size in frames 32
+max buffer size in frames 1048576
+*********** PLAYBACK ***********
+max channels 2
+min channels 2
+min rate 44100 hz
+max rate 192000 hz
+min period time 83 usecs
+max period time 11888617 usecs
+min period size in frames 16
+max period size in frames 524288
+min periods per buffer 2
+max periods per buffer 32
+min buffer time 166 usecs
+max buffer time 23777234 usecs
+min buffer size in frames 32
+max buffer size in frames 1048576
+	</code>
+      </pre> <p>
+    </p>
+
+    <p>
+      This program works with any ALSA device, including the "plug" devices.
+      The output from <code>device-info plughw:0</code> shows how the software
+      wrapper can give a wider range of possible values:
+      </p> <pre>
+	<code>
+*********** CAPTURE ***********
+max channels 10000
+min channels 1
+min rate 4000 hz
+max rate -1 hz
+min period time 83 usecs
+max period time 11888617 usecs
+min period size in frames 0
+max period size in frames -1
+min periods per buffer 0
+max periods per buffer -1
+min buffer time 1 usecs
+max buffer time -1 usecs
+min buffer size in frames 1
+max buffer size in frames -2
+*********** PLAYBACK ***********
+max channels 10000
+min channels 1
+min rate 4000 hz
+max rate -1 hz
+min period time 83 usecs
+max period time 11888617 usecs
+min period size in frames 0
+max period size in frames -1
+min periods per buffer 0
+max periods per buffer -1
+min buffer time 1 usecs
+max buffer time -1 usecs
+min buffer size in frames 1
+max buffer size in frames -2
+	</code>
+      </pre> <p>
+    </p>
+
+    <p>
+      It can also be run with alias devices, such as
+      <code>device-info surround40</code>.
+    </p>
+
+
+    <h3> ALSA initialisation </h3>
+    <p>
+      A line-by-line breakdown is at
+      <a href="http://soundprogramming.net/programming_apis/alsa_tutorial_1_initialization">
+	ALSA Tutorial Part 1 - Initialization
+      </a>
+      This explains much of the common code in the programs that follow.
+    </p>
+
+    <h3> Capture audio to a file </h3>
+    <p>
+      The following program is from Paul Davis
+      <a href="http://equalarea.com/paul/alsa-audio.html">
+	A Tutorial on Using the ALSA Audio API
+      </a> alsa_capture.c:
+      </p> <pre class="sh_cpp">
+<!--#exec cmd="/usr/local/bin/escape.pl . alsa_capture.c" -->
+      </pre> <p>
+    </p>
+
+
+    <h3> Playback audio from a file </h3>
+
+    <p>
+      In order to capture or play audio, a device must first be opened as 
+      in previous examples. A configuration space is then created and the
+      space is narrowed by setting values on the various parameters.
+      The access type determines if the samples are interleaved or other.
+      The format determines the size of samples and whether little- or big-endian.
+      All of these will return an error if the requested value cannot be set.
+    </p>
+
+    <p>
+      Some parameters need care in setting. For example, there is a range of possible
+      values for the sampling rate, but not all of these may be supported. 
+      A particular rate may be requested using <code>snd_pcm_hw_params_set_rate</code>.
+      But if a 
+      requested rate is not possible then an error will be returned. There are
+      several ways of avoiding this:
+      </p> <ul>
+	<li>
+	  Try a number of rates till you get one that is supported
+	</li>
+	<li>
+	  Test if a rate is supported by <code>snd_pcm_hw_params_test_rate</code>
+	</li>
+	<li>
+	  Request ALSA to give
+	  the nearest supported rate by <code>snd_pcm_hw_params_set_rate_near</code>.
+	  The actual rate chosen is set in the rate parameter
+	</li>
+	<li>
+	  Instead of a hardware device such as "hw:0" use a plug device such as
+	  "plughw:0" which will support many more values by resampling
+	</li>
+      </ul> <p>
+    </p>
+
+    <p>
+      Finally, once parameters are set for the configuration space, the restricted space
+      is installed onto the device by <code>snd_pcm_hw_params</code>
+    </p>
+
+    <p>
+      The calls on PCm devices will cause state changes to take place in the device.
+      After opening, the device is in the state <code>SND_PCM_STATE_OPEN</code>.
+      After setting the hardware configuration, the device is in the state
+      <code>SND_PCM_STATE_PREPARE</code>. 
+      Applications can use the <code>snd_pcm_start</code> call, write or read data.
+      The state may drop to <code>SND_PCM_STATE_XRUN</code> if an overrun or
+      underrun occurs, and then a call to <code>snd_pcm_prepare</code> is needed
+      to restore it to  <code>SND_PCM_STATE_PREPARE</code>.
+    </p>
+
+    <p>
+      The call to <code>readi</code> reads interlaced data.
+    </p>
+
+    <p>
+      The following program is from Paul Davis
+      <a href="http://equalarea.com/paul/alsa-audio.html">
+	A Tutorial on Using the ALSA Audio API
+      </a> alsa_playback.c:
+      </p> <pre class="sh_cpp">
+<!--#exec cmd="/usr/local/bin/escape.pl . alsa_playback.c" -->
+      </pre> <p>
+    </p>
+
+    <p>
+      Check that the microphone is enabled using <code>alsamixer</code>. 
+      Record by <code>alsa_capture hw:0 tmp.s16</code> for example.
+      Playback by 
+      </p> <pre>
+	<code>
+sox -c 2 -r 44100 tmp.s16 tmp.wav
+mplayer tmp.wav
+	</code>
+      </pre> <p>
+      or by using the next program
+      </p> <pre>
+	<code>
+alsa_playback hw:0 tmp.s16
+	</code>
+      </pre> <p>
+
+
+    </p>
+
+    <h3> Capturing using callbacks </h3>
+    <p>
+      See 
+      <a href="http://equalarea.com/paul/alsa-audio.html">
+	A Tutorial on Using the ALSA Audio API
+      </a>
+    </p>
+
+    <h3> Managing latency </h3>
+    <p>
+      The program
+      <a href="http://www.alsa-project.org/alsa-doc/alsa-lib/_2test_2latency_8c-example.html">
+	/test/latency.c
+      </a>
+      can be run with various parameters to test the latency of your system. 
+      <em>Warning: turn your volume way down low or the feedback might fry your speakers!</em>
+      For example,
+      on a low setting
+      </p> <pre>
+	<code>
+latency -m 128 -M 128
+	</code>
+      </pre> <p>
+      gave a latency of only 0.93 msecs!
+    </p>
+
+    <p>
+      The "poor" latency test of
+      </p> <pre>
+	<code>
+latency -m 8192 -M 8192 -t 1 -p
+	</code>
+      </pre> <p>
+      gave a latency of 92.9 msecs.
+    </p>
+
+    <p>
+      See <a href="http://www.alsa-project.org/main/index.php/Low_latency_howto">
+	Low latency howto
+      </a>
+    </p>
+
+    <p>
+      Two methods are available to control latency: one is through the ALSA configuration
+      files, the other is programmatically. 
+      The following is 
+      <a href="http://www.linuxquestions.org/questions/linux-software-2/alsa-latency-configuration-904689/">
+	claimed to work
+      </a>  in the configuration file <code>/etc/asound.conf</code>:
+      </p> <pre>
+	<code>
+pcm.card0 {
+  type hw
+  card 0
+}
+
+pcm.!default {
+  type plug
+  slave.pcm "dmixer"
+}
+
+
+pcm.dmixer {
+  type dmix
+  ipc_key 2048
+  slave {
+    pcm "hw:0,0"
+    period_time 0
+    period_size 2048
+    buffer_size 65536
+    buffer_time 0
+    periods 128
+    rate 48000
+    channels 2
+  }
+  bindings {
+    0 0
+    1 1
+  }
+}
+	</code>
+      </pre> <p>
+      <em> I haven't tested this yet </em>.
+    </p>
+
+    <p>
+      Programmatically you need to set the internal buffer and period sizes using
+      <code>snd_pcm_hw_params_set_buffer_size_near</code> and
+      <code>snd_pcm_hw_params_set_period_size_near</code>.
+      <em> I haven't got this to work yet </em>.
+    </p>
+
+    <h3> Playback of captured sound </h3>
+
+    <p>
+      Playback of captured sound involves two handles, possibly for different
+      cards. The direct method of just combining two of these in a loop
+      </p> <pre class="sh_cpp">
+	<code>
+while (1) {
+    int nread;
+    if ((nread = snd_pcm_readi (capture_handle, buf, BUF_SIZE)) != BUF_SIZE) {
+      fprintf (stderr, "read from audio interface failed (%s)\n",
+	       snd_strerror (nread));
+      snd_pcm_prepare(capture_handle);
+      continue;
+    }
+        
+    printf("copying %d\n", nread);
+
+    if ((err = snd_pcm_writei (playback_handle, buf, nread)) != nread) {
+      if (err &lt; 0) {
+	fprintf (stderr, "write to audio interface failed (%s)\n",
+		 snd_strerror (err));
+      } else {
+	fprintf (stderr, "write to audio interface failed after %d frames\n", err);
+      }
+      snd_pcm_prepare(playback_handle);
+    }
+} 
+	</code>
+      </pre> <p>
+      doesn't unfortunately work. On my computer it threw up a variety of
+      errors, including broken pipe, device not ready and device non-existent.
+    </p>
+
+    <p>
+      There are many issues that must be addressed in order to playback captured
+      sound directly. The first issue is that each soundcard has its own timing 
+      clock. These must be synchronised. This is difficult to maintain for
+      consumer-grade cards as their clocks apparently are low quality and will
+      drift or be erratic. Nevertheless, ALSA will attempt to synchronise clocks
+      by the function <code>snd_pcm_link</code> which takes two card handles
+      as parameter.
+    </p>
+    <p>
+      The next issue is that finer control must be exercised over the buffers and how
+      often ALSA will fill these buffers. This is controlled by two parameters,
+      buffer size and period size (or buffer time and period time). The period size/time
+      controls how often interrupts occur to fill the buffer. Typically, the
+      period size (time) is set to half that of the buffer size (time).
+      Relevant functions are <code>snd_pcm_hw_params_set_buffer_size_near</code>
+      and <code>snd_pcm_hw_params_set_period_size_near</code>.
+      Corresponding <code>get</code> functions can used to discover what values
+      were actually set.
+    </p>
+
+    <p>
+      In addition to hardware parameters, ALSA can also set software parameters.
+      The distinction between the two is not clear to me, but anyway, a "start
+      threshold" and "available minimum" have to set as software
+      parameters. I have managed to get working results by setting both of
+      these to the period size, using <code>snd_pcm_sw_params_set_start_threshold</code>
+      and <code>snd_pcm_sw_params_set_avail_min</code>. Setting software
+      parameters is similar to setting hardware parameters: first a data
+      structure is initialised by <code>snd_pcm_sw_params_current</code>,
+      the software space is restricted by setter calls, and then the data
+      is set into the card by <code>snd_pcm_sw_params</code>.
+    </p>
+
+    <p>
+      ALSA needs to keep the output as full as possible. Otherwise it will generate
+      a "write error". I have no idea why, but it only seems to work if two
+      buffers are written to the playback device before attempts are made to read 
+      and copy from the capture device. Sometimes one buffer will do, but no more
+      than two. To avoid extraneous unwanted noise at the beginning of playback,
+      two buffers of silence work well.
+    </p>
+
+    <p>
+      The resultant program is playback-capture.c:
+      </p> <pre class="sh_cpp">
+<!--#exec cmd="/usr/local/bin/escape.pl . playback-capture.c" -->
+      </pre> <p>
+    </p>
+
+    <h2> Mixing audio </h2>
+
+    <h3> Mixing using dmix </h3>
+    <p>
+      ALSA contains a plugin <code>dmix</code> which is enabled by default.
+      This performs mixing of multiple audio input signals into an
+      output signal in software.
+      A description of this is given in
+      <a href="http://alsa.opensrc.org/Dmix">
+	The Dmix Howto 
+      </a>.
+      Basically, each application that wishes to write audio to ALSA should use
+      the plugin <code>plug:dmix</code> instead of a hardware device such as
+      <code>hw:0</code>. For example, the <code>alsa_playback</code> program
+      discussed earlier can be called multiple times and have the ALSA inputs mixed together
+      as in
+      </p> <pre>
+	<code>
+alsa_playback plug:dmix tmp1.s16 &amp;
+alsa_playback plug:dmix tmp2.s16 &amp;
+alsa_playback plug:dmix tmp3.s16
+	</code>
+      </pre> <p>
+    </p>
+
+    <h3> Mixing using PulseAudio </h3>
+    <p>
+      PulseAudio isn't covered until the mext chapter, because it is generally
+      considered to be a sound server, acting in the layer <em>above</em> ALSA.
+      However, there is also an ALSA plugin module whereby PulseAudio can appear
+      as a plugin device <em>below</em> ALSA! So ALSA can write output to the
+      PulseAudio plugin, which can process it using the full capabilities of PulseAudio,
+      which then feeds it back down into ALSA for rendering on a hardware
+      device.
+    </p>
+
+    <p>
+      One of these capabilities is that PulseAudio contains a mixer.
+      So two (or more) applications can send audio to the PulseAudio plugin which
+      will then mix the signals and then send them back to ALSA.
+    </p>
+
+    <p>
+      The PulseAudio plugin can appear as the PCM devices <code>pulse</code>
+      or as <code>default</code>. So the following three outputs will be mixed
+      by PulseAudio and rendered by ALSA.
+      </p> <pre>
+	<code>
+alsa_playback default tmp1.s16 &amp;
+alsa_playback pulse tmp2.s16 &amp;
+alsa_playback default tmp3.s16
+	</code>
+      </pre> <p>
+    </p>
+
+    <h3> Simple mixer API - volume control</h3>
+    <p>
+      ALSA has a separate API for the mixer module. In fact, there are two:
+      the 
+      <a href="http://www.alsa-project.org/alsa-doc/alsa-lib/group___mixer.html">
+	[asynchronous] Mixer Interface
+      </a> and the
+      <a href="http://www.alsa-project.org/alsa-doc/alsa-lib/group___simple_mixer.html">
+	Simple Mixer Interface
+      </a>.
+      For now, we shall just consider the simple interface.
+    </p>
+
+    <p>
+      The ALSA mixer does not have a great deal of functionality apart from mixing.
+      Basically, it can get and set volumes on channels or globally.
+      Setting the volume is illustrated by the following program,
+      based on a function by
+      <a href="http://stackoverflow.com/users/619295/trenki">
+	trenki
+      </a> at
+      <a href="http://stackoverflow.com/questions/6787318/set-alsa-master-volume-from-c-code">
+	Set ALSA master volume from C code
+      </a>:
+      </p> <pre class="sh_cpp">
+<!--#exec cmd="/usr/local/bin/escape.pl . volume.c" -->
+      </pre>
+
+
+    <h2> Writing an ALSA device driver </h2>
+    <p>
+      If you need to write a device driver for a new soundcard, see 
+      <a href="http://www.alsa-project.org/~tiwai/writing-an-alsa-driver.pdf">
+	Writing an ALSA Driver
+      </a> by Takashi Iwai
+    </p>
+
+    <h2> Conclusion </h2>
+    <p>
+      ALSA is currently the lowest level of the audio stacks for Linux
+      that is included in the kernel.
+      It supplies device drivers with a standard API to access the different
+      sound devices and cards. There are a variety of user level tools
+      to access and manipulate the devices, built using this API.
+    </p>
+    <p>
+      This chapter has looked at the user level tools and at building your 
+      own tools using the API. There is a pointer to building device drivers.
+    </p>
+
+    
+    <hr/>
+    <!--#include virtual="../../footer.html" -->
+
+
+  </body>
+</html>

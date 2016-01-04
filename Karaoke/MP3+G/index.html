@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="../../stylesheet.css" />
+
+    <title> MP3+G </title>
+
+    <style type="text/css">
+        body { counter-reset: chapter 26; }
+    </style>
+
+    <script type="text/javascript" src="../../toc.js"> 
+      /* empty */
+   </script>
+
+   <script type="text/javascript">
+/* <![CDATA[ */
+    (function() {
+        var s = document.createElement("script"), t = document.getElementsByTagName("script")[0];
+        s.type = "text/javascript";
+        s.async = true;
+        s.src = "http://api.flattr.com/js/0.6/load.js?mode=auto";
+        t.parentNode.insertBefore(s, t);
+    })();
+/* ]]> */
+    </script>
+
+
+   <link rel="stylesheet" type="text/css" href="../../js/doc/style.css">
+   <!-- <link rel="stylesheet" type="text/css" href="../../js/css/sh_emacs.css"> -->
+   <link rel="stylesheet" type="text/css" href="../../js/sh_style.css">
+   <script type="text/javascript" src="../../js/sh_main.min.js"></script>
+   <script type="text/javascript" src="../../js/lang/sh_cpp.min.js"></script>
+   
+
+  </head>
+  <body onload="sh_highlightDocument();">
+
+    <!--#include virtual="../../header.html" -->
+
+
+    <div class="chapter">
+        <h1> MP3+G </h1>
+     </div>
+
+    <div class="preface">
+      <p>
+	This chapter explores using Karaoke files in MP3+G
+	format. Files are pulled off a server to a (small)
+	computer attached to a display device (my TV).
+	Files are chosen using a Java Swing application
+	running on Linux or Windows, or by an Android
+	application.
+      </p>
+    </div>
+
+    <div id="generated-toc" class="generate_from_h2"></div>
+
+    <h2> Files </h2>
+    <p>
+	Source files in this chapter are
+	<a href="all.zip"> here </a>.
+
+    </p>
+
+    <h2> Introduction </h2>
+    <p>
+      In the chapter on <a href="../User/"> User level Karaoke tools</a>
+      we discussed the MP3+G format for Karaoke.
+      Each "song" consists of two files: an MP3 file for the audio
+      and a low-quality CDG file for the video (mainly the lyrics).
+      Often this pair of files are zipped together.
+    </p>
+
+    <p>
+      Files can be extracted from CDG Karaoke disks by using
+      <code>cdrdao</code> and <code>cdgrip.py</code>.
+      They can be played by <code>vlc</code> when given the
+      MP3 file as argument - it wil pick up the CDG file from
+      the same directory.
+    </p>
+
+    <p>
+      Many people will have built up a sizeable collection of
+      MP3+G songs. In this chapter we consider how to list and play
+      them, along with keeping lists of favourite songs.
+      The chapter just looks at a Java application to perform
+      this, and is really just standard Swing and Android programming.
+      There are no special audio or Karaoke features
+      considered in this chapter.
+    </p>
+
+    <p>
+      I keep my files on a server. I can access them in many ways on 
+      the other computers in the house: SAMBA shares, HTTP downloads,
+      SSH file system (sshfs), etc. Some mechanisms are less portable than
+      others; for example sshfs is not a standard Windows application
+      and SMB/SAMBA is not a standard Android client. So after getting
+      everything working using sshfs (a no-brainer under standard Linux),
+      I then converted the applications to HTTP access.
+      This has its own wrinkles :-).
+    </p>
+
+    <p>
+      The environment looks like
+      <br/> <img alt="" src="env.png"/>
+    </p>
+
+    <p>
+      The Java client application for Linux and Windows looks like
+    </p>
+      <figure>
+	<figcaption>MP3+G player</figcaption>
+	<img src="karaoke.png" alt="MP3+G player"/>
+      </figure>
+    <p>
+      This shows the main window of songs and on its right
+      the favourites window for two people, Jan and Linda.
+      The application handles multiple languages - english,
+      korean and chinese are shown.
+    </p>
+
+    <p>
+      Filters can be applied to the main song list. For example,
+      filtering on the singer Sting gives
+    </p>
+      <figure>
+	<figcaption>Songs by Sting</figcaption>
+	<img  src="sting.png" alt="Songs by Sting"/>
+      </figure>
+    
+
+    <p>
+      The Android application looks like
+      XXX
+    </p>
+
+    <p>
+      When <code>Play</code> is clicked, information about the selection
+      is sent to the media player - currently a CubieBoard2 connected
+      to my hifi/TV. The media computer fetches the files from
+      the HTTP server.
+      Files are played on the media computer using <code>vlc</code> as it can 
+      handle MP3+G files.
+    </p>
+
+    <h2> File organisation </h2>
+    <p>
+      If MP3+G songs are ripped from CDG Karaoke disks, then
+      a natural organisation would be to store the files in
+      directories, each directory corresponding to one disk.
+      More structure may be given by grouping the directories
+      by common artist, or by style of music, etc.
+      We just assume a directory structure with music files
+      as leaf nodes. These files are kept on the HTTP server.
+    </p>
+
+    <p>
+      I currently have a large number of these files on my server.
+      Information about these needs to be supplied to the clients.
+      After a bit of experimentation a <code>Vector</code>
+      of <code>SongInformation</code> is created and serialised
+      using Java's object serialisation methods. The serialised
+      file is also kept on the HTTP server. When a client
+      starts up, it gets this file from the HTTP server
+      and deserialises it.
+    </p>
+
+    <p>
+      Building this vector means walking the directory tree
+      on the HTTP server and recording information as it goes.
+      Java code to walk directory trees is fairly straightforward.
+      It is a little tedious if you want it to be O/S independent.
+      Java 1.7 introduced mechanisms to make this easier.
+      These belong to the New I/O (NIO) system. The first
+      class of importance is the 
+      <a href="http://docs.oracle.com/javase/7/docs/api/java/nio/file/Path.html">
+	java.nio.file.Path</a>
+      which "[is] an object that may be used to locate a 
+      file in a file system. 
+      It will typically represent a system dependent file path."
+      A string representing a file location in, say, a Linux
+      or a Windows file system can be turned into a <code>Path</code>
+      object by
+    </p>
+      <pre class="sh_cpp">
+Path startingDir = FileSystems.getDefault().getPath(dirString);
+      </pre>
+    
+
+    <p>
+      Traversal of a file system from a given <code>path</code>
+      is done by walking a file tree, calling a node "visitor"
+      at each point. The visitor is a subclass of 
+      <code>SimpleFileVisitor&lt;Path&gt;</code> 
+      and for leaf nodes only you would override the
+      method
+    </p>
+      <pre class="sh_cpp">
+public FileVisitResult visitFile(Path file, BasicFileAttributes attr)
+      </pre>
+      The traversal is done by
+      <pre class="sh_cpp">
+Visitor pf = new Visitor();
+Files.walkFileTree(startingDir, pf);
+      </pre>
+    
+
+    <p>
+      A full explanation of this is given in the Java Tutorials
+      on <a href="http://docs.oracle.com/javase/tutorial/essential/io/walk.html">
+	Walking the File Tree
+      </a>.
+      We use this to load all song information
+      from disk into a vector of song
+      paths in <code>SongTable.java</code>.
+    </p>
+
+    <h2> Song information </h2>
+    <p>
+      The information about each song should include its path
+      in the file system, the name of the artist(s), the title
+      of the song and any other useful information. This information
+      has to be pulled out of the the file path of the song.
+      In my current setup, files look like
+    </p>
+      <pre>
+	<code>
+/server/KARAOKE/Sonken/SK-50154 - Crosby, Stills - Carry On.mp3
+	</code>
+      </pre>
+    <p>
+      Each song has a reasonably unique identifier ("SK-50154"),
+      a unique path and an artist and title. 
+      Reasonably straight-forward pattern matching code can
+      extract these parts:
+    </p>
+      <pre class="sh_cpp">
+Path file = ...
+String fname = file.getFileName().toString();
+if (fname.endsWith(".zip") || 
+    fname.endsWith(".mp3")) {
+    String root = fname.substring(0, fname.length()-4);
+    String parts[] = root.split(" - ", 3);
+    if (parts.length != 3)
+        return;
+
+	String index = parts[0];
+	String artist = parts[1];
+	String title = parts[2];
+
+        SongInformation info = new SongInformation(file,
+						   index,
+						   title,
+						   artist);
+      </pre>
+    <p>
+      (The patterns produced by <code>cdrip.py</code>
+      are not quite the same, but the code is easily changed.)
+    </p>
+
+    <p>
+      The <code>SongInformation</code> class captures this
+      information and also includes methods for pattern matching
+      of a string against the various fields. For example,
+      to check if a title matches,
+    </p>
+      <pre class="sh_cpp">
+public boolean titleMatch(String pattern) {
+    return title.matches("(?i).*" + pattern + ".*");
+}
+      </pre>
+    <p>
+      This gives a case-independent match using 
+      Java regular expression support.
+      See <a href="http://www.vogella.com/articles/JavaRegularExpressions/article.html">
+	Java Regex Tutorial
+      </a> by Lars Vogel for more details.
+    </p>
+
+    <p>
+      The complete <code>SongInformation</code> file is
+    </p>
+      <pre class="sh_cpp">
+<!--#exec cmd="/usr/local/bin/escape.pl Table SongInformation.java" -->
+      </pre>
+    
+
+    <h2> Song table </h2>
+    <p>
+      The <code>SongTable</code> builds up a vector of 
+      <code>SongInformation</code> objects by traversing the file
+      tree.
+    </p>
+
+    <p>
+      If there are many songs (say, in the thousands)
+      this can lead to a slow startup time. To reduce this,
+      once a table is loaded, it is saved to disk as a persistent
+      object by writing it to an <code>ObjectOutputStream</code>.
+      The next time the program is started, an attempt is made to
+      read it back from this using an <code>ObjectInputStream</code>.
+      Note that we do <em>not</em> use the 
+      <a href="http://en.wikibooks.org/wiki/Java_Persistence/What_is_Java_persistence%3F">
+	Java Persistence API
+      </a> -
+      designed for J2EE, it is too heavyweight for our purpose here.
+    </p>
+      
+    <p>
+      The <code>SongTable</code> also includes code to build 
+      smaller song tables based on matches between patterns
+      and the title (or artist or number). It can search
+      for matches between a pattern and a song and build a new
+      table based on the matches. It contains a pointer to
+      the original table for restoration later.
+      This allows searches for patterns to use the same
+      data structure.
+    </p>
+
+    <p>
+      The code for <code>SongTable</code> is
+    </p>
+      <pre class="sh_cpp">
+<!--#exec cmd="/usr/local/bin/escape.pl Table SongTable.java" -->
+      </pre>
+    
+
+    <h2> Favourites </h2>
+    <p>
+      I've built this system for my home environment where I have
+      a regular group of friends visiting. We each have our
+      favourite songs to sing and so we have made up lists
+      on scraps of paper which get lost, have wine spilt on them, etc.
+      So this system includes favourite lists of songs.
+    </p>
+
+    <p>
+      Each favourites list is essentially just another
+      <code>SongTable</code>. But I have put a <code>JList</code>
+      around the table to display it. The <code>JList</code>
+      uses a <code>DefaultListModel</code>, and
+      the constructor loads a song table into this list
+      by iterating through the table and adding elements
+    </p>
+      <pre class="sh_cpp">
+	int n = 0;
+	java.util.Iterator&lt;SongInformation&gt; iter = favouriteSongs.iterator();
+	while(iter.hasNext()) {
+	    model.add(n++, iter.next());
+	}
+      </pre>
+    
+
+    <p>
+      Other Swing code adds three buttons along the bottom:
+    </p>
+      <ul>
+	<li>
+	  Add song to list
+	</li>
+	<li>
+	  Delete song from list
+	</li>
+	<li>
+	  Play song
+	</li>
+      </ul>
+    
+
+    <p>
+      Adding a song to the list means taking the selected item
+      from the main song table and adding it to this table.
+      The main table is passed into the constructor and just
+      kept for the purpose of getting its selection. The
+      selected object is added to both the Swing <code>JList</code>
+      and to the favourites <code>SongTable</code>.
+    </p>
+
+    <p>
+      "Playing a song" is done in a simple way: the full path
+      to the song is written to standard output, newline
+      terminated. Another program in a pipeline can then pick
+      this up - see later.
+    </p>
+
+    <p>
+      Favourites aren't much good if they don't persist from one
+      day to the next! So the same object storage method as before is used 
+      as with the full song table. Each favourites file is saved on each
+      change. There are some Linux/Unix dependencies here, in that
+      application information is stored in a subdirectory
+      beginning with a "." in the user's home directory.
+    </p>
+
+    <p>
+      The code for <code>Favourites</code> is
+    </p>
+      <pre class="sh_cpp">
+<!--#exec cmd="/usr/local/bin/escape.pl Table Favourites.java" -->
+      </pre>
+    
+
+    <h2> All favourites </h2>
+    <p>
+      There's nothing special here. It just loads the tables for
+      each person and builds a <code>Favourites</code> object
+      which it places in a <code>JTabbedPane</code>.
+      It also adds in a "NEW" tab to add additional users.
+    </p>
+
+    <p>
+      The code for <code>AllFavourites</code> is
+    </p>
+      <pre class="sh_cpp">
+<!--#exec cmd="/usr/local/bin/escape.pl Table AllFavourites.java" -->
+      </pre>
+    
+
+    <h2> Swing song table </h2>
+    <p>
+      This is mainly code to get the different song tables loaded
+      and to buld the Swing interface. It also filters the
+      showing table based on patterns matched.
+      The originally loaded table is kept for restoration and
+      patching matching.
+      The code for <code>SongTableSwing</code> is
+    </p>
+      <pre class="sh_cpp">
+<!--#exec cmd="/usr/local/bin/escape.pl Table SongTableSwing.java" -->
+      </pre>
+    
+
+    <h2> Playing songs </h2>
+    <p>
+      Whenever a song is "played" its file path is written to standard output.
+      This makes it suitable for use in a pipeline such as
+    </p>
+      <pre class="sh_cpp">
+VLC_OPTS="--play-and-exit --fullscreen"
+
+java  SongTableSwing |
+while read line
+do
+        if expr match "$line" ".*mp3"
+        then
+                vlc $VLC_OPTS "$line"
+        elif expr match "$line" ".*zip"
+        then
+                rm -f /tmp/karaoke/*
+                unzip -d /tmp/karaoke "$line"
+                vlc $VLC_OPTS /tmp/karaoke/*.mp3
+        fi
+done
+      </pre>
+    
+
+    <h2> VLC </h2>
+    <p>
+      VLC is an immensely flexible media player. It relies on a large set of plugins
+      to enhance its basic core functionality. We saw in an earlier chapter that
+      if a directory contains both an MP3 and a CDG file with the same basename
+      then by asking it to play the MP3 file it will also show the CDG video.
+    </p>
+
+    <p>
+      Common expectations of Karaoke players are that you can adjust the speed and pitch.
+      Currently VLC cannot adjust pitch, but it does have a plugin to adjust speed
+      (while keeping the pitch unchanged). This plugin can be accessed by the 
+      <a href="http://www.videolan.org/developers/vlc/share/lua/intf/cli.lua">Lua</a>
+      interface to VLC. 
+      Once set up, you can send commands such as
+    </p>
+      <pre>
+	<code>
+rate 1.04	  
+	</code>
+      </pre>
+    <p>
+      across standard input from the process that started VLC (such as a
+      command line shell). This will change the speed and leave the pitch
+      unchanged.
+    </p>
+
+    <p>
+      Setting up VLC to accept Lua commands from stdin can be done by the command options
+    </p>
+      <pre>
+	<code>
+vlc -I luaintf --lua-intf cli ...
+	</code>
+      </pre>
+    <p>
+      Note that this takes away the standard GUI controls (menus, etc) and 
+      controls VLC from stdin only.
+    </p>
+
+    <p>
+      At present, it is not simple to add pitch control to VLC.
+      Take a deep breath:
+    </p>
+      <ul>
+	<li>
+	  Turn off PulseAudio and start Jack
+	</li>
+	<li>
+	  Run <code>jack-rack</code> and install the <code>TAP_pitch</code> filter
+	</li>
+	<li>
+	  Run VLC with Jack output
+	</li>
+	<li>
+	  Using <code>qjackctl</code> hook VLC to output through 
+	  <code>jack-rack</code>, which outputs to system
+	</li>
+	<li>
+	  Control pitch through the <code>jack-rack</code> GUI
+	</li>
+      </ul>
+    
+
+    <h2> Playing songs across the network </h2>
+    <p>
+      I actually want to play songs from my server disk to a
+      Raspberry Pi or CubieBoard connected to my TV,
+      and control the play from a netbook sitting on my
+      lap. (Later I will try to get Android code running to
+      do the same.). This is a distributed system.
+    </p>
+
+    <p>
+      Mounting server files on a computer is simple: you can use
+      NFS, Samba, ... I am currently using <code>sshfs</code> as in
+    </p>
+      <pre>
+sshfs -o idmap=user -o rw -o allow_other newmarch@192.168.1.101:/home/httpd/html /server
+      </pre>
+    
+
+    <p>
+      For remote access/control I replace the <code>run</code> command
+      of the last section by a TCP client/server. On the client,
+      controlling the player, I have
+    </p>
+      <pre class="sh_cpp">
+java SongTableSwing | client 192.168.1.7
+      </pre>
+    <p>
+      while on the (Raspberry Pi/CubieBoard) server I run
+    </p>
+      <pre class="sh_cpp">
+#!/bin/bash
+set -x
+VLC_OPTS="--play-and-exit -f"
+
+server |
+while read line
+do
+	if expr match "$line" ".*mp3"
+	then
+		vlc $VLC_OPTS "$line"
+	elif expr match "$line" ".*zip"
+	then
+		rm -f /tmp/karaoke/*
+		unzip -d /tmp/karaoke "$line"
+		vlc $VLC_OPTS /tmp/karaoke/*.mp3
+	fi
+done
+      </pre>
+    
+
+    <p>
+      The client/server files are just standard TCP files.
+      The client reads a newline-terminated string
+      from standard input and writes it to the
+      server, and the server prints the same line to standard output.
+      Here is <code>client.c</code>:
+    </p>
+      <pre class="sh_cpp">
+<!--#exec cmd="/usr/local/bin/escape.pl Table client.c" -->
+      </pre>
+    <p>
+      and here is <code>server.c</code>
+    </p>
+      <pre class="sh_cpp">
+<!--#exec cmd="/usr/local/bin/escape.pl Table server.c" -->
+      </pre>
+    
+
+    <h2> Conclusion </h2>
+    <p>
+      This chapter has built a player for MP3+G files.
+    </p>
+     
+
+
+<!-- https://github.com/oreillymedia/HTMLBook/blob/master/specification.asciidoc -->
+<!--
+<figure>
+<figcaption>Adorable cat</figcaption>
+<img src="cute_kitty.gif" alt="Photo of an adorable cat"/>
+</figure>
+-->
+
+    <!--#include virtual="../../footer.html" -->
+
+  </body>
+</html>

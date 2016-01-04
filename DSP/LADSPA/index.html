@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="../../stylesheet.css" />
+
+    <title> LADSPA </title>
+
+    <style type="text/css">
+        body { counter-reset: chapter 14; }
+    </style>
+
+    <script type="text/javascript" src="../../toc.js"> 
+   /* empty */
+   </script>
+
+   <script type="text/javascript">
+/* <![CDATA[ */
+    (function() {
+        var s = document.createElement("script"), t = document.getElementsByTagName("script")[0];
+        s.type = "text/javascript";
+        s.async = true;
+        s.src = "http://api.flattr.com/js/0.6/load.js?mode=auto";
+        t.parentNode.insertBefore(s, t);
+    })();
+/* ]]> */
+    </script>
+
+
+   <link rel="stylesheet" type="text/css" href="../../js/doc/style.css">
+   <!-- <link rel="stylesheet" type="text/css" href="../../js/css/sh_emacs.css"> -->
+   <link rel="stylesheet" type="text/css" href="../../js/sh_style.css">
+   <script type="text/javascript" src="../../js/sh_main.min.js"></script>
+   <script type="text/javascript" src="../../js/lang/sh_cpp.min.js"></script>
+   
+
+  </head>
+  <body onload="sh_highlightDocument();">
+
+    <!--#include virtual="../../header.html" -->
+
+
+    <div class="chapter">
+        <h1> LADSPA </h1>
+     </div>
+
+    <div class="preface">
+      <p>
+	LADSPA (Linux Audio Plug-Ins) is a set of plugins
+	that may be used by applictions to add effects such as
+	delays and filters.
+      </p>
+    </div>
+
+    <div id="generated-toc" class="generate_from_h2"></div>
+
+    <h2> Resources </h2>
+    <ul>
+      <li>
+	<a href="http://www.linuxdevcenter.com/pub/a/linux/2001/02/02/ladspa.html">
+	  Linux Audio Plug-Ins: A Look Into LADSPA
+	</a>
+	by Dave Phillips
+      </li>
+      <li>
+	<a href="http://www.ladspa.org/">
+	  Linux Audio Developer's Simple Plugin API (LADSPA)
+	</a>
+      </li>
+    </ul>
+
+    <h2> Files </h2>
+    <p>
+      <a href="all.zip"> All files </a>
+    </p>
+
+    <h2> Introduction </h2>
+    <p>
+      LADPSA is a set of plugins that may be used by applications.
+      It is designed with simplicity in mind, so is only capable
+      of a limited number of effects. Nevertheless, these can be
+      quite wide-ranging and are sufficient for a large variety
+      of applications.
+    </p>
+
+    <h2> User level tools </h2>
+    <p>
+      LADSPA plugins live in a directory defaulting to
+      <code>/usr/lib/ladspa</code>. This can be controlled
+      by the environment variable <code>LADSPA_PATH</code>.
+      This directory will contain a set of <code>.so</code>
+      files as LADSPA plugins. 
+    </p>
+
+    <p>
+      Each plugin contains information
+      about itself, and the set of plugins can be inspected by running the
+      command line tool <code>listplugins</code>. By installing
+      just LADPSA, the default plugins are
+    </p>
+      <pre>
+	<code>
+/usr/lib/ladspa/amp.so:
+	Mono Amplifier (1048/amp_mono)
+	Stereo Amplifier (1049/amp_stereo)
+/usr/lib/ladspa/delay.so:
+	Simple Delay Line (1043/delay_5s)
+/usr/lib/ladspa/filter.so:
+	Simple Low Pass Filter (1041/lpf)
+	Simple High Pass Filter (1042/hpf)
+/usr/lib/ladspa/sine.so:
+	Sine Oscillator (Freq:audio, Amp:audio) (1044/sine_faaa)
+	Sine Oscillator (Freq:audio, Amp:control) (1045/sine_faac)
+	Sine Oscillator (Freq:control, Amp:audio) (1046/sine_fcaa)
+	Sine Oscillator (Freq:control, Amp:control) (1047/sine_fcac)
+/usr/lib/ladspa/noise.so:
+	White Noise Source (1050/noise_white)
+	</code>
+      </pre>
+    
+
+    <p>
+      More detailed information about each plugin can be found from
+      the tool <code>analyseplugin</code>. For example for the
+      <code>amp</code> plugin,
+    </p>
+      <pre>
+	<code>
+$analyseplugin amp
+
+Plugin Name: "Mono Amplifier"
+Plugin Label: "amp_mono"
+Plugin Unique ID: 1048
+Maker: "Richard Furse (LADSPA example plugins)"
+Copyright: "None"
+Must Run Real-Time: No
+Has activate() Function: No
+Has deactivate() Function: No
+Has run_adding() Function: No
+Environment: Normal or Hard Real-Time
+Ports:	"Gain" input, control, 0 to ..., default 1, logarithmic
+	"Input" input, audio
+	"Output" output, audio
+
+Plugin Name: "Stereo Amplifier"
+Plugin Label: "amp_stereo"
+Plugin Unique ID: 1049
+Maker: "Richard Furse (LADSPA example plugins)"
+Copyright: "None"
+Must Run Real-Time: No
+Has activate() Function: No
+Has deactivate() Function: No
+Has run_adding() Function: No
+Environment: Normal or Hard Real-Time
+Ports:	"Gain" input, control, 0 to ..., default 1, logarithmic
+	"Input (Left)" input, audio
+	"Output (Left)" output, audio
+	"Input (Right)" input, audio
+	"Output (Right)" output, audio
+	</code>
+      </pre>
+    
+
+    <p>
+      A simple test of each plugin can be performed using
+      <code>applyplugin</code>. When run with no arguments
+      it gives a usage message:
+    </p>
+      <pre>
+	<code>
+$applyplugin 
+Usage:	applyplugin [flags] &lt;input Wave file&gt; &lt;output Wave file&gt;
+	&lt;LADSPA plugin file name&gt; &lt;plugin label&gt; &lt;Control1&gt; &lt;Control2&gt;...
+	[&lt;LADSPA plugin file name&gt; &lt;plugin label&gt; &lt;Control1&gt; &lt;Control2&gt;...]...
+Flags:	-s&lt;seconds&gt;  Add seconds of silence after end of input file.
+	</code>
+      </pre>
+    <p>
+      This takes an input and an output WAV file as first and second parameters.
+      The next ones are the names of the <code>.so</code> file
+       and the plugin label chosen. This is followed by values of the
+      controls. For the <code>amp</code> plugin, the file name is
+      <code>amp.so</code>, the stereo plugin is <code>amp_stereo</code>
+      and there is only one control for gain as a value between zero
+      and one. To halve the volume of a file containing stereo WAV data,
+    </p>
+      <pre>
+	<code>
+applyplugin 54154.wav tmp.wav amp.so amp_stereo 0.5
+	</code>
+      </pre>
+    
+
+    <h2> The type LADSPA_Descriptor </h2>
+    <p>
+      Coomunication between an application and a LADSPA plugin
+      takes place through a data structure of type
+      <code>LADSPA_Descriptor</code>. This has fields that
+      contain all of the information that is shown by
+      <code>listplugins</code> and <code>analyseplugins</code>.
+      In addition, it contains fields that control memory layout,
+      whether or not it supports hard realtime, etc.
+    </p>
+      <dl>
+	<dt>
+	  <code> unsigned long UniqueID </code>
+	</dt>
+	<dd>
+	  Each plugin must have a unique ID within the LADSPA
+	  system. 
+	</dd>
+	<dt>
+	  <code> const char * Label  </code>
+	</dt>
+	<dd>
+	  This is the label used to refer to the plugin within the
+	  LADSPA system
+	</dd>
+	<dt>
+	  <code> const char * Name  </code>
+	</dt>
+	<dd>
+	  This is the "user friendly" name of the plugin.
+	  For example, the <code>amp</code> file (shown later)
+	  contains two plugins,
+	  the mono amplifier has ID 1048,  label "amp_mono" and
+	  name "Mono Amplifier", while the stereo amplifier has
+	  ID 1049, label "amp_stereo" and name "Stereo Amplifier"
+	</dd>
+	<dt>
+	  <code> const char * Maker, * Copyright </code>
+	</dt>
+	<dd>
+	  Obvious
+	</dd>
+	<dt>
+	  <code> unsigned long PortCount </code>
+	</dt>
+	<dd>
+	  This indicates the number of ports (input AND output) present on
+	  the plugin
+	</dd>
+	<dt>
+	  <code> const LADSPA_PortDescriptor * PortDescriptors  </code>
+	</dt>
+	<dd>
+	  This member indicates an array of port descriptors. Valid indices
+	  vary from 0 to PortCount-1
+	</dd>
+	<dt>
+	  <code> const char * const * PortNames </code>
+	</dt>
+	<dd>
+	  This member indicates an array of null-terminated strings
+	  describing ports. For example, the mono amplifer has two
+	  input ports and one output port labelled
+	  "Gain", "Input" and "Output". The Input port has 
+	  PortDescriptor <code>(LADSPA_PORT_INPUT | LADSPA_PORT_AUDIO)</code>
+	  while the Output port has 
+	  PortDescriptor <code>(LADSPA_PORT_OUTPUT | LADSPA_PORT_AUDIO)</code>
+	</dd>
+	<dt>
+	  <code> LADSPA_PortRangeHint * PortRangeHints  </code>
+	</dt>
+	<dd>
+	  This is an array of type <code>LADSPA_PortRangeHint</code>,
+	  one element for each port. This allows the plugin to
+	  pass information such as whether it has a value that
+	  is bounded above or below, and if so what is that bound,
+	  as to whether it should be treated as a Boolean value,
+	  and so on. These hints could be used by, say, a GUI to
+	  give a visual control display for the plugin.
+	</dd>
+      </dl>
+
+    <p>
+      Additionally, it contains fields that are function
+      pointers, which are called by the LADSPA runtime to
+      initialise the plugin, handle data and clean up.
+      These fields are
+    </p>
+      <dl>
+	<dt>
+	  <code>instantiate</code>
+	</dt>
+	<dd>
+	  This takes the sample rate as parameter.
+	  It is responsible for general instantiation of the plugin,
+	  setting local parameters, allocating memory, etc.
+	  It returns a pointer to a plugin-specific data
+	  structure containing all of the information
+	  relating to that plugin. This pointer will be passed
+	  as the first parameter to the other functions
+	  so that they can retrieve information for this plugin.
+	</dd>
+	<dt>
+	  <code>connect_port</code>
+	</dt>
+	<dd>
+	  This takes three parameters, the second and third being
+	  the port number and the address on which data will be
+	  readable/writable respectively. The plugin is expected
+	  to read/write data from the LADSPA runtime using this
+	  address only for each port. it will be called before
+	  <code>run</code> or <code>run_adding</code>.
+	</dd>
+	<dt>
+	  <code>activate/deactivate</code>
+	</dt>
+	<dd>
+	  These may be called to re-initialise the plugin state.
+	  They may be <code>NULL</code>.
+	</dd>
+	<dt>
+	  <code>run</code>
+	</dt>
+	<dd>
+	  This function is where all of the plugin'a real work is done.
+	  Its second parameter is the number of samples that are
+	  ready to read/write.
+	</dd>
+	<dt>
+	  <code>cleanup</code>
+	</dt>
+	<dd>
+	  Obvious
+	</dd>
+      </dl>
+    <p>
+      Other function fields are normally set to <code>NULL</code>.
+    </p>
+
+    <h2> Loading a plugin </h2>
+    <p>
+      An application can load a plugin by calling
+      <code>loadLADSPAPluginLibrary</code> with one
+      parameter which is the name of the plugin file.
+      Note that there is no LADSPA library - LADPSA
+      suuplies a header file <code>ladspa.h</code> and
+      the distribution may include a file 
+      <code>load.c</code> which implements
+      <code>loadLADSPAPluginLibrary</code>
+      (it searches the directories in the <code>LADSPA_PATH</code>).
+    </p>
+
+    <p>
+      When a plugin is loaded by <code>dlopen</code>, 
+      the function <code>_init</code>
+      is called with no parameters. This may be used to setup
+      the plugin and build, for example, the 
+      <code>LADSPA_Descriptor</code>.
+    </p>
+
+    <p>
+      A DLL must have an entry point that you can hook into.
+      For LADSPA, each plugin must define a function
+      <code>LADSPA_Descriptor * ladspa_descriptor(unsigned long Index)</code>.
+      The values for indices 0, 1, ... are the 
+      <code>LADSPA_Descriptor</code>'s for each of the plugins
+      included in the file.
+    </p>
+
+
+    <h2> The amp program </h2>
+    <p>
+      The code for the <code>amp</code> program is
+    </p>
+      <pre class="sh_cpp">
+<!--#exec cmd="/usr/local/bin/escape.pl . amp.c" -->
+      </pre>
+    
+
+    <h2> The analysePlugin client</h2>
+    <p>
+      The <code>analysePlugin</code> client loads
+      a plugin file and then does a dump of all the information
+      given about each plugin in the file. It is really
+      just a long-winded plough through all the possibilities,
+      printing out information. Its code is:     
+    </p>
+    <pre class="sh_cpp">
+	<!--#exec cmd="/usr/local/bin/escape.pl ladspa_sdk/src analyseplugin.c" -->
+      </pre>
+    
+
+    <h2> A mono amplifier client </h2>
+    <p>
+      The <code>applyplugin</code> program shows how clients can use
+      LADSPA plugins in a general way. Unfortunately, the
+      necessary generality makes it harder to see what is being
+      done. In this section we just look at a simple client
+      that uses the <code>amp_mono</code> plugin to halve the
+      volume of a file.
+    </p>
+
+    <p>
+      From running <code>analyseplugin</code> on the
+      <code>amp.so</code> file we can find that it contains
+      a mono and stereo plugin. In the following program
+      the <code>main</code> function loads the plugin file,
+      gets a handle to the <code>ladspa_descriptor</code>
+      structure and then looks through the descriptors until
+      it finds the <code>amp_mono</code> plugin.
+    </p>
+
+    <p>
+      We know there are three ports: control, input and output,
+      so we look through the list of ports to assign indices
+      and connect the relevant arrays to the plugin descriptor.
+      The control port only needs the address of a
+      float value which is the amount of amplification that
+      will occur.
+    </p>
+
+    <p>
+      The <code>run_plugin</code> function then just loops,
+      reading samples from the imput file, applying the plugin
+      and writing to the output file.
+      I've used the <a href="http://www.mega-nerd.com/libsndfile/">
+	libsndfile</a> library to simplify reading and writing
+      files in whatever format they are in.
+      I've also used the <code>load.c</code> file from the
+      LADSPA package to simplify loading the plugin library.
+    </p>
+
+    <p>
+      The program is <code>mono_amp.c</code>:
+    </p>
+      <pre class="sh_cpp">
+<!--#exec cmd="/usr/local/bin/escape.pl mono_amp mono_amp.c" -->
+      </pre>
+    <p>
+      it is run just by calling <code>mono_amp</code>, 
+      no arguments.
+    </p>
+
+    <h2> A stereo amplifer with GUI </h2>
+    <p>
+      The <code>amp</code> file contains a stereo amplifier
+      as well as a mono amplifier. This causes several differences
+      to managing the plugin. there are now two input ports and
+      two output ports, but still only one control port for the 
+      amplification factor. We need an array of input ports
+      and an array of output ports. This just adds a little
+      complexity.
+    </p>
+
+    <p>
+      The major difference is in handling the streams: 
+      <code>libsndfile</code> returns <em>frames</em>
+      of sound, with the two channels of a stereo signal
+      interleaved. These have to be split out into separate
+      channels for each input port, and then the two
+      output ports have to interleaved back together.
+    </p>
+
+    <p>
+      Adding a GUI such as GTK is fairly straightforward.
+      The following code just shows a slider to control
+      the volume. The GUI code and the LADSPA code must
+      obviously run in different (POSIX) threads.
+      There is really only one tricky point: the control
+      value is not supposed to change during execution
+      of the <code>run</code> function.
+      This could be protected by locks, but in this case
+      that is too heavyweight: just keep a copy of the
+      control as modified by the slider, and bring that
+      across before each call to <code>run</code>.
+    </p>
+
+    <p>
+      The code is written to use GTK v3 and is:
+    </p>
+      <pre class="sh_cpp">
+<!--#exec cmd="/usr/local/bin/escape.pl stereo_amp stereo_amp.c" -->
+      </pre>
+    <p>
+      It is run just by calling <code>stereo_amp</code>, 
+      no arguments.
+    </p>
+
+    <h2> Conclusion </h2>
+    <p>
+      LADSPA is a commonly used framework for audio effects plugins.
+      This chapter has considered the programming model and
+      also some command line tools.
+    </p>
+
+    <!--#include virtual="../../footer.html" -->
+  </body>
+</html>

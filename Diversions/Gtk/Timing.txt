@@ -1,0 +1,8 @@
+
+
+gtk_play_video
+
+Image is 192x144 MPG
+on Dell: 8 secs
+ob Cubieboard across ssg: 80 secs
+on Cubieboard only: 80 secs

@@ -1,0 +1,51 @@
+
+div.center {
+        text-align: center;
+}
+
+div.chapter {
+	text-align: center;
+}
+
+div.preface {
+	margin-left: 10em;
+	margin-right: 10em;
+}
+
+div.warning {
+	color: red;
+}
+
+div.disable {
+	color: lightgray;
+	pointer-events: none;
+}
+
+div.disable a:link {
+	color: lightgray;
+	pointer-events: none;
+}
+
+div.disable a:visited {
+	color: lightgray;
+	pointer-events: none;
+}
+
+ 
+body { counter-reset: section; 
+}
+
+
+code {color: darkblue; font-weight: bold}
+pre  {color: darkblue; background: #DDDDDD; font-weight: bold}
+em  {color: blue; font-style: italic}
+ 
+P {background: white}
+
+textarea {font-family: monospace; font-weight: bold}
+ 
+
+.interactive_program {background: white}
+.interactive_program {color: green}
+ 
+.list {background: #CCCCFF}

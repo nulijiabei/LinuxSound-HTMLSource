@@ -1,0 +1,532 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta http-equiv="content-language" content="en">
+<title>alsa-utils 1.0.24.2-1, aseqdump_8c_source.html</title>
+<style type="text/css">
+td{font-family: verdana, arial, helvetica, sans-serif;font-size:12pt}
+</style>
+<script type="text/javascript" src="https://apis.google.com/js/plusone.js"></script>
+</head>
+<body>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-9697898-2");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+<form action="http://sourcearchive.com/index.php" method="POST">
+<table border=0 width="98%" cellspacing=0 cellpadding=0 align="center">
+   <tr><td style="background-image:url('http://sourcearchive.com/g/bg.png')" align="left">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://sourcearchive.com"><img src="http://sourcearchive.com/g/logo_sa.png" border=0 alt="Logo"></a></td><td style="background-image:url('http://sourcearchive.com/g/bg.png')" align="right">
+<g:plusone size="small" href="http://sourcearchive.com"></g:plusone>
+<font color="#FFFFFF">Search packages:</font> <input type=text name="search" value="" size=20 maxlength=100> <input type=submit value="Search">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tr>
+</table>
+</form>
+
+
+<form action="http://sourcearchive.com/redirect.php" method="GET" name="chooser" target="_top">
+<table width="96%" cellpadding=0 cellspacing=0 align="center">
+<tr><td height="42"><img src="http://sourcearchive.com/g/menu_bg_l.png" alt=""></td><td width="50%" style="background-image:url('http://sourcearchive.com/g/menu_bg.png')">
+Sourcecode: <a href="http://alsa-utils.sourcearchive.com/">alsa-utils</a> version <input type=hidden name="dir" value="alsa-utils">
+<input type=hidden name="file" value="aseqdump_8c_source.html">
+<select name="version" size="1" onchange="document.forms['chooser'].submit();">
+<option value="1.0.10">1.0.10<option value="1.0.10-1ubuntu14">1.0.10-1ubuntu14<option value="1.0.13">1.0.13<option value="1.0.13-1ubuntu5">1.0.13-1ubuntu5<option value="1.0.13-2">1.0.13-2<option value="1.0.14">1.0.14<option value="1.0.14-1ubuntu4">1.0.14-1ubuntu4<option value="1.0.15">1.0.15<option value="1.0.15-3ubuntu2">1.0.15-3ubuntu2<option value="1.0.16">1.0.16<option value="1.0.16-1ubuntu3">1.0.16-1ubuntu3<option value="1.0.16-2">1.0.16-2<option value="1.0.17">1.0.17<option value="1.0.17-0ubuntu1">1.0.17-0ubuntu1<option value="1.0.17-0ubuntu2">1.0.17-0ubuntu2<option value="1.0.17-1">1.0.17-1<option value="1.0.18">1.0.18<option value="1.0.18-1">1.0.18-1<option value="1.0.18-1ubuntu1">1.0.18-1ubuntu1<option value="1.0.18-1ubuntu10">1.0.18-1ubuntu10<option value="1.0.18-1ubuntu11">1.0.18-1ubuntu11<option value="1.0.18-1ubuntu3">1.0.18-1ubuntu3<option value="1.0.18-1ubuntu8">1.0.18-1ubuntu8<option value="1.0.19">1.0.19<option value="1.0.19-1">1.0.19-1<option value="1.0.19-2">1.0.19-2<option value="1.0.19-2ubuntu2">1.0.19-2ubuntu2<option value="1.0.20">1.0.20<option value="1.0.20-1">1.0.20-1<option value="1.0.20-1ubuntu1">1.0.20-1ubuntu1<option value="1.0.20-2">1.0.20-2<option value="1.0.20-2ubuntu1">1.0.20-2ubuntu1<option value="1.0.20-2ubuntu3">1.0.20-2ubuntu3<option value="1.0.20-2ubuntu4">1.0.20-2ubuntu4<option value="1.0.20-2ubuntu6">1.0.20-2ubuntu6<option value="1.0.20-3">1.0.20-3<option value="1.0.21">1.0.21<option value="1.0.21-1">1.0.21-1<option value="1.0.21-1ubuntu2">1.0.21-1ubuntu2<option value="1.0.21-1ubuntu3">1.0.21-1ubuntu3<option value="1.0.22">1.0.22<option value="1.0.22-0ubuntu1">1.0.22-0ubuntu1<option value="1.0.22-0ubuntu2">1.0.22-0ubuntu2<option value="1.0.22-0ubuntu3">1.0.22-0ubuntu3<option value="1.0.22-0ubuntu5">1.0.22-0ubuntu5<option value="1.0.22-1">1.0.22-1<option value="1.0.23-2ubuntu3">1.0.23-2ubuntu3<option value="1.0.23-3">1.0.23-3<option value="1.0.23-5">1.0.23-5<option value="1.0.24.2-0ubuntu6">1.0.24.2-0ubuntu6<option value="1.0.24.2-0ubuntu7">1.0.24.2-0ubuntu7<option value="1.0.24.2-0ubuntu8">1.0.24.2-0ubuntu8<option value="1.0.24.2-1" selected>1.0.24.2-1<option value="1.0.24.2-3">1.0.24.2-3<option value="1.0.24.2-4">1.0.24.2-4<option value="1.0.24.2-4ubuntu3">1.0.24.2-4ubuntu3<option value="1.0.25-1ubuntu2">1.0.25-1ubuntu2<option value="1.0.8">1.0.8<option value="1.0.8-4">1.0.8-4</select><input type=submit value="Show">
+
+</td><td style="background-image:url('http://sourcearchive.com/g/menu_bg.png')" align="right" width="50%" valign="middle">
+
+<a href="http://alsa-utils.sourcearchive.com/versions/aseqdump_8c_source.html" rel="nofollow"><img src="http://sourcearchive.com/g/icon_versions.png" alt="File versions" border=0></a> &nbsp;<a href="http://alsa-utils.sourcearchive.com/downloads/1.0.24.2-1/" rel="nofollow"><img src="http://sourcearchive.com/g/icon_download.png" alt="Download package" border=0></a>
+</td>
+<td><img src="http://sourcearchive.com/g/menu_bg_r.png" alt=""></td></tr></table>
+</form>
+
+
+<br>
+<script type="text/javascript"><!--
+google_ad_client = "pub-2709623729693576";
+/*  */
+google_ad_slot = "5710915133";
+google_ad_width = 728;
+google_ad_height = 90;
+//-->
+</script>
+<script type="text/javascript"
+src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
+</script>
+<!-- google_ad_section_start -->
+<div class="navigation" id="top">
+  <div class="tabs">
+    <ul class="tablist">
+      <li><a href="main.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="annotated.html"><span>Classes</span></a></li>
+      <li class="current"><a href="files.html"><span>Files</span></a></li>
+      <li><a href="dirs.html"><span>Directories</span></a></li>
+    </ul>
+  </div>
+  <div class="tabs2">
+    <ul class="tablist">
+      <li><a href="files.html"><span>File&#160;List</span></a></li>
+    </ul>
+  </div>
+  <div class="navpath">
+    <ul>
+      <li><a class="el" href="dir_36c49baa0e4b4909d2ff1be16dbdbb36.html">alsa-utils-1.0.24.2</a>      </li>
+      <li><a class="el" href="dir_25e09cddb7a0e68521b780a1f30fe8a1.html">seq</a>      </li>
+      <li><a class="el" href="dir_d9335d3370ca46c26f6404fc74ce6e0c.html">aseqdump</a>      </li>
+    </ul>
+  </div>
+</div>
+<div class="header">
+  <div class="headertitle">
+<h1>aseqdump.c</h1>  </div>
+</div>
+<div class="contents">
+<div class="fragment"><pre class="fragment"><span class="comment">/*</span>
+<span class="comment"> * aseqdump.c - show the events received at an ALSA sequencer port</span>
+<span class="comment"> *</span>
+<span class="comment"> * Copyright (c) 2005 Clemens Ladisch &lt;clemens&#64;ladisch.de&gt;</span>
+<span class="comment"> *</span>
+<span class="comment"> *</span>
+<span class="comment"> *  This program is free software; you can redistribute it and/or modify</span>
+<span class="comment"> *  it under the terms of the GNU General Public License as published by</span>
+<span class="comment"> *  the Free Software Foundation; either version 2 of the License, or</span>
+<span class="comment"> *  (at your option) any later version.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  This program is distributed in the hope that it will be useful,</span>
+<span class="comment"> *  but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="comment"> *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="comment"> *  GNU General Public License for more details.</span>
+<span class="comment"> *</span>
+<span class="comment"> *  You should have received a copy of the GNU General Public License</span>
+<span class="comment"> *  along with this program; if not, write to the Free Software</span>
+<span class="comment"> *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA</span>
+<span class="comment"> */</span>
+
+<span class="preprocessor">#include &lt;stdio.h&gt;</span>
+<span class="preprocessor">#include &lt;stdlib.h&gt;</span>
+<span class="preprocessor">#include &lt;stdarg.h&gt;</span>
+<span class="preprocessor">#include &lt;string.h&gt;</span>
+<span class="preprocessor">#include &lt;signal.h&gt;</span>
+<span class="preprocessor">#include &lt;getopt.h&gt;</span>
+<span class="preprocessor">#include &lt;sys/poll.h&gt;</span>
+<span class="preprocessor">#include &lt;alsa/asoundlib.h&gt;</span>
+<span class="preprocessor">#include &quot;aconfig.h&quot;</span>
+<span class="preprocessor">#include &quot;version.h&quot;</span>
+
+<span class="keyword">static</span> snd_seq_t *seq;
+<span class="keyword">static</span> <span class="keywordtype">int</span> port_count;
+<span class="keyword">static</span> snd_seq_addr_t *ports;
+<span class="keyword">static</span> <span class="keyword">volatile</span> sig_atomic_t stop = 0;
+
+
+<span class="comment">/* prints an error message to stderr, and dies */</span>
+<span class="keyword">static</span> <span class="keywordtype">void</span> fatal(<span class="keyword">const</span> <span class="keywordtype">char</span> *msg, ...)
+{
+      va_list ap;
+
+      va_start(ap, msg);
+      vfprintf(stderr, msg, ap);
+      va_end(ap);
+      fputc(<span class="charliteral">&#39;\n&#39;</span>, stderr);
+      exit(EXIT_FAILURE);
+}
+
+<span class="comment">/* memory allocation error handling */</span>
+<span class="keyword">static</span> <span class="keywordtype">void</span> check_mem(<span class="keywordtype">void</span> *p)
+{
+      <span class="keywordflow">if</span> (!p)
+            fatal(<span class="stringliteral">&quot;Out of memory&quot;</span>);
+}
+
+<span class="comment">/* error handling for ALSA functions */</span>
+<span class="keyword">static</span> <span class="keywordtype">void</span> check_snd(<span class="keyword">const</span> <span class="keywordtype">char</span> *operation, <span class="keywordtype">int</span> err)
+{
+      <span class="keywordflow">if</span> (err &lt; 0)
+            fatal(<span class="stringliteral">&quot;Cannot %s - %s&quot;</span>, operation, snd_strerror(err));
+}
+
+<span class="keyword">static</span> <span class="keywordtype">void</span> init_seq(<span class="keywordtype">void</span>)
+{
+      <span class="keywordtype">int</span> err;
+
+      <span class="comment">/* open sequencer */</span>
+      err = snd_seq_open(&amp;seq, <span class="stringliteral">&quot;default&quot;</span>, SND_SEQ_OPEN_DUPLEX, 0);
+      check_snd(<span class="stringliteral">&quot;open sequencer&quot;</span>, err);
+
+      <span class="comment">/* set our client&#39;s name */</span>
+      err = snd_seq_set_client_name(seq, <span class="stringliteral">&quot;aseqdump&quot;</span>);
+      check_snd(<span class="stringliteral">&quot;set client name&quot;</span>, err);
+}
+
+<span class="comment">/* parses one or more port addresses from the string */</span>
+<span class="keyword">static</span> <span class="keywordtype">void</span> parse_ports(<span class="keyword">const</span> <span class="keywordtype">char</span> *arg)
+{
+      <span class="keywordtype">char</span> *buf, *s, *port_name;
+      <span class="keywordtype">int</span> err;
+
+      <span class="comment">/* make a copy of the string because we&#39;re going to modify it */</span>
+      buf = strdup(arg);
+      check_mem(buf);
+
+      <span class="keywordflow">for</span> (port_name = s = buf; s; port_name = s + 1) {
+            <span class="comment">/* Assume that ports are separated by commas.  We don&#39;t use</span>
+<span class="comment">             * spaces because those are valid in client names. */</span>
+            s = strchr(port_name, <span class="charliteral">&#39;,&#39;</span>);
+            <span class="keywordflow">if</span> (s)
+                  *s = <span class="charliteral">&#39;\0&#39;</span>;
+
+            ++port_count;
+            ports = realloc(ports, port_count * <span class="keyword">sizeof</span>(snd_seq_addr_t));
+            check_mem(ports);
+
+            err = snd_seq_parse_address(seq, &amp;ports[port_count - 1], port_name);
+            <span class="keywordflow">if</span> (err &lt; 0)
+                  fatal(<span class="stringliteral">&quot;Invalid port %s - %s&quot;</span>, port_name, snd_strerror(err));
+      }
+
+      free(buf);
+}
+
+<span class="keyword">static</span> <span class="keywordtype">void</span> create_port(<span class="keywordtype">void</span>)
+{
+      <span class="keywordtype">int</span> err;
+
+      err = snd_seq_create_simple_port(seq, <span class="stringliteral">&quot;aseqdump&quot;</span>,
+                               SND_SEQ_PORT_CAP_WRITE |
+                               SND_SEQ_PORT_CAP_SUBS_WRITE,
+                               SND_SEQ_PORT_TYPE_MIDI_GENERIC |
+                               SND_SEQ_PORT_TYPE_APPLICATION);
+      check_snd(<span class="stringliteral">&quot;create port&quot;</span>, err);
+}
+
+<span class="keyword">static</span> <span class="keywordtype">void</span> connect_ports(<span class="keywordtype">void</span>)
+{
+      <span class="keywordtype">int</span> i, err;
+
+      <span class="keywordflow">for</span> (i = 0; i &lt; port_count; ++i) {
+            err = snd_seq_connect_from(seq, 0, ports[i].client, ports[i].port);
+            <span class="keywordflow">if</span> (err &lt; 0)
+                  fatal(<span class="stringliteral">&quot;Cannot connect from port %d:%d - %s&quot;</span>,
+                        ports[i].client, ports[i].port, snd_strerror(err));
+      }
+}
+
+<span class="keyword">static</span> <span class="keywordtype">void</span> dump_event(<span class="keyword">const</span> snd_seq_event_t *ev)
+{
+      printf(<span class="stringliteral">&quot;%3d:%-3d &quot;</span>, ev-&gt;source.client, ev-&gt;source.port);
+      <span class="keywordflow">switch</span> (ev-&gt;type) {
+      <span class="keywordflow">case</span> SND_SEQ_EVENT_NOTEON:
+            <span class="keywordflow">if</span> (ev-&gt;data.note.velocity)
+                  printf(<span class="stringliteral">&quot;Note on                %2d, note %d, velocity %d\n&quot;</span>,
+                         ev-&gt;data.note.channel, ev-&gt;data.note.note, ev-&gt;data.note.velocity);
+            <span class="keywordflow">else</span>
+                  printf(<span class="stringliteral">&quot;Note off               %2d, note %d\n&quot;</span>,
+                         ev-&gt;data.note.channel, ev-&gt;data.note.note);
+            <span class="keywordflow">break</span>;
+      <span class="keywordflow">case</span> SND_SEQ_EVENT_NOTEOFF:
+            printf(<span class="stringliteral">&quot;Note off               %2d, note %d, velocity %d\n&quot;</span>,
+                   ev-&gt;data.note.channel, ev-&gt;data.note.note, ev-&gt;data.note.velocity);
+            <span class="keywordflow">break</span>;
+      <span class="keywordflow">case</span> SND_SEQ_EVENT_KEYPRESS:
+            printf(<span class="stringliteral">&quot;Polyphonic aftertouch  %2d, note %d, value %d\n&quot;</span>,
+                   ev-&gt;data.note.channel, ev-&gt;data.note.note, ev-&gt;data.note.velocity);
+            <span class="keywordflow">break</span>;
+      <span class="keywordflow">case</span> SND_SEQ_EVENT_CONTROLLER:
+            printf(<span class="stringliteral">&quot;Control change         %2d, controller %d, value %d\n&quot;</span>,
+                   ev-&gt;data.control.channel, ev-&gt;data.control.param, ev-&gt;data.control.value);
+            <span class="keywordflow">break</span>;
+      <span class="keywordflow">case</span> SND_SEQ_EVENT_PGMCHANGE:
+            printf(<span class="stringliteral">&quot;Program change         %2d, program %d\n&quot;</span>,
+                   ev-&gt;data.control.channel, ev-&gt;data.control.value);
+            <span class="keywordflow">break</span>;
+      <span class="keywordflow">case</span> SND_SEQ_EVENT_CHANPRESS:
+            printf(<span class="stringliteral">&quot;Channel aftertouch     %2d, value %d\n&quot;</span>,
+                   ev-&gt;data.control.channel, ev-&gt;data.control.value);
+            <span class="keywordflow">break</span>;
+      <span class="keywordflow">case</span> SND_SEQ_EVENT_PITCHBEND:
+            printf(<span class="stringliteral">&quot;Pitch bend             %2d, value %d\n&quot;</span>,
+                   ev-&gt;data.control.channel, ev-&gt;data.control.value);
+            <span class="keywordflow">break</span>;
+      <span class="keywordflow">case</span> SND_SEQ_EVENT_CONTROL14:
+            printf(<span class="stringliteral">&quot;Control change         %2d, controller %d, value %5d\n&quot;</span>,
+                   ev-&gt;data.control.channel, ev-&gt;data.control.param, ev-&gt;data.control.value);
+            <span class="keywordflow">break</span>;
+      <span class="keywordflow">case</span> SND_SEQ_EVENT_NONREGPARAM:
+            printf(<span class="stringliteral">&quot;Non-reg. parameter     %2d, parameter %d, value %d\n&quot;</span>,
+                   ev-&gt;data.control.channel, ev-&gt;data.control.param, ev-&gt;data.control.value);
+            <span class="keywordflow">break</span>;
+      <span class="keywordflow">case</span> SND_SEQ_EVENT_REGPARAM:
+            printf(<span class="stringliteral">&quot;Reg. parameter         %2d, parameter %d, value %d\n&quot;</span>,
+                   ev-&gt;data.control.channel, ev-&gt;data.control.param, ev-&gt;data.control.value);
+            <span class="keywordflow">break</span>;
+      <span class="keywordflow">case</span> SND_SEQ_EVENT_SONGPOS:
+            printf(<span class="stringliteral">&quot;Song position pointer      value %d\n&quot;</span>,
+                   ev-&gt;data.control.value);
+            <span class="keywordflow">break</span>;
+      <span class="keywordflow">case</span> SND_SEQ_EVENT_SONGSEL:
+            printf(<span class="stringliteral">&quot;Song select                value %d\n&quot;</span>,
+                   ev-&gt;data.control.value);
+            <span class="keywordflow">break</span>;
+      <span class="keywordflow">case</span> SND_SEQ_EVENT_QFRAME:
+            printf(<span class="stringliteral">&quot;MTC quarter frame          %02xh\n&quot;</span>,
+                   ev-&gt;data.control.value);
+            <span class="keywordflow">break</span>;
+      <span class="keywordflow">case</span> SND_SEQ_EVENT_TIMESIGN:
+            <span class="comment">// XXX how is this encoded?</span>
+            printf(<span class="stringliteral">&quot;SMF time signature         (%#010x)\n&quot;</span>,
+                   ev-&gt;data.control.value);
+            <span class="keywordflow">break</span>;
+      <span class="keywordflow">case</span> SND_SEQ_EVENT_KEYSIGN:
+            <span class="comment">// XXX how is this encoded?</span>
+            printf(<span class="stringliteral">&quot;SMF key signature          (%#010x)\n&quot;</span>,
+                   ev-&gt;data.control.value);
+            <span class="keywordflow">break</span>;
+      <span class="keywordflow">case</span> SND_SEQ_EVENT_START:
+            <span class="keywordflow">if</span> (ev-&gt;source.client == SND_SEQ_CLIENT_SYSTEM &amp;&amp;
+                ev-&gt;source.port == SND_SEQ_PORT_SYSTEM_TIMER)
+                  printf(<span class="stringliteral">&quot;Queue start                queue %d\n&quot;</span>,
+                         ev-&gt;data.queue.queue);
+            <span class="keywordflow">else</span>
+                  printf(<span class="stringliteral">&quot;Start\n&quot;</span>);
+            <span class="keywordflow">break</span>;
+      <span class="keywordflow">case</span> SND_SEQ_EVENT_CONTINUE:
+            <span class="keywordflow">if</span> (ev-&gt;source.client == SND_SEQ_CLIENT_SYSTEM &amp;&amp;
+                ev-&gt;source.port == SND_SEQ_PORT_SYSTEM_TIMER)
+                  printf(<span class="stringliteral">&quot;Queue continue             queue %d\n&quot;</span>,
+                         ev-&gt;data.queue.queue);
+            <span class="keywordflow">else</span>
+                  printf(<span class="stringliteral">&quot;Continue\n&quot;</span>);
+            <span class="keywordflow">break</span>;
+      <span class="keywordflow">case</span> SND_SEQ_EVENT_STOP:
+            <span class="keywordflow">if</span> (ev-&gt;source.client == SND_SEQ_CLIENT_SYSTEM &amp;&amp;
+                ev-&gt;source.port == SND_SEQ_PORT_SYSTEM_TIMER)
+                  printf(<span class="stringliteral">&quot;Queue stop                 queue %d\n&quot;</span>,
+                         ev-&gt;data.queue.queue);
+            <span class="keywordflow">else</span>
+                  printf(<span class="stringliteral">&quot;Stop\n&quot;</span>);
+            <span class="keywordflow">break</span>;
+      <span class="keywordflow">case</span> SND_SEQ_EVENT_SETPOS_TICK:
+            printf(<span class="stringliteral">&quot;Set tick queue pos.        queue %d\n&quot;</span>, ev-&gt;data.queue.queue);
+            <span class="keywordflow">break</span>;
+      <span class="keywordflow">case</span> SND_SEQ_EVENT_SETPOS_TIME:
+            printf(<span class="stringliteral">&quot;Set rt queue pos.          queue %d\n&quot;</span>, ev-&gt;data.queue.queue);
+            <span class="keywordflow">break</span>;
+      <span class="keywordflow">case</span> SND_SEQ_EVENT_TEMPO:
+            printf(<span class="stringliteral">&quot;Set queue tempo            queue %d\n&quot;</span>, ev-&gt;data.queue.queue);
+            <span class="keywordflow">break</span>;
+      <span class="keywordflow">case</span> SND_SEQ_EVENT_CLOCK:
+            printf(<span class="stringliteral">&quot;Clock\n&quot;</span>);
+            <span class="keywordflow">break</span>;
+      <span class="keywordflow">case</span> SND_SEQ_EVENT_TICK:
+            printf(<span class="stringliteral">&quot;Tick\n&quot;</span>);
+            <span class="keywordflow">break</span>;
+      <span class="keywordflow">case</span> SND_SEQ_EVENT_QUEUE_SKEW:
+            printf(<span class="stringliteral">&quot;Queue timer skew           queue %d\n&quot;</span>, ev-&gt;data.queue.queue);
+            <span class="keywordflow">break</span>;
+      <span class="keywordflow">case</span> SND_SEQ_EVENT_TUNE_REQUEST:
+            printf(<span class="stringliteral">&quot;Tune request\n&quot;</span>);
+            <span class="keywordflow">break</span>;
+      <span class="keywordflow">case</span> SND_SEQ_EVENT_RESET:
+            printf(<span class="stringliteral">&quot;Reset\n&quot;</span>);
+            <span class="keywordflow">break</span>;
+      <span class="keywordflow">case</span> SND_SEQ_EVENT_SENSING:
+            printf(<span class="stringliteral">&quot;Active Sensing\n&quot;</span>);
+            <span class="keywordflow">break</span>;
+      <span class="keywordflow">case</span> SND_SEQ_EVENT_CLIENT_START:
+            printf(<span class="stringliteral">&quot;Client start               client %d\n&quot;</span>,
+                   ev-&gt;data.addr.client);
+            <span class="keywordflow">break</span>;
+      <span class="keywordflow">case</span> SND_SEQ_EVENT_CLIENT_EXIT:
+            printf(<span class="stringliteral">&quot;Client exit                client %d\n&quot;</span>,
+                   ev-&gt;data.addr.client);
+            <span class="keywordflow">break</span>;
+      <span class="keywordflow">case</span> SND_SEQ_EVENT_CLIENT_CHANGE:
+            printf(<span class="stringliteral">&quot;Client changed             client %d\n&quot;</span>,
+                   ev-&gt;data.addr.client);
+            <span class="keywordflow">break</span>;
+      <span class="keywordflow">case</span> SND_SEQ_EVENT_PORT_START:
+            printf(<span class="stringliteral">&quot;Port start                 %d:%d\n&quot;</span>,
+                   ev-&gt;data.addr.client, ev-&gt;data.addr.port);
+            <span class="keywordflow">break</span>;
+      <span class="keywordflow">case</span> SND_SEQ_EVENT_PORT_EXIT:
+            printf(<span class="stringliteral">&quot;Port exit                  %d:%d\n&quot;</span>,
+                   ev-&gt;data.addr.client, ev-&gt;data.addr.port);
+            <span class="keywordflow">break</span>;
+      <span class="keywordflow">case</span> SND_SEQ_EVENT_PORT_CHANGE:
+            printf(<span class="stringliteral">&quot;Port changed               %d:%d\n&quot;</span>,
+                   ev-&gt;data.addr.client, ev-&gt;data.addr.port);
+            <span class="keywordflow">break</span>;
+      <span class="keywordflow">case</span> SND_SEQ_EVENT_PORT_SUBSCRIBED:
+            printf(<span class="stringliteral">&quot;Port subscribed            %d:%d -&gt; %d:%d\n&quot;</span>,
+                   ev-&gt;data.connect.sender.client, ev-&gt;data.connect.sender.port,
+                   ev-&gt;data.connect.dest.client, ev-&gt;data.connect.dest.port);
+            <span class="keywordflow">break</span>;
+      <span class="keywordflow">case</span> SND_SEQ_EVENT_PORT_UNSUBSCRIBED:
+            printf(<span class="stringliteral">&quot;Port unsubscribed          %d:%d -&gt; %d:%d\n&quot;</span>,
+                   ev-&gt;data.connect.sender.client, ev-&gt;data.connect.sender.port,
+                   ev-&gt;data.connect.dest.client, ev-&gt;data.connect.dest.port);
+            <span class="keywordflow">break</span>;
+      <span class="keywordflow">case</span> SND_SEQ_EVENT_SYSEX:
+            {
+                  <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> i;
+                  printf(<span class="stringliteral">&quot;System exclusive          &quot;</span>);
+                  <span class="keywordflow">for</span> (i = 0; i &lt; ev-&gt;data.ext.len; ++i)
+                        printf(<span class="stringliteral">&quot; %02X&quot;</span>, ((<span class="keywordtype">unsigned</span> <span class="keywordtype">char</span>*)ev-&gt;data.ext.ptr)[i]);
+                  printf(<span class="stringliteral">&quot;\n&quot;</span>);
+            }
+            <span class="keywordflow">break</span>;
+      <span class="keywordflow">default</span>:
+            printf(<span class="stringliteral">&quot;Event type %d\n&quot;</span>,  ev-&gt;type);
+      }
+}
+
+<span class="keyword">static</span> <span class="keywordtype">void</span> list_ports(<span class="keywordtype">void</span>)
+{
+      snd_seq_client_info_t *cinfo;
+      snd_seq_port_info_t *pinfo;
+
+      snd_seq_client_info_alloca(&amp;cinfo);
+      snd_seq_port_info_alloca(&amp;pinfo);
+
+      puts(<span class="stringliteral">&quot; Port    Client name                      Port name&quot;</span>);
+
+      snd_seq_client_info_set_client(cinfo, -1);
+      <span class="keywordflow">while</span> (snd_seq_query_next_client(seq, cinfo) &gt;= 0) {
+            <span class="keywordtype">int</span> client = snd_seq_client_info_get_client(cinfo);
+
+            snd_seq_port_info_set_client(pinfo, client);
+            snd_seq_port_info_set_port(pinfo, -1);
+            <span class="keywordflow">while</span> (snd_seq_query_next_port(seq, pinfo) &gt;= 0) {
+                  <span class="comment">/* we need both READ and SUBS_READ */</span>
+                  <span class="keywordflow">if</span> ((snd_seq_port_info_get_capability(pinfo)
+                       &amp; (SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ))
+                      != (SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ))
+                        <span class="keywordflow">continue</span>;
+                  printf(<span class="stringliteral">&quot;%3d:%-3d  %-32.32s %s\n&quot;</span>,
+                         snd_seq_port_info_get_client(pinfo),
+                         snd_seq_port_info_get_port(pinfo),
+                         snd_seq_client_info_get_name(cinfo),
+                         snd_seq_port_info_get_name(pinfo));
+            }
+      }
+}
+
+<span class="keyword">static</span> <span class="keywordtype">void</span> help(<span class="keyword">const</span> <span class="keywordtype">char</span> *argv0)
+{
+      printf(<span class="stringliteral">&quot;Usage: %s [options]\n&quot;</span>
+            <span class="stringliteral">&quot;\nAvailable options:\n&quot;</span>
+            <span class="stringliteral">&quot;  -h,--help                  this help\n&quot;</span>
+            <span class="stringliteral">&quot;  -V,--version               show version\n&quot;</span>
+            <span class="stringliteral">&quot;  -l,--list                  list input ports\n&quot;</span>
+            <span class="stringliteral">&quot;  -p,--port=client:port,...  source port(s)\n&quot;</span>,
+            argv0);
+}
+
+<span class="keyword">static</span> <span class="keywordtype">void</span> version(<span class="keywordtype">void</span>)
+{
+      puts(<span class="stringliteral">&quot;aseqdump version &quot;</span> SND_UTIL_VERSION_STR);
+}
+
+<span class="keyword">static</span> <span class="keywordtype">void</span> sighandler(<span class="keywordtype">int</span> sig)
+{
+      stop = 1;
+}
+
+<span class="keywordtype">int</span> main(<span class="keywordtype">int</span> argc, <span class="keywordtype">char</span> *argv[])
+{
+      <span class="keyword">static</span> <span class="keyword">const</span> <span class="keywordtype">char</span> short_options[] = <span class="stringliteral">&quot;hVlp:&quot;</span>;
+      <span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">struct </span>option long_options[] = {
+            {<span class="stringliteral">&quot;help&quot;</span>, 0, NULL, <span class="charliteral">&#39;h&#39;</span>},
+            {<span class="stringliteral">&quot;version&quot;</span>, 0, NULL, <span class="charliteral">&#39;V&#39;</span>},
+            {<span class="stringliteral">&quot;list&quot;</span>, 0, NULL, <span class="charliteral">&#39;l&#39;</span>},
+            {<span class="stringliteral">&quot;port&quot;</span>, 1, NULL, <span class="charliteral">&#39;p&#39;</span>},
+            { }
+      };
+
+      <span class="keywordtype">int</span> do_list = 0;
+      <span class="keyword">struct </span>pollfd *pfds;
+      <span class="keywordtype">int</span> npfds;
+      <span class="keywordtype">int</span> c, err;
+
+      init_seq();
+
+      <span class="keywordflow">while</span> ((c = getopt_long(argc, argv, short_options,
+                        long_options, NULL)) != -1) {
+            <span class="keywordflow">switch</span> (c) {
+            <span class="keywordflow">case</span> <span class="charliteral">&#39;h&#39;</span>:
+                  help(argv[0]);
+                  <span class="keywordflow">return</span> 0;
+            <span class="keywordflow">case</span> <span class="charliteral">&#39;V&#39;</span>:
+                  version();
+                  <span class="keywordflow">return</span> 0;
+            <span class="keywordflow">case</span> <span class="charliteral">&#39;l&#39;</span>:
+                  do_list = 1;
+                  <span class="keywordflow">break</span>;
+            <span class="keywordflow">case</span> <span class="charliteral">&#39;p&#39;</span>:
+                  parse_ports(optarg);
+                  <span class="keywordflow">break</span>;
+            <span class="keywordflow">default</span>:
+                  help(argv[0]);
+                  <span class="keywordflow">return</span> 1;
+            }
+      }
+      <span class="keywordflow">if</span> (optind &lt; argc) {
+            help(argv[0]);
+            <span class="keywordflow">return</span> 1;
+      }
+
+      <span class="keywordflow">if</span> (do_list) {
+            list_ports();
+            <span class="keywordflow">return</span> 0;
+      }
+
+      create_port();
+      connect_ports();
+
+      err = snd_seq_nonblock(seq, 1);
+      check_snd(<span class="stringliteral">&quot;set nonblock mode&quot;</span>, err);
+      
+      <span class="keywordflow">if</span> (port_count &gt; 0)
+            printf(<span class="stringliteral">&quot;Waiting for data.&quot;</span>);
+      <span class="keywordflow">else</span>
+            printf(<span class="stringliteral">&quot;Waiting for data at port %d:0.&quot;</span>,
+                   snd_seq_client_id(seq));
+      printf(<span class="stringliteral">&quot; Press Ctrl+C to end.\n&quot;</span>);
+      printf(<span class="stringliteral">&quot;Source  Event                  Ch  Data\n&quot;</span>);
+      
+      signal(SIGINT, sighandler);
+      signal(SIGTERM, sighandler);
+
+      npfds = snd_seq_poll_descriptors_count(seq, POLLIN);
+      pfds = alloca(<span class="keyword">sizeof</span>(*pfds) * npfds);
+      <span class="keywordflow">for</span> (;;) {
+            snd_seq_poll_descriptors(seq, pfds, npfds, POLLIN);
+            <span class="keywordflow">if</span> (poll(pfds, npfds, -1) &lt; 0)
+                  <span class="keywordflow">break</span>;
+            <span class="keywordflow">do</span> {
+                  snd_seq_event_t *<a class="code" href="structevent.html">event</a>;
+                  err = snd_seq_event_input(seq, &amp;event);
+                  <span class="keywordflow">if</span> (err &lt; 0)
+                        <span class="keywordflow">break</span>;
+                  <span class="keywordflow">if</span> (event)
+                        dump_event(event);
+            } <span class="keywordflow">while</span> (err &gt; 0);
+            fflush(stdout);
+            <span class="keywordflow">if</span> (stop)
+                  <span class="keywordflow">break</span>;
+      }
+
+      snd_seq_close(seq);
+      <span class="keywordflow">return</span> 0;
+}
+</pre></div></div>
+</div>
+<!-- google_ad_section_end -->
+
+<hr size="1"><address style="align: right;"><small>Generated by&nbsp; Doxygen 1.6.0 &nbsp; <a href="http://sourcearchive.com">Back to index</a></small></address>
+</body>
+</html>

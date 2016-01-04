@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="../../stylesheet.css" />
+
+    <title>  Sound codecs and file formats </title>
+
+    <style type="text/css">
+      body { counter-reset: chapter 3; }
+    </style>
+
+    <script type="text/javascript" src="../../toc.js"> 
+      /* empty */
+    </script>
+
+    <script type="text/javascript">
+      /* <![CDATA[ */
+    (function() {
+        var s = document.createElement("script"), t = document.getElementsByTagName("script")[0];
+        s.type = "text/javascript";
+        s.async = true;
+        s.src = "http://api.flattr.com/js/0.6/load.js?mode=auto";
+        t.parentNode.insertBefore(s, t);
+    })();
+/* ]]> */
+    </script>
+
+
+  </head>
+  <body>
+
+    <!--#include virtual="../../header.html" -->
+
+
+    <div class="chapter">
+      <h1> Sound codecs and file formats </h1>
+    </div>
+
+    <div class="preface">
+      <p>
+	There are many different ways of representing sound data.
+	Some of these involve compressing the data, which may or may
+	not lose information. Data may be stored in the file system
+	or transmitted across the network, and this raises additional
+	issues. This chapter considers the major sound codecs and container
+	formats.
+      </p>
+    </div>
+
+    <div id="generated-toc" class="generate_from_h2"></div>
+
+    <h2> Overview </h2>
+      <p>
+	Audio and video data needs to be represented in digital format to be
+	used by a computer. Audio and video data contain an enormous amount of
+	information, and so digital representations of this data can occupy
+	huge amounts of space. Consequently, computer scientists have developed
+	many different ways of representing this information, sometimes in
+	ways that preserve all of the information (lossless) and sometimes
+	in ways that lose information (lossy).
+      </p>
+      
+    <p>
+      Each way of representing the information digitally is known as a <em>codec</em>.
+      The simplest way, described in the next section, is to represent it as "raw"
+      pulse-code modulated data (PCM). Hardware devices such as sound cards can deal
+      with PCM data directly, but PCM data can use a  lot of space.
+    </p>
+
+    <p>
+      Most codecs will attempt to reduce the memory requirements of PCM data by
+      <em>encoding</em> it to another form, called encoded data. It can then be
+      <em>decoded</em> back to PCM form when required. Depending on the codec
+      algorithms, the re-generated PCM may have the same information content as
+      the original PCM data
+      (lossless) or may contain less information (lossless).
+    </p>
+
+    <p>
+      Encoded audio data may or may not contain information about the properties
+      of the data. This information may be about the original PCM data such 
+      as the number of channels (mono, stereo),
+      the sampling rate, the number of bits in the sample, etc.
+      Or it may be information about the encoding process itself, such as the
+      size of framed data. The encoded data along with this additional information
+      may be stored in a file, transmitted across the network, etc.
+      if this is done, the encoded data plus the additional information is
+      amalgamated into a <em>container</em>.
+    </p>
+
+    <p>
+      It is important at times to know whether you are dealing with just the
+      encoded data, or with a container that holds this data. For example,
+      files on disk will normally be containers, holding additional information
+      along with the encoded data. But audio data manipulation
+      libaries will typically deal with the encoded data itself, after the
+      additional data has been removed.
+    </p>
+
+    <h2> PCM </h2>
+    <p>
+      From <a href="">Wikipedia</a>
+    </p>
+      <blockquote>
+	<p>
+	  Pulse-code modulation (PCM) is a method used to digitally represent sampled analog signals. 
+	  It is the standard form for digital audio in computers and various Blu-ray, 
+	  DVD and Compact Disc formats, as well as other uses such as digital telephone systems. 
+	  A PCM stream is a digital representation of an analog signal, in which the magnitude 
+	  of the analog signal is sampled regularly at uniform intervals, with each sample being 
+	  quantized to the nearest value within a range of digital steps.
+	</p>
+	<p>
+	  PCM streams have two basic properties that determine their fidelity to the original 
+	  analog signal: the sampling rate, which is the number of times per second that samples 
+	  are taken; and the bit depth, which determines the number of possible digital values 
+	  that each sample can take.
+	</p>
+      </blockquote>
+
+    <p>
+      PCM data can be stored in files as "raw" data. In this case there is no header information
+      to say what the sampling rate and bit depth are. Many tools such as <code>sox</code>
+      use the file extension to determine these properties. From 
+      <a href="http://sox.sourceforge.net/soxformat.html"> man soxformat</a>:
+    </p>
+      <blockquote>
+	<p>
+	      f32 and f64 indicate files encoded as 32 and
+              64-bit  (IEEE  single  and  double precision) floating point PCM
+              respectively; s8, s16, s24, and s32  indicate  8,  16,  24,  and
+              32-bit  signed  integer  PCM respectively; u8, u16, u24, and u32
+              indicate 8, 16, 24, and  32-bit  unsigned  integer  PCM  respectively
+	</p>
+      </blockquote>
+      
+    <p>
+      But it should be noted that the file extension is only an aid to understanding some of the
+      PCM codec parameters and how it is stored in the file.
+    </p>
+ 
+    <h2> WAV </h2>
+    <p>
+      WAV is a file format wrapper around audio data as a container.
+      The audio data is often PCM.
+      The file format is based on RIFF (Resource Interchange File Format ).
+      While it is a Microsoft/IBM format, it does not seem to be encumbered by 
+      patents.
+    </p>
+    <p>
+      A good description of the format is given by
+      <a href="http://www.topherlee.com/software/pcm-tut-wavformat.html">
+	Topherlee
+      </a>.
+      The WAV file header contains information about the PCM codec and also
+      about how it is stored (e.g. little- or big-endian).
+    </p>
+ 
+    <p>
+      Because they usually contain uncompressed audio data, WAV files are often huge,
+      around 50Mbytes for a 3 minute song.
+    </p>
+
+    <h2> MP3 </h2>
+    <p>
+      The MP3 and related formats are covered by a patent. Actually, a whole lot of patents.
+      For using an encoder or decoder, users should pay a license fee to an organisation such
+      as the Fraunhofer Society. Most casual users neither do this  nor are aware that they
+      should, but it is reported by 
+      <a href="http://en.wikipedia.org/wiki/Fraunhofer_Society#cite_note-3">Wikipedia</a>
+      that the society earned €100,000,000 in revenue for the 
+      society in 2005. The Society has at present chosen not to pursue free open source implementations
+      of encoders and decoders for royalties.
+    </p>
+
+    <p>
+      The codec used by MP3 is the
+      <a href="http://en.wikipedia.org/wiki/MP3">
+	MPEG-1 Audio Layer III 
+      </a> audio compression format.
+      This includes a header component which gives all the additional information
+      about the data and the compression algorithm.
+      There is no need for a separate container format.
+    </p>
+
+
+    <h2> Ogg Vorbis </h2>
+    <p>
+      Ogg Vorbis is one of the "good guys". From
+      <a href="http://www.vorbis.com/">
+	Vorbis.com
+      </a>
+      "Ogg Vorbis is a completely open, patent-free, professional audio encoding and 
+      streaming technology with all the benefits of Open Source"
+    </p>
+
+    <p>
+      The names are <a href="http://www.vorbis.com/faq/#what"> described</a> as
+    </p>
+      <blockquote>	
+	<p> 
+	  Ogg:
+	  Ogg is the name of Xiph.org's container format for audio, video, and metadata.
+	  This puts the stream data into <em>frames</em> which are easier to manage in
+	  files other things.
+	</p>
+	<p>
+	  Vorbis:
+	  Vorbis is the name of a specific audio compression scheme that's designed to be 
+	  contained in Ogg. Note that other formats are capable of being embedded in 
+	  Ogg such as FLAC and Speex.
+	</p>
+      </blockquote>
+    <p>
+      The extension .oga is preferred for Ogg audio files, although .ogg was previously used.
+    </p>
+
+    <p>
+      At times it is necessary to be closely aware of the distinction between Ogg and Vorbis.
+      For example, OpenMAX IL has a number of standard audio components including one to decode
+      various codecs. The LIM component with role "audio decoder ogg" 
+      can decode Vorbis streams. 
+      But even though the component includes the name "ogg", it <em>cannot</em> decode
+      Ogg files -
+      they are the containers of Vorbis streams and it can <em>only</em> decode the Vorbis stream. 
+      To decode an Ogg file requires
+      use of a different component, an "audio decoder with framing".
+    </p>
+
+    <h2> WMA </h2>
+    <p>
+      From the standpoint of Open Source, WMA files are evil.
+      WMA files are based on two Microsoft proprietary formats. The first is
+      the Advanced Systems Format (ASF) file format which describes the "container"
+      for the music data. The second is the codec, Windows Media Audio 9.
+    </p>
+
+    <p>
+      The ASF is the primary problem. Microsoft have a 
+      <a href="http://www.microsoft.com/en-us/download/details.aspx?id=14995">
+	published specification</a>. This specification is strongly antagonistic
+      to anything open source. The license states that if you build an implementation
+      based on that specification then you:
+    </p>
+    <blockquote>
+      <ul>
+	<li>
+	  cannot distribute the source code
+	</li>
+	<li>
+	  can only distribute the object code
+	</li>
+	<li>
+	  cannot distribute the object code except as part of a "Solution"
+	  i.e. libraries seem to be banned
+	</li>
+	<li>
+	  cannot distribute your object code for no charge
+	</li>
+	<li>
+	  cannot set your license to allow derivative works
+	</li>
+      </ul>
+    </blockquote>
+    <p>
+      And what's more, you are not allowed to begin any new implementation after
+      January 1, 2012 - and (at the time of writing) it is already July, 2012!
+    </p>
+
+    <p>
+      Just to make it a little worse, Microsoft have 
+      <a href="http://www.google.com/patents/US6041345"> Patent 6041345
+	"Active stream format for holding multiple media streams"</a>
+      filed in the US on March 7, 1997. The patent appears to cover the same ground as
+      many other such formats which were in existence at the time, so the
+      standing of this patent (were it to be challenged) is not clear.
+      However, it has been used to block the GPL-licensed project
+      <a href="http://www.advogato.org/article/101.html">VirtualDub</a>
+      from supporting ASF. The status of patenting a file format is a little
+      suspect anyway, but may become a little clearer now that Oracle has lost its claim
+      to patent the Java API.
+    </p>
+
+    <p>
+      The <a href="http://ffmpeg.org/">FFmpeg project</a> has nevertheless done a
+      clean-room implementation of ASF, reverse-engineering the file format
+      and not using the ASF specification at all. It has also reverse-engineered
+      the WMA codec. This allows players such as mplayer and VLC to play ASF/WMA files.
+      FFmpeg itself can also convert from ASF/WMA to better formats such as Ogg Vorbis.
+    </p>
+
+    <p>
+      There is no Java handler for WMA files, and given the license there is unlikely
+      to be one unless it is a native-code one based on FFmpeg.
+    </p>
+
+    <h2> Matroska </h2>
+    <p>
+      From the <a href="http://matroska.org/">Matroska web site</a>
+    </p>
+      <blockquote>
+	Matroska aims to become THE standard of multimedia container formats.
+	It was derived from a project called MCF, but differentiates from 
+	it significantly because it is based on EBML (Extensible Binary
+	Meta Language), a binary derivative of XM.     
+	It incorporates features you would expect from a modern container format, like:
+	<ul>
+	  <li>
+    Fast seeking in the file
+	  </li>
+	  <li>
+    Chapter entries
+	  </li>
+	  <li>
+    Full metadata (tags) support
+	  </li>
+	  <li>
+    Selectable subtitle/audio/video streams
+	  </li>
+	  <li>
+    Modularly expandable
+	  </li>
+	  <li>
+    Error resilience (can recover playback even when the stream is damaged)
+	  </li>
+	  <li>
+    Streamable over the internet and local networks (HTTP, CIFS, FTP, etc)
+	  </li>
+	  <li>
+    Menus (like DVDs have)
+	  </li>
+	</ul>
+      </blockquote>
+
+    <p>
+      I hadn't come across it until I started looking at subtitles
+      which can be (optionally) added to videos, where it seems
+      to be one of the major formats.
+    </p>
+
+    <p>
+      A GUI tool to create and manage MKV files is mkvmerge,
+      in the Ubuntu repositories.
+      the command mmg is a GUI version.
+      mplayer and vlc will play them happily.
+      There is a
+      <a href="http://matroska.org/technical/specs/codecid/index.html">
+	list
+      </a> of recognised formats.
+    </p>
+
+    <h2> Conclusion </h2>
+    <p>
+      There are many codecs for sound, and more are being devised
+      all the time. They vary between being codecs, containers
+      or both, and come with a variety of features, some with
+      encumbrances such as patents.
+    </p>
+
+<hr/>
+ <!--#include virtual="../../footer.html" -->
+
+
+  </body>
+</html>

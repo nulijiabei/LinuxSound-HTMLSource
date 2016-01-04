@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>
+      Sonken DKD DVD Mid Karaoke
+    </title>
+    <meta name="keywords" content="Sonken, DKD, decoding DKD, DVD, Karaoke"/>
+
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="../../stylesheet.css" />
+
+    <style type="text/css">
+      body { counter-reset: chapter 27; }
+    </style>
+
+    <script type="text/javascript" src="../../toc.js"> 
+      /* empty */
+    </script>
+
+    <script type="text/javascript">
+      /* <![CDATA[ */
+    (function() {
+        var s = document.createElement("script"), t = document.getElementsByTagName("script")[0];
+        s.type = "text/javascript";
+        s.async = true;
+        s.src = "http://api.flattr.com/js/0.6/load.js?mode=auto";
+        t.parentNode.insertBefore(s, t);
+    })();
+/* ]]> */
+    </script>
+
+   <link rel="stylesheet" type="text/css" href="../../js/doc/style.css">
+   <!-- <link rel="stylesheet" type="text/css" href="../../js/css/sh_emacs.css"> -->
+   <link rel="stylesheet" type="text/css" href="../../js/sh_style.css">
+   <script type="text/javascript" src="../../js/sh_main.min.js"></script>
+   <script type="text/javascript" src="../../js/lang/sh_cpp.min.js"></script>
+   
+  </head>
+
+  <body onload="sh_highlightDocument();">
+
+    <!--#include virtual="../../header.html" -->
+
+
+    <div class="chapter">
+      <h1>
+	Decoding the DKD files on the Sonken Karaoke DVD
+      </h1>
+    </div>
+
+    <div class="preface">
+      <p>
+	This chapter is about getting the information off my Sonken
+	Karaoke DVD so that I can start writing programs to play the songs.
+	It is not directly involved in playing sound under Linux and
+	can be skipped.
+      </p>
+    </div>
+
+    <div id="generated-toc" class="generate_from_h2"></div>
+
+ 
+    <h2> Introduction </h2>
+    <p>
+      I have two Karaoke players, a Sonken MD-388 and a Malata MDVD-6619.
+      Between the two of them they have all the features I
+      think I need from Karaoke players. These are
+    </p>
+      <ul>
+	<li>
+	  Selecting and playing tunes (of course!)
+	</li>
+	<li>
+	  Huge range of both Chinese and English songs -
+	  my wife is Chinese and I am English
+	</li>
+	<li>
+	  Both Mandarin and Pinyin shown for the Chinese songs
+	  so that I can sing along too
+	</li>
+	<li>
+	  The notes of the melody displayed along with the
+	  notes that the singer is actually singing
+	</li>
+	<li>
+	  Scoring system showing different features
+	</li>
+      </ul>
+    
+
+    <p>
+      The Malata is really good in that it shows the notes of the melody 
+      and also shows the notes that you are singing. 
+      But it has a pathetic range of English songs and doesn't show
+      the Pinyin for the Chinese songs. The Songen has a good selection
+      of both and shows the Pinyin, but doesn't show the notes and has
+      a simplistic scoring system.
+    </p>
+
+    <p>
+      So I want to take the songs off my Sonken DVD and either play them
+      on the Malata or on my PC. Playing them on my PC is preferred because
+      then I am only limited by the programs that I can write and am not
+      so dependent on the vendor's machines. So my immediate goal is to
+      get the songs off the Sonken DVD and start playing them in the ways
+      that I want.
+    </p>
+
+    <p>
+      The files on the Sonken DVD are in DKD format. This is an
+      undocumented format probably standing for Digital Karaoke Disk.
+      Many people have worked on this format, and there has been 
+      much discussion in forums such as the Karaoke Engineering.
+      These include
+      <a href="http://old.nabble.com/Understanding-the-HOTDOG-files-on-DVD-of-California-electronics-td11359745.html">
+	Understanding the HOTDOG files on DVD of California electronics
+      </a>,
+      <a href="http://old.nabble.com/Decoding-JBK-6628-DVD-Karaoke-Disc-td12261269.html">
+	Decoding JBK 6628 DVD Karaoke Disc
+      </a> and
+      <a href="http://board.midibuddy.net/showpost.php?p=533722&postcount=31">
+	Karaoke Huyndai 99
+      </a>.
+    </p>
+
+    <p>
+      When I started looking at my disk, I went about it in a different
+      direction to many of the posters in these forums. Also, the results
+      in the forums were presented in an adhoc and often confusing manner -
+      as could be expected. So I ended up re-inventing a lot of what had
+      already been discovered, as well as coming up with some new stuff.
+    </p>
+
+    <p>
+      In hindsight, I could have saved myself weeks of work if I had paid
+      proper attention to what was said in the forums. So this chapter
+      is my attempt to lay out the results in a simple and logical enough
+      way so that people trying to do similar things with their own disks
+      can easily work out what is applicable to their situation and
+      what is different.
+    </p>
+
+    <p>
+      What this chapter will cover is
+    </p>
+      <ul>
+	<li>
+	  What files are on my DVD
+	</li>
+	<li>
+	  What each file contains (overview)
+	</li>
+	<li>
+	  Matching song titles to song numbers
+	</li>
+	<li>
+	  Finding the song data on the disk
+	</li>
+	<li>
+	  Extracting the song data
+	</li>
+	<li>
+	  Decoding the song data
+	</li>
+      </ul>
+    <p>
+      This section is not complete, as there is still more to be
+      discovered.
+    </p>
+
+    <h2> Format shifting </h2>
+    <p>
+      Isn't it illegal to copy your DVDs? Not in Australia, under
+      the right conditions
+      (<a href="http://www.ag.gov.au/Copyright/Issuesandreviews/Pages/CopyrightAmendmentAct2006FAQs.aspx">
+	Copyright Amendment Act 2006 - FAQs</a>):
+    </p>
+      <blockquote>
+	Will I be able to copy my music collection onto my iPod?
+	<br/>
+	Yes. You can format-shift music that you own to devices such as
+	an MP3 player, X-Box 360 or your computer. 
+      </blockquote>
+    
+    
+    <p>
+      I am just copying the music I legally bought with the Sonken
+      DVD to my computer for personal use. That is within the revised
+      Australian copyright act. You should check if your country allows
+      the same rights.
+    </p>
+
+    <p>
+      <em> 
+	Don't ask for any copies of the files off my DVD.
+	That would be illegal, and I'm not going to do it.
+      </em>
+    </p>
+
+    
+
+    
+
+    <h2> Files on the DVD </h2>
+
+    <p>
+      My Sonken DVD disk contains these files:
+    </p>
+      <pre>
+	<code>
+	  BACK01.MPG
+	  DTSMUS00.DKD
+	  DTSMUS01.DKD
+	  DTSMUS02.DKD
+	  DTSMUS03.DKD
+	  DTSMUS04.DKD
+	  DTSMUS05.DKD
+	  DTSMUS06.DKD
+	  DTSMUS07.DKD
+	  DTSMUS10.DKD
+	  DTSMUS20.DKD
+	</code>
+      </pre>
+    
+
+    <h3>  BACK01.MPG </h3>
+    <p>
+      This is the MP3 file that plays in the background
+    </p>
+
+    <h3> DTSMUS00.DKD - DTSMUS07.DKD </h3>
+    <p>
+      These are the song files. The number of these depends on how many
+      songs are on the DVD.
+    </p>
+
+    <h3> DTSMUS10.DKD </h3>
+    <p>
+      No-one has worked out what this file is for yet.
+    </p>
+
+    <h3> DTSMUS20.DKD </h3>
+    <p>
+      This file contains the list of song number/song title/artist
+      as given in the song book. The song number in this file
+      is one less than the song number in the book.
+    </p>
+
+    <h2> Decoding  DTSMUS20.DKD </h2>
+    <p>
+      I'm on a Linux system and I use Linux/Unix utilities and applications.
+      Equivalents exist under other O/S's such as Windows and Apple.
+    </p>
+
+    <h3> Song information </h3>
+    <p>
+      The Unix command <code>strings</code> lists all the ASCII 8-bit encoded
+      strings in a file that are at least 4 characters long. Running
+      this command on all the DVD files shows that  DTSMUS20.DKD is the 
+      only one with lots of english-language strings, and these
+      strings are the song titles on the DVD.
+    </p>
+
+    <p>
+      A brief selection is
+    </p>
+      <pre>
+	<code>
+	  Come To Me
+	  Come To Me Boy
+	  Condition Of My Heart
+	  Fly To The Sky
+	  Cool Love
+	  Count Down
+	  Cowboy
+	  Crazy
+	</code>
+      </pre>
+    <p>
+      The actual strings that would show on your disk depends of course
+      on the songs on it. You would need some english language titles
+      on it for this to work, of course!
+    </p>
+
+    <p>
+      To make further progress you need a binary editor. I use
+      <code>bvi</code>. <code>emacs</code> has a binary editor
+      mode as well. Search in there for a song title you know is
+      on the disk. For example, searching for the Beatles "Here Comes The Sun"
+      shows the block
+    </p>
+      <pre>
+	<code>
+	  000AA920  12 D3 88 48 65 72 65 20 43 6F 6D 65 73 20 54 68 ...Here Comes Th
+	  000AA930  65 20 52 61 69 6E 20 41 67 61 69 6E 00 45 75 72 e Rain Again.Eur
+	  000AA940  79 74 68 6D 69 63 73 00 1F 12 D3 89 48 65 72 65 ythmics.....Here
+	  000AA950  20 43 6F 6D 65 73 20 54 68 65 20 53 75 6E 00 42  Comes The Sun.B
+	  000AA960  65 61 74 6C 65 73 00 1B 12 D3 8A 48 65 72 65 20 eatles.....Here
+	  000AA970  46 6F 72 20 59 6F 75 00 46 69 72 65 68 6F 75 73 For You.Firehous
+	</code>
+      </pre>
+    <p>
+      The string  "Here Comes The Sun" starts at 0xAA94C followed by 
+      a null byte. This is followed at 0xAA95F by the null-terminated
+      "Beatles". Immediately before this is 4 bytes.
+      The length of these two strings (including the null bytes) and the 4 bytes 
+      is 0x1F and this is the first of the 4 preceding bytes.
+      So the block consists of a 4-byte header followed by a null-terminated
+      song title followed by a null-terminated artist.
+      Byte 1 is the length of the song information block including the
+      4 byte header.
+    </p>
+
+    <p>
+      Byte 2 of the header block is 0x12. jim75 at
+      <a href="http://old.nabble.com/Decoding-JBK-6628-DVD-Karaoke-Disc-td12261269.html">
+	Decoding JBK 6628 DVD Karaoke Disc
+      </a>
+      discovered the document
+      <a href="http://old.nabble.com/file/p12261269/JBK_Manual%255B1%255D.doc">
+	JBK_Manual%5B1%5D.doc
+      </a>.
+      In there is a list of country codes:
+    </p>
+      <pre>
+	<code>
+	  00 : KOREAN
+	  01 : CHINESE( reserved )
+	  02 : CHINESE
+	  03 : TAIWANESE
+	  04 : JAPANESE
+	  05 : RUSSIAN
+	  06 : THAI
+	  07 : TAIWANESE( reserved )
+	  08 : CHINESE( reserved )
+	  09 : CANTONESE
+	  12 : ENGLISH
+	  13 : VIETNAMESE
+	  14 : PHILIPPINE
+	  15 : TURKEY
+	  16 : SPANISH
+	  17 : INDONESIAN
+	  18 : MALAYSIAN
+	  19 : PORTUGUESE
+	  20 : FRENCH
+	  21 : INDIAN
+	  22 : BRASIL
+	</code>
+      </pre>
+    <p>
+      The Beatle's song has 0x12 in byte 2 of the header and this matches
+      the country codes in the table. This is confirmed by looking at
+      other language files (later).
+    </p>
+
+    <p>
+      I've discovered later that the WMA files have their own codes.
+      So far I have seen
+    </p>
+      <pre>
+	<code>
+	  83 : CHINESE WMA
+	  92 : ENGLISH WMA
+	  94 : PHILIPPINE WMA
+	</code>
+      </pre>
+    <p>
+      I guess you can see the pattern with the earlier ones!
+    </p>
+
+
+    <p>
+      Bytes 3 and 4 of the header are 0xD389 which is 54153 in decimal.
+      This is one less than the song number in the book (54154).
+      So bytes 3 and 4 are a 16-bit short integer, one less than the
+      song index in the book.
+    </p>
+
+    <p>
+      This pattern is repeated throughout the file, so that each record
+      is of this format.
+    </p>
+
+    <h3> Beginning/end of data </h3>
+    <p>
+      There is a long sequence of bytes near the beginning of the file
+      "01 01 01 01 01 ...".
+      This finishes on my file at 0x9F23. By comparing the index number
+      with those in my song book, I confirm this is the start of the Korean
+      songs, and probably the start of all songs.
+      I haven't found any table giving me this start value.
+    </p>
+
+    <p>
+      Checking a number
+      of songs gives me this table:
+    </p>
+      <ul>
+	<li>
+	  English songs start at 60x9562D, song 24452 type 0x12
+	</li>
+	<li>
+	  Cantonese at 0x8F5D2, song 13701 type 3
+	</li>
+	<li>
+	  Korean at 0x9F23, song 37847 type 0
+	</li>
+	<li>
+	  Indonesian at 0x11F942, song 42002 type 0x17
+	</li>
+	<li>
+	  Hindi at 0x134227, song 45058 type 0x21
+	</li>
+	<li>
+	  Phillipine at 0xD5D20, song 62775 type 0x14
+	</li>
+	<li>
+	  Russian at 0x110428, song 41012 type 5
+	</li>
+	<li>
+	  Spanish at 0xF5145, song 26487 type 0x16
+	</li>
+	<li>
+	  Mandarin (1 char) at 0x413BE, song 1388 type 3
+	</li>
+      </ul>
+    <p>
+      I can't find the Vietnamese songs, though. There don't seem to
+      any on my disk. My song book is lying!
+      I guess there is some table somewhere giving these start points, but 
+      I haven't found it - these were all found by looking at my song
+      book and then in the file.
+    </p>
+
+    <p>
+      The end of the block is signalled by a sequence of 
+      "FF FF FF FF ..." at 0x136C92. 
+    </p>
+
+    <p>
+      But there is lots of stuff
+      both before and after the song information block.
+      I don't know what it means.
+    </p>
+
+    <h3> Chinese songs </h3>
+
+    <p>
+      The first English song in my book is "Gump by Al Wierd", song
+      number 24452. In the table of contents file DTSMUS20.DK this is at
+      0x9562D (611885). The entry before this is
+      "20 03 3A 04 CE D2 B4 F2 C1 CB D2 BB CD A8 B2 BB CB B5 BB B0 B5 C4 B5 E7 BB B0 B8 F8 C4 E3 00 00". The song code is "3A 04" i.e. 14852 which is song
+      number 14853 (one offset, remember!). When I play that song on my
+      karaoke machine I'm in luck: the first character of the song is "我",
+      which I recognise as the word "I" (in Pinyin: wo3). 
+      It's encoding in the file is "CE D2".
+      I've got Chinese input installed on my computer so I can search for this
+      Chinese character.
+    </p>
+
+    <p>
+      A Google search for "unicode value of 我" shows me
+    </p>
+      <pre>
+	<code>
+	  [RESOLVED] Converting Unicode Character Literal to Uint16 variable ...
+	  www.codeguru.com › ... › C++ (Non Visual C++ Issues)
+	  5 posts - 2 authors - 1 Jul 2011
+
+          I've determined that the unicode character '我' has a hex value of 
+          0x6211 by looking it up on the "GNOME Character Map 2.32.1" 
+          and if I do this....
+	</code>
+      </pre>
+    <p>
+      and then looking up 0x6211 on 
+      <a href="http://www.khngai.com/chinese/tools/codeunicode.php">
+	Unicode Search 
+      </a>
+      gives gold:
+    </p>
+      <pre>
+	<code>
+	  Unicode	6211 (25105)
+	  GB Code	CED2 (4650)
+	  Big 5 Code	A7DA
+	  CNS Code	1-4A3C
+	</code>
+      </pre>
+    <p>
+      There's the CED2 in the second line as GB Code.
+      So there you go: the character set is GB
+      (probably GB2312 with EUC-CN encoding) with code for 我 as CED2.
+    </p>
+    <p>
+      Just to make sure: using the table by Mary Ansell at
+      <a href="http://www.ansell-uebersetzungen.com/gborder.html">
+	GB Code Table
+      </a>
+      the bytes "CE D2 B4 F2 C1 CB D2 BB CD A8 B2 BB CB B5 BB B0 B5 
+      C4 B5 E7 BB B0 B8 F8 C4 E3" translate into
+      "我 打 了 一 通 ..." which is indeed the song.
+    </p>
+
+    <h3> Other languages </h3>
+    <p>
+      I'm not familiar with other language encodings so haven't investigated
+      the Thai, Vietnamese, etc.
+      The Korean seems to be EUC-KR.
+    </p>
+
+    <h3> Programs </h3>
+    <p>
+      The earlier investigations by others have created programs in C or C++.
+      These are generally standalone programs. I would like to build a
+      collection of reusable modules, so I have chosen Java as
+      implementation language.
+    </p>
+
+    <h4> Java goodies </h4>
+    <p>
+      Java is a good O/O language which supports good design.
+      It includes a Midi player and Midi classes.
+      It supports multiple language encodings so it is easy to
+      switch from, say GB-2312 to Unicode.
+      It has good cross-platform GUI support.
+    </p>
+
+    <h4> Java baddies </h4>
+    <p>
+      Java doesn't support unsigned integer types. This sucks <em>really</em>
+      badly here since so many data types are unsigned for these programs. 
+      Even bytes in Java are signed :-(.
+      Here are some of the tricks :-(.
+    </p>
+      <ul>
+	<li>
+	  Make all types the next size up: byte to int, int to long, long to long...
+	  Just hope that unsigned longs aren't really needed
+	</li>
+	<li>
+	  If you need an unsigned byte and you've got an int, and you need
+	  it to fit into 8 bits, cast to a byte and hope it's not too big :-(
+	</li>
+	<li>
+	  Typecast all over the place to keep the compiler happy 
+	  e.g. when a byte is required  from an int, <code> (byte) n </code>
+	</li>
+	<li>
+	  Watch signs all over the place. If you want to right shift a number,
+	  the operator &gt;&gt; preserves sign extensions so eg in binary
+	  1XYZ... shifts to 1111XYZ.. You need to use  &gt;&gt;&gt; which results
+	  in 0001XYZ.
+	</li>
+	<li>
+	  If you want to assign an unsigned byte to an int, watch signs again.
+	  You may need
+	
+	  <pre>
+	    <code>
+	      n = b &ge; 0 ? b : 256 - b
+	    </code>
+	  </pre>
+	</li>
+
+	<li>
+	  To build an unsigned int from 2 unsigned bytes, signs will stuff you again:
+	  n = (b1 &lt;&lt; 8) + b2 will get it wrong if either b1 or b2 is -ve.
+	  Instead use 
+	  <pre>
+	    <code>
+	      n = ((b1 &ge; 0 ? b1 : 256 - b1) &lt;&lt; 8) + (b2 &ge; 0 ? b2 : 256 - b2)
+	    </code>
+	  </pre>
+	  (no joke!)
+	</li>
+      </ul>
+
+      <h4> Classes </h4>
+    <p>
+      The song class contains information about a single song and is given here:
+      SongInformation.java
+    </p>
+      <pre class="sh_cpp">
+	<code>
+      <!--#exec cmd="/usr/local/bin/escape.pl java SongInformation.java" -->
+	</code>
+      </pre>
+
+    <p>
+      The song table class holds a list of song information objects and is given by
+       SongTable.java
+    </p>
+      <pre class="sh_cpp">
+	<code>
+      <!--#exec cmd="/usr/local/bin/escape.pl java SongTable.java" -->
+	</code>
+      </pre>
+    <p>
+      You may need to adjust the constant values in the file-based 
+      constructor for this to work properly for you.
+    </p>
+
+    <p>
+      A Java program using Swing to allow display and searching of the song
+      titles is
+      SongTableSwing.java
+    </p>
+      <pre class="sh_cpp">
+	<code>
+      <!--#exec cmd="/usr/local/bin/escape.pl java SongTableSwing.java" -->
+	</code>
+      </pre>
+
+      <!-- It will also attempt to decode and play a selected Midi-format song,
+      but you may need to adjust some of the external programs to do this.
+	-->
+    <p>
+      When "play" is selected it will print the song id to standard output for use in
+      a pipeline.
+
+    </p>
+
+    <h2> The data files </h2>
+    <h3> General </h3>
+    <p>
+      The files DTSMUS00.DKD - DTSMUS07.DKD contain the music files.
+      There are two formats for the music: Microsoft WMA files and 
+      MIDI files. In my song books some songs are marked as having
+      a singer. These turn out to be the WMA files. Those without
+      a singer are MIDI files.
+    </p>
+
+    <p>
+      The WMA files are just that. The MIDI files are slightly
+      compressed and have to be decoded before they can be played.
+    </p>
+
+    <p>
+      Each song block has at the beginning a section containing the lyrics.
+      These are compressed and have to be decoded.
+    </p>
+
+    <p>
+      The data for one song forms a record of contiguous bytes.
+      These records are collected into blocks, also contiguous.
+      The blocks are separate. There is a "super block" of pointers
+      to these blocks. Part of the song number is an index into the
+      super block, selecting the block. The rest of the song number
+      is an index of the record in the block.
+    </p>
+    
+    <h3> My route into this </h3>
+    <p>
+      I came backwards into this and only arrived at understanding
+      what others had accomplished after some time. So in case it
+      helps any others, here is my route.
+    </p>
+
+    <p>
+      I used the Unix command <code>strings</code> to discover the
+      songs information in DTSMUS10.DKD. On the other files it
+      didn't seem to produce much. But there were ASCII strings
+      in these files and
+      some were repeated. So I wrote a shell pipeline to sort these
+      strings and count them. The pipeline for one file was
+    </p>
+      <pre>
+	<code>
+	  strings DTSMUS05.DKD | sort |uniq -c | sort -n -r |less	
+	</code>
+      </pre>
+<p>
+      This produced results
+</p>
+      <pre>
+	<code>
+	  1229 :^y|
+	  1018 j?wK
+	  843 ]/&lt;
+	  756  Seh
+	  747  Ser
+	  747 _\D+P
+	  674 :^yt
+	  234 IRI$	
+	</code>
+      </pre>
+    
+
+    <p>
+      The results weren't inspiring. But when I looked inside the files
+      to see where "Ser" was occurring, I also saw:
+    </p>
+      <pre>
+	<code>
+	  q03C3E230  F6 01 00 00 00 02 00 16 00 57 00 69 00 6E 00 64 .........W.i.n.d
+	  03C3E240  00 6F 00 77 00 73 00 20 00 4D 00 65 00 64 00 69 .o.w.s. .M.e.d.i
+	  03C3E250  00 61 00 20 00 41 00 75 00 64 00 69 00 6F 00 20 .a. .A.u.d.i.o.
+	  03C3E260  00 39 00 00 00 24 00 20 00 34 00 38 00 20 00 6B .9...$. .4.8. .k
+	  03C3E270  00 62 00 70 00 73 00 2C 00 20 00 34 00 34 00 20 .b.p.s.,. .4.4.
+	  03C3E280  00 6B 00 48 00 7A 00 2C 00 20 00 73 00 74 00 65 .k.H.z.,. .s.t.e
+	  03C3E290  00 72 00 65 00 6F 00 20 00 31 00 2D 00 70 00 61 .r.e.o. .1.-.p.a
+	  03C3E2A0  00 73 00 73 00 20 00 43 00 42 00 52 00 00 00 02 .s.s. .C.B.R....
+	  03C3E2B0  00 61 01 91 07 DC B7 B7 A9 CF 11 8E E6 00 C0 0C .a..............
+	  03C3E2C0  20 53 65 72 00 00 00 00 00 00 00 40 9E 69 F8 4D  Ser.......@.i.M	
+	</code>
+      </pre>
+<p>
+      Wow! <em>two byte</em> characters!
+    </p>
+
+    <p>
+      The <code>strings</code> command has options to look at e.g. 2-byte 
+      big-endian character strings. The command
+    </p>
+      <pre>
+	<code>
+	  strings -e b DTSMUS05.DKD
+	</code>
+      </pre>
+<p>
+      turned up
+</p>
+      <pre>
+	<code>
+	  IsVBR
+	  DeviceConformanceTemplate
+	  WM/WMADRCPeakReference
+	  WM/WMADRCAverageReference
+	  WMFSDKVersion
+	  9.00.00.2980
+	  WMFSDKNeeded
+	  0.0.0.0000
+	</code>
+      </pre>
+    <p>
+      These are all part of the WMA format.
+    </p>
+
+    <p>
+      According to Gary Kessler's
+      <a href="http://www.garykessler.net/library/file_sigs.html">
+	FILE SIGNATURES TABLE
+      </a>, 
+      the signature of a WMA file is given by the header
+    </p>
+      <pre>
+	<code>
+	  30 26 B2 75 8E 66 CF 11
+	  A6 D9 00 AA 00 62 CE 6C	
+	</code>
+      </pre>
+<p>
+      and that pattern does occur, with the above strings appearing some time later.
+    </p>
+
+    <p>
+      The spec for the ASF/WMA file format is at 
+      <a href="http://www.microsoft.com/download/en/details.aspx?displaylang=en&id=14995">
+	Advanced Systems Format (ASF) Specification
+      </a> although you are advised not to read it in case you want to do anything
+      open source with such files.
+    </p>
+
+    <p>
+      So on that basis I could indentify the start of WMA files.
+      The 4 bytes preceding each WMA file are the length of the
+      file. From that I could find the <em>end</em> of the file,
+      which turned out to be the start of a record for the
+      <em>next</em> record containing some stuff and
+      then the next WMA file.
+    </p>
+
+    <p>
+      In these records I could see patterns I couldn't understand,
+      but also from byte 36 on I could see strings like
+    </p> 
+      <pre>
+	<code>
+	  AIN'T IT FUNNY HOW TIME SLIPS AWAY, Str length: 34
+
+
+	  00000000  10 50 41 10 50 49 10 50 4E 10 50 27 10 50 54 10 .PA.PI.PN.P'.PT.
+	  00000010  50 20 11 F1 25 12 71 05 04 61 05 05 51 21 13 01 P ..%.q..a..Q!..
+	  00000020  02 05 91 2B 10 20 48 10 50 4F 10 50 57 13 40 00 ...+. H.PO.PW.@.
+	  00000030  12 61 02 12 01 02 04 D1 05 04 51 3B 05 31 05 04 .a........Q;.1..
+	  00000040  C1 29 10 20 50 10 51 45 10 21 28 10 21 1E 10 21 .). P.QE.!(.!..!
+	  00000050  3A 14 F1 05 13 31 02 10 C1 0E 11 A1 58 15 A0 00 :....1......X...
+	  00000060  15 70 00 13 A0 A9                               .p....
+	</code>
+      </pre>
+<p>
+      Can you see "A.I.N.'.T" ( as ".PA.PI.PN.P'.PT")?
+    </p>
+
+    <p>
+      But I couldn't figure out what the encoding was or how to
+      find the table of song starts. That's when I was ready to look at
+      the earlier stuff and understand how it applied to me.
+      (<a href="http://old.nabble.com/Understanding-the-HOTDOG-files-on-DVD-of-California-electronics-td11359745.html">
+	Understanding the HOTDOG files on DVD of California electronics
+      </a>,
+      <a href="http://old.nabble.com/Decoding-JBK-6628-DVD-Karaoke-Disc-td12261269.html">
+	Decoding JBK 6628 DVD Karaoke Disc
+      </a> and
+      <a href="http://board.midibuddy.net/showpost.php?p=533722&postcount=31">
+	Karaoke Huyndai 99
+      </a>).
+    </p>
+
+    <h3> The super block </h3>
+    <p>
+      The file DTSMUS00.DKD starts with a bunch of nulls. At 0x200 it starts
+      to kick in with data. This was identified as the start of a "table
+      of tables" i.e. a superblock. Each entry in this superblock
+      is a 4-byte integer, which turns out to be an index to tables
+      in the data files. The superblock is terminated by a
+      sequence of nulls (for me at 0x5F4) and there are  less than 256 indexes 
+      in the table.
+    </p>
+
+    <p>
+      The value of these superblock entries seems to have changed in
+      different versions. In the JBK disk and also on mine, the
+      values have to be multiplied by 0x800 to give a "virtual offset"
+      in the data files.
+    </p>
+
+    <p>
+      To give meaning to this: on my disk at 0x200 is 
+    </p>
+      <pre>
+	<code>
+	  00000200  00 00 00 01 00 00 08 6C 00 00 0F C1 00 00 17 7A 
+	  00000210  00 00 1E 81 00 00 25 21 00 00 2B 8D 00 00 32 B7 
+	</code>
+      </pre>
+<p>
+      So the table values are 0x1, 0x86C, 0xFC1, 0x177A, ...
+      The "virtual addresses" are  0x800, 
+      0x436000 (0x86C * 0x800) and so on.
+      If you go to these addresses, then before the address is a bunch of nulls,
+      and at that address is data.
+    </p>
+
+    <p>
+      Why I call them virtual addresses is because there are 8 data files
+      on my DVD and most addresses are larger than any of the files.
+      The files in my case are all 1065353216L (except the last) bytes.
+      The "obvious" solution works:  
+      the file number is address / file size, and the offset into
+      the file is address % file size. You can check this by
+      looking for the nulls before the address of each block.
+    </p>
+
+    <h3> Song start tables </h3>
+    <p>
+      Each of the tables indexed from the super block is a table
+      of song indexes. Each  table contains 4-byte indexes.
+      Each table has at most 0x100 entries, or is terminated by a
+      zero index.  Each index is the offset from the table start 
+      of the beginning of a song entry. 
+    </p>
+
+    <h3> Locating song entry from song number </h3>
+    <p>
+      Given a song number such as 54154 "Here Comes The Sun" we can now find
+      the song entry. Reduce the song number by one to 54153. It is a 16-bit
+      number. The top 8 bits are the index of the song index table
+      in the superblock.
+      The bottom 8 bits are the index of the song entry in the song index table.
+    </p>
+
+    <p>
+      Pseudocode:
+    </p>
+      <pre>
+	<code>
+	  songNumber = get number for song from DTSMUS20.DKD
+	  superBlockIdx = songNumber &gt;&gt;
+	  indexTableIdx = songNumber &amp; 0xFF
+
+	  seek(DTSMUS00.DKD, superBlockIdx) 
+	  superBlockValue = read 4-byte int from DTSMUS00.DKD
+
+	  locationIndexTable = superBlockValue * 0x800
+	  fileNumber = locationIndexTable / fileSize
+	  indexTableStart = locationIndexTable % fileSize
+	  entryLocation = indexTableStart + indexTableIdx 
+
+	  seek(fileNumber, entryLocation)
+	  read song entry
+	</code>
+      </pre>
+    
+
+    <h3> Song entries </h3>
+    <p>
+      Each song entry has a header and is followed by two blocks that I
+      call the information block and the song data block.
+      Each header block has a 2-byte type code and a 2-byte integer length.
+      The type code is either 0x0800 or 0x0000. The code signals the encoding
+      of the song data: 0x0800 is a WMA file while 0x0000 is a MIDI
+      file.
+    </p>
+
+    <p>
+      If the type code is 0x0 such as the Beatles "Help!" (song number 51765)
+      then the information block has the length in the header block and starts
+      12 bytes further in.
+      The song data block immediately follows this.
+    </p>
+
+    <p>
+      If the type code is 0x8000 then the information block starts 4 bytes in
+      for the length given in the header. The song block starts on the next
+      16-byte boundary from the end of the information block.
+    </p>
+
+    <p>
+      The song block starts with a 4-byte header which is the length of the
+      song data for all types.
+    </p>
+
+    <h3> Song data </h3>
+    <p>
+      If the song type is 0x8000 then the song data is a WMA file.
+      All songs looked at have a singer included in this file.
+    </p>
+
+    <p>
+      If the song type is 0x0 then (from the book) there is no singer
+      in the songs looked at.
+      The file is encoded, and decodes to a MIDI file.
+    </p>
+
+    <h2> Decoding MIDI files </h2>
+    <p>
+      All files have a lyric block followed by a music block. The lyric block is compressed
+      and it has been discovered that this is LZW compression. This decompresses to a set
+      of 4-byte chunks. The first two bytes are characters of the lyric.
+      For 1-byte encodings such as English or Vietnamese, the first byte is one character
+      and the second is either zero or another character (two byts such as "\r\n").
+      For two byte encodings such as GB-2312, the two bytes form one character.
+    </p>
+
+    <p>
+      The next two bytes are the length of time the character string plays for.
+    </p>
+
+    <h3> Lyric block </h3>
+    <p>
+      Each lyric block starts with strings such as "#0001
+      @@00@12
+      @Help Yourself
+      @
+      @@Tom Jones
+      "
+      The language code is in there as NN in "@00@NN". The song title, writer, singer are clear.
+      (Note: these characters are all 4 bytes apart!). For English it is "12" and so on.
+    </p>
+
+    <p>
+      Bytes 0 and 1 of each block are a character in the lyric. Bytes 2 and 3 are the duration
+      of each character. To turn them into MIDI data, the durations have to be turned into
+      start/stop of each character.
+    </p>
+
+    <p>
+      My Java program to do this is
+      SongExtracter.java
+    </p>
+      <pre class="sh_cpp">
+	<code>
+      <!--#exec cmd="/usr/local/bin/escape.pl java SongExtracter.java" -->
+	</code>
+      </pre>
+    <p>
+      with support classes LZW.java
+    </p>
+      <pre class="sh_cpp">
+	<code>
+      <!--#exec cmd="/usr/local/bin/escape.pl java LZW.java" -->
+	</code>
+      </pre>
+    <p>
+      SongInformation.java
+    </p>
+      <pre class="sh_cpp">
+	<code>
+      <!--#exec cmd="/usr/local/bin/escape.pl java SongInformation.java" -->
+	</code>
+      </pre>
+    <p>
+      and Debug.java
+    </p>
+      <pre class="sh_cpp">
+	<code>
+      <!--#exec cmd="/usr/local/bin/escape.pl java Debug.java" -->
+	</code>
+      </pre>
+
+    <p>
+      To compile these, run
+    </p>
+      <pre>
+	<code>
+    javac SongExtracter.java LZW.java Debug.java SongInformation.java
+	</code>
+      </pre>
+<p>
+      and run by
+</p>
+      <pre>
+	<code>
+java SongExtracter &lt;song number &gt;
+	</code>
+      </pre>
+    
+
+    <p>
+      The program to convert these MIDI files to Karaoke KAR files is
+      KARConverter.java
+    </p>
+      <pre class="sh_cpp">
+	<code>
+      <!--#exec cmd="/usr/local/bin/escape.pl java KARConverter.java" -->
+	</code>
+      </pre>
+
+    <h2> Playing MIDI files </h2>
+    <p>
+      The MIDI files extracted from the disk can be played using
+      standard MIDI players such as Timidity. The lyrics are included
+      and the melody line is in MIDI channel one. I've written a batch
+      of Java programs using Swing and also the Java Sound framework
+      which can play and do things to MIDI files. At the same time as
+      playing MIDI files I can also do cool karaoke things like show
+      the lyrics, show the notes that should be played and show
+      progress through the lyrics. I'm still working on those, they
+      will get posted later.
+    </p>
+
+    <h2> Playing WMA files </h2>
+    
+    <p>
+      WMA files are "evil."
+      They are based on two Microsoft proprietary formats. The first is
+      the Advanced Systems Format (ASF) file format which describes the "container"
+      for the music data. The second is the codec, Windows Media Audio 9.
+    </p>
+
+    <p>
+      The ASF is the primary problem. Microsoft have a 
+      <a href="http://www.microsoft.com/en-us/download/details.aspx?id=14995">
+	published specification</a>. This specification is strongly antagonistic
+      to anything open source. The license states that if you build an implementation
+      based on that specification then you:
+    </p>
+      <ul>
+	<li>
+	  cannot distribute the source code
+	</li>
+	<li>
+	  can only distribute the object code
+	</li>
+	<li>
+	  cannot distribute the object code except as part of a "Solution"
+	  i.e. libraries seem to be banned
+	</li>
+	<li>
+	  cannot distribute your object code for no charge
+	</li>
+	<li>
+	  cannot set your license to allow derivative works
+	</li>
+      </ul>
+<p>
+      And what's more, you are not allowed to begin any new implementation after
+      January 1, 2012 - and it is already May, 2012!
+    </p>
+
+    <p>
+      Just to make it a little worse, Microsoft have 
+      <a href="http://www.google.com/patents/US6041345"> Patent 6041345
+	"Active stream format for holding multiple media streams"</a>
+      filed in Mar 7, 1997. The patent appears to cover the same ground as
+      many other such formats which were in existence at the time, so the
+      standing of this patent (were it to be challenged) is not clear.
+      However, it has been used to block the GPL-licensed project
+      <a href="http://www.advogato.org/article/101.html">VirtualDub</a>
+      from supporting ASF. The status of patenting a file format is a little
+      suspect anyway, but may become a little clearer after Oracle wins or loses its claim
+      to patent the Java API.
+    </p>
+
+    <p>
+      The <a href="http://ffmpeg.org/">FFmpeg project</a> has nevertheless done a
+      clean-room implementation of ASF, reverse-engineering the file format
+      and not using the ASF specification at all. It has also reverse-engineered
+      the WMA codec. This allows players such as mplayer and VLC to play ASF/WMA files.
+      FFmpeg itself can also convert from ASF/WMA to better formats such as Ogg Vorbis.
+    </p>
+
+    <p>
+      There is no Java handler for WMA files, and given the license there is unlikely
+      to be one unless it is based on FFmpeg.
+    </p>
+
+    <p>
+      The WMA files that I have extracted from the DVD have the following characteristics:
+    </p>
+      <ul>
+	<li>
+	  Each file has two channels
+	</li>
+	<li>
+	  Each channel carries a mono signal
+	</li>
+	<li>
+	  The right channel carries all of the instruments, backing vocals
+	  and also the lead singer
+	</li>
+	<li>
+	  The left channel carries all of the instruments and backing vocals
+	  but not the lead singer
+	</li>
+      </ul>
+    
+
+    <p>
+      The Sonken player plays the right channel if no-one is singing into the
+      microphones, but switches to the left channel (effectively muting the lead
+      singer) as soon as someone sings into a microphone. Simple and effective.
+    </p>
+
+    <p>
+      The lyrics are still there in the track data as MIDI and can be extracted as
+      before. They can be played by a MIDI player. I have no idea (yet) how
+      to synchronise playing the MIDI and the WMA files.
+    </p>
+
+ 
+      <h2> KAR format </h2>
+    <p>
+      The resultant MIDI files are not in KAR format.
+      This means that Karaoke players
+      such as pykaraoke may have problems
+      playing them. It is not too hard to convert the 
+      files to this format: loop through the sequence,
+      writing or modifying MIDI events as appropriate.
+      The program is not very exciting but is downloadable
+      as <a href="KARConverter.java"> KARConverter </a>.
+    </p>
+
+    <h2> Playing songs with pykar </h2>
+    <p>
+      One of the simplest ways to play Karaoke Midi files is by
+      using <a href="http://www.kibosh.org/pykaraoke/">
+	pykar
+      </a>.
+      Regrettably, the songs ripped fromt he Sonken disk do not
+      play properly - this is a mixture of bugs in pykar and
+      features required which are not supplied. 
+      The problems and their solutions follow.
+    </p>
+
+    <h4> Tempo </h4>
+    <p>
+      Many Midi files will set the tempo explicitly using the Meta
+      Event Set Tempo, 0x51. These files often do not.
+      Pykar expects a Midi file to include this event, and otherwise
+      defaults to a tempo of zero beats per minute. As might be expected,
+      this trhows out all timing calculations performed by
+      PyKar.
+    </p>
+    
+    <p>
+      As <a href="http://www.sonicspot.com/guide/midifiles.html">
+	The Sonic Spot</a> explains, 
+      "If no set tempo event is present, 120 beats per minute is assumed"
+      and gives a formula for calculating the appropriate tempo value,
+      which is 60000000/120.
+    </p>
+
+    <p>
+      This requires one change to one PyKaraoke file: change
+      line 190 of <code>pykar.py</code> from
+    </p>
+      <pre class="sh_cpp">
+sele.Tempo = [(0, 0)]
+      </pre>
+<p>
+      to
+</p>
+      <pre class="sh_cpp">
+self.Tempo = [(0, 500000)]
+      </pre>
+
+      <h4> Language encoding </h4>
+    <p>
+      The file <code>pykdb.py</code> clains that <code>cp1252</code>
+      is the default character encoding for Karaoke files,
+      ans uses a font <code>DejaVuSans.tt</code> which is
+      appropriate for displaying such characters.
+      This encoding adds in various European symbols such as
+      '&aacute;' in the top 128 bits of a byte, in addition
+      to standard ASCII.
+    </p>
+
+    <p>
+      I'm not sure where PyKaraoke got that information from,
+      but it certainly doesn't apply to Chinese Karaoke.
+      I don't know what encodings Chinese, Japanese, Korean, etc
+      use, but my code dumps them out as Unicode UTF-8.
+      A suitable font for Unicode is Cyberbit.ttf.
+      (See the Fonts chapter in my lecture notes on
+      <a href="http://jan.newmarch.name/i18n/">
+	Global Software</a>).
+    </p>
+
+    <p>
+      The file <code>pykdb.py</code> needs the lines
+    </p>
+      <pre class="sh_cpp">
+        self.KarEncoding = 'cp1252'  # Default text encoding in karaoke files
+        self.KarFont = FontData("DejaVuSans.ttf")
+      </pre>
+<p>
+      changed to
+</p>
+      <pre class="sh_cpp">
+        self.KarEncoding = 'utf-8'  # Default text encoding in karaoke files
+        self.KarFont = FontData("Cyberbit.ttf")
+      </pre>
+<p>
+      and a copy of <code>Cyberbit.tt</code> copied to the directory
+      <code>/usr/share/pykaraoke/fonts/</code>.
+    </p>
+
+    <h4> Songs with no notes </h4>
+    <p>
+      Some songs on the disk have no MIDI notes, as this is all in 
+      a WMA file. The MIDI file only has the lyrics.
+      PyKaraoke only plays upto the last note, which is at zero!.
+      So no lyrics are played.
+    </p>
+      
+      <h2> Conclusion </h2>
+    <p>
+      This chapter has discussed basically a forensics issue: how to get information
+      off a DVD when the format of the files is not known. It doesn't have anything
+      directly to do with playing sound, although it does give me a big source of
+      files that I have already paid for.
+    </p>
+  </body>

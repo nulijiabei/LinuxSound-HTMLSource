@@ -1,0 +1,30 @@
+
+Currently have original on desktop.
+This gets copied across to server, complete copy
+
+Advantages:
+	simple
+	complete backup available
+
+Disadvantages:
+	Much stuff on web site that really shouldn't be there
+	(e.g. timidity source)
+	Much stuff that mustn't be there (Sonken files, etc)
+	Server load in delivering files with server-side includes
+	No version control
+
+New:
+
+Original on desktop
+Backup entire content using git, on desktop
+Backup entire content to server
+
+wget content to server
+? backup server content using git
+? push server content to GitHub
+
+Markdown:
+
+Convert server content to Markdown
+Push to GitHub
+Save to GitBook

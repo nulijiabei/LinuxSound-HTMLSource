@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="../../stylesheet.css" />
+
+    <title>FluidSynth </title>
+
+    <style type="text/css">
+        body { counter-reset: chapter 31; }
+    </style>
+
+    <script type="text/javascript" src="../../toc.js"> 
+   /* empty */
+   </script>
+
+   <script type="text/javascript">
+/* <![CDATA[ */
+    (function() {
+        var s = document.createElement("script"), t = document.getElementsByTagName("script")[0];
+        s.type = "text/javascript";
+        s.async = true;
+        s.src = "http://api.flattr.com/js/0.6/load.js?mode=auto";
+        t.parentNode.insertBefore(s, t);
+    })();
+/* ]]> */
+    </script>
+
+   <link rel="stylesheet" type="text/css" href="../../js/doc/style.css">
+   <!-- <link rel="stylesheet" type="text/css" href="../../js/css/sh_emacs.css"> -->
+   <link rel="stylesheet" type="text/css" href="../../js/sh_style.css">
+   <script type="text/javascript" src="../../js/sh_main.min.js"></script>
+   <script type="text/javascript" src="../../js/lang/sh_cpp.min.js"></script>
+   
+  </head>
+  <body  onload="sh_highlightDocument();">
+
+
+
+
+    <!--#include virtual="../../header.html" -->
+
+    <div class="chapter">
+        <h1> FluidSynth </h1>
+     </div>
+
+    <div class="preface">
+      <p>
+	FluidSynth is an application for playing MIDI files and a library
+	for MIDI applications. It does not have the hooks for playing 
+	Karaoke files. This chapter discusses an extension to 
+	FluidSynth which adds appropriate hooks, and then uses
+	these to build a variety of Karaoke systems.
+      </p>
+    </div>
+
+    <div id="generated-toc" class="generate_from_h2"></div>
+
+    <h2> Resources </h2>
+    <p>
+</p>
+      <ul>
+	<li>
+	  <a href="http://sourceforge.net/apps/trac/fluidsynth/">
+	    FluidSynth home page
+	  </a>
+	</li>
+	<li>
+	  <a href="http://sourceforge.net/projects/fluidsynth/">
+	    FluidSynth download page
+	  </a>
+	</li>
+	<li>
+	  <a href="http://fluidsynth.sourceforge.net/api/">
+	    FluidSynth 1.1 Developer Documentation
+	  </a>
+	</li>
+	<li>
+	  <a href="http://fluidsynth.sourcearchive.com/documentation/1.1.5-1/main.html">
+	    Source Archive fluidsynth Documentation
+	  </a>
+	</li>
+      </ul>
+<p>
+    </p>
+
+    <h2> Files </h2>
+    <p>
+      Source files in this chapter are
+      <a href="all.zip">
+	here
+      </a>.
+    </p>
+
+    <h2> Players </h2>
+    <p>
+      <code>fluidsynth</code> is a command line MIDI player.
+      It runs under ALSA with a command line
+</p>
+      <pre>
+	<code>
+fluidsynth -a alsa -l &lt;soundfont&gt; &lt;files...&gt;
+	</code>
+      </pre>
+<p>
+    </p>
+    
+
+
+    <h2> Play MIDI files </h2>
+    <p>
+      The FluidSynth API consists of 
+</p>
+      <ul>
+	<li>
+	  A sequencer created using <code>new_fluid_player</code>
+	</li>
+	<li>
+	  A synthesizer created using <code>new_fluid_synth</code>
+	</li>
+	<li>
+	  An audio player created using <code>new_fluid_audio_driver</code>
+	  which runs in a separate thread
+	</li>
+	<li>
+	  A "settings" object which can be used to control many features
+	  of the other components, created by <code>new_fluid_settings</code>
+	  and modified by calls such as <code>fluid_settings_setstr</code>
+	</li>
+      </ul>
+<p>
+    </p>
+
+    <p>
+      A typical program to play a sequence of MIDI files using ALSA follows.
+      It creates the various objects, sets the audio player to use ALSA
+      and then adds each soundfont and MIDI file to the player.
+      The call to <code>fluid_player_play</code> then plays each MIDI file
+      in turn.
+      This program is just a repeat of the program seen in the chapter
+      on 
+      <a href="../../MIDI/FluidSynth/">FluidSynth MIDI</a>.
+</p>
+      <pre class="sh_cpp">
+<!--#exec cmd="/usr/local/bin/escape.pl . file_player.c" -->
+      </pre>
+<p>
+    </p>
+
+    <h2> Extending FluidSynth with callbacks </h2>
+    <p>
+      Callbacks are functions registered with an application which
+      are called when certain events occur. In order to build a Karaoke
+      player we need to know
+</p>
+      <ul>
+	<li>
+	  When a file is loaded so that we can extract all of the lyrics
+	  from it for display at the right times.
+	</li>
+	<li>
+	  When each Meta Lyric or Text event occurs as output from
+	  a sequencer, so that we can see what lyric is about to be
+	  sung.
+	</li>
+      </ul>
+<p>
+    </p>
+
+    <p>
+      The first of these is fairly straightforward: FluidSynth
+      has a function <code>fluid_player_load</code> which will
+      load a file. We can change the code to add a suitable callback into that
+      function which will give us access to the loaded MIDI file.
+    </p>
+
+    <p>
+      Getting Lyric or Text events out of a sequencer is not so easy, since they
+      are never meant to appear! The MIDI specification allows these
+      event types within a MIDI file, but they are not wire-types so
+      should never be sent from a sequencer to a synthesizer.
+      The Java MIDI API makes them available by an out-of-band call
+      to a Meta event handler. FluidSynth just throws them away.
+    </p>
+
+    <p>
+      On the other hand, FluidSynth already has a callback to handle
+      MIDI events sent from the sequencer to the synthesizer. It is
+      the function <code>fluid_synth_handle_midi_event</code>
+      and is set by the call <code>fluid_player_set_playback_callback</code>.
+      What we need to do is to firstly alter the 
+      existing FluidSynth code so that Lyric and
+      Text events are passed through, and then insert a new playback
+      callback that will intercept those events and do something
+      with them while passing on all other events to the default
+      handler. The default handler will ignore any such events
+      anyway, so it does not need to be changed.
+    </p>
+
+    <p>
+      I have added one new function to FluidSynth,
+      <code>fluid_player_set_onload_callback</code>
+      and added appropriate code to pass on some Meta
+      events. Then it is a matter of writing an onload
+      callback to walk through the MIDI data from the parsed
+      input file, and writing a suitable MIDI event callback
+      to handle the intercepted Meta events while passing the rest
+      through to the default handler.
+    </p>
+
+    <p>
+      These changes have been made to give a new source
+      package 
+      <a href="fluidsynth-1.1.6-karaoke.tar.bz2">
+	fluidsynth-1.1.6-karaoke.tar.bz2
+      </a>.
+      If you just want to work from a patch file, that is
+      <a href="fluid.patch">
+	fluid.patch
+      </a>.
+      The patch has been submitted to the FluidSynth
+      maintainers.
+    <p>
+
+    <p>
+      To build from this package, do the same as you normally
+      would:
+</p>
+      <pre>
+	<code>
+tar jxf fluidsynth-1.1.6-karaoke.tar.bz2
+cd fluidsynth-1.1.6
+./configure
+make clean
+make
+	</code>
+      </pre>
+<p>
+      To get ALSA support, you will need to have installed
+      the <code>libasound2-dev</code> package, and similarly
+      for Jack or other packages. You probably won't have  many
+      of them installed, so
+      don't run <code>make install</code> or you will overwrite
+      the normal <code>fluidsynth</code> package which will 
+      probably have more features.
+    </p>
+
+    <p>
+      The previous program modified to just print out
+      the lyric lines and the lyric events as they occur
+      is <code>karaoke_player.c</code>:
+</p>
+      <pre class="sh_cpp">
+<!--#exec cmd="/usr/local/bin/escape.pl . karaoke_player.c" -->
+      </pre>
+<p>
+    </p>
+
+    <p>
+      Assuming the new fluidsynth package is in an immediate subdirectory,
+      to compile the program you will need  to pick up the local 
+      includes and libraries
+</p>
+      <pre>
+	<code>
+gcc -g -I fluidsynth-1.1.6/include/ -I fluidsynth-1.1.6/src/midi/ -I fluidsynth-1.1.6/src/utils/ -c -o karaoke_player.o karaoke_player.c
+
+gcc karaoke_player.o -Lfluidsynth-1.1.6/src/.libs -l fluidsynth -o karaoke_player
+	</code>
+      </pre>
+<p>
+    </p>
+
+    <p>
+      To run the program, you will also need to pick up the local library
+      and the soundfont file:
+</p>
+      <pre>
+	<code>
+export LD_LIBRARY_PATH=./fluidsynth-1.1.6/src/.libs/
+./karaoke_player /usr/share/soundfonts/FluidR3_GM.sf2 54154.mid
+	</code>
+      </pre>
+<p>
+    </p>
+
+    <p>
+      The output for a typical <code>KAR</code> file is
+</p>
+      <pre>
+	<code>
+Load callback, tracks 1 
+Track 0
+Loaded event #
+Loaded event 0
+Loaded event 0
+Loaded event 0
+Loaded event 1
+Loaded event 
+
+...
+
+Callback: Playing lyric event 2 #
+Callback: Playing lyric event 2 0
+Callback: Playing lyric event 2 0
+Callback: Playing lyric event 2 0
+Callback: Playing lyric event 2 1
+Callback: Playing lyric event 3 
+	</code>
+      </pre>
+<p>
+    </p>
+
+    <h2> Displaying and colouring text with Gtk </h2>
+    <p>
+      While there are many ways in which Karaoke text can be
+      displayed, a common pattern is to display two lines of
+      text, the currently playing line and the next one.
+      The current line is progressively highlighted and 
+      on completion is
+      replaced by the next line. 
+    </p>
+
+    <p>
+      In the Java chapter we did that. But the Java libraries have
+      not been polished and are distinctly slow and heavyweight.
+      They also seem to be low on Oracle's development schedule
+      for Java.
+      So here we look at an alternative GUI and make use of the
+      FluidSynth library. The Gtk library is chosen for reasons
+      outlined in an
+      <a href="../../Diversions/Gtk/"> earlier chapter </a>
+      on Gtk.
+    </p>
+
+    <p>
+      The first task is to build up an array of lyric lines 
+      as the file is loaded. We are asssuming KAR format files
+      with upfront information as to title, etc, prefixed
+      by '@', and newlines prefixed by '\'.
+</p>
+      <pre class="sh_cpp">
+        <code>
+struct _lyric_t {
+    gchar *lyric;
+    long tick;
+};
+typedef struct _lyric_t lyric_t;
+
+struct _lyric_lines_t {
+    char *language;
+    char *title;
+    char *performer;
+    GArray *lines; // array of GString *
+};
+typedef struct _lyric_lines_t lyric_lines_t;
+
+GArray *lyrics;
+lyric_lines_t lyric_lines;
+
+void build_lyric_lines() {
+    int n;
+    lyric_t *plyric;
+    GString *line = g_string_new("");
+    GArray *lines =  g_array_sized_new(FALSE, FALSE, sizeof(GString *), 64);
+
+    lyric_lines.title = NULL;
+
+    for (n = 0; n &lt; lyrics-&gt;len; n++) {
+	plyric = g_array_index(lyrics, lyric_t *, n);
+	gchar *lyric = plyric-&gt;lyric;
+	int tick = plyric-&gt;tick;
+
+	if ((strlen(lyric) &gt;= 2) &amp;&amp; (lyric[0] == '@') &amp;&amp; (lyric[1] == 'L')) {
+	    lyric_lines.language =  lyric + 2;
+	    continue;
+	}
+
+	if ((strlen(lyric) &gt;= 2) &amp;&amp; (lyric[0] == '@') &amp;&amp; (lyric[1] == 'T')) {
+	    if (lyric_lines.title == NULL) {
+		lyric_lines.title = lyric + 2;
+	    } else {
+		lyric_lines.performer = lyric + 2;
+	    }
+	    continue;
+	}
+
+	if (lyric[0] == '@') {
+	    // some other stuff like @KMIDI KARAOKE FILE
+	    continue;
+	}
+
+	if ((lyric[0] == '/') || (lyric[0] == '\\')) {
+	    // start of a new line
+	    // add to lines
+	    g_array_append_val(lines, line);
+	    line = g_string_new(lyric + 1);
+	}  else {
+	    line = g_string_append(line, lyric);
+	}
+    }
+    lyric_lines.lines = lines;
+    
+    printf("Title is %s, performer is %s, language is %s\n", 
+	   lyric_lines.title, lyric_lines.performer, lyric_lines.language);
+    for (n = 0; n &lt; lines->len; n++) {
+	printf("Line is %s\n", g_array_index(lines, GString *, n)->str);
+    }  
+}
+	</code>
+      </pre>
+<p>
+    </p>
+
+    <p>
+      This is called from the onload callback
+</p>
+      <pre class="sh_cpp">
+	<code>
+int onload_callback(void *data, fluid_player_t *player) {
+    long ticks = 0L;
+    lyric_t *plyric;
+
+    printf("Load callback, tracks %d \n", player->ntracks);
+    int n;
+    for (n = 0; n &lt; player-&gt;ntracks; n++) {
+	fluid_track_t *track = player-&gt;track[n];
+	printf("Track %d\n", n);
+	fluid_midi_event_t *event = fluid_track_first_event(track);
+	while (event != NULL) {
+	    switch (fluid_midi_event_get_type (event)) {
+	    case MIDI_TEXT:
+	    case MIDI_LYRIC:
+		/* there's no fluid_midi_event_get_sysex()
+		   or fluid_midi_event_get_time() so we 
+		   have to look inside the opaque struct
+		*/
+		ticks += event-&gt;dtime;
+		printf("Loaded event %s for time %d\n", 
+		       event-&gt;paramptr,
+		       ticks);
+		plyric = g_new(lyric_t, 1);
+		plyric-&gt;lyric = g_strdup(event-&gt;paramptr);
+		plyric-&gt;tick = ticks;
+		g_array_append_val(lyrics, plyric);
+	    }
+	    event = fluid_track_next_event(track);
+	}
+    }
+
+    printf("Saved %d lyric events\n", lyrics-&gt;len);
+    for (n = 0; n &lt; lyrics-&gt;len; n++) {
+	plyric = g_array_index(lyrics, lyric_t *, n);
+	printf("Saved lyric %s at %d\n", plyric-&gt;lyric, plyric-&gt;tick);
+    }
+
+    build_lyric_lines();
+}
+	</code>
+      </pre>
+<p>
+    </p>
+
+    <p>
+      The standard GUI part is to build an interface consisting of
+      two labels, one above the other to hold lines of lyrics.
+      This is just ordinary Gtk.
+    </p>
+
+    <p>
+      The final part is to handle lyric or text events from the
+      sequencer. If the event is a '\', then the current text
+      in a label must be replaced with new text, afer a small
+      pause. Otherwise, the text in the label has to be
+      progressively coloured to indicate what is next
+      to be played.
+    </p>
+
+    <p>
+      In the  <a href="../../Diversions/Gtk/"> earlier chapter </a>
+      on Gtk we discussed using Cairo to draw in pixbufs, and 
+      Pango to structure the text. The Gtk Label understands
+      Pango directly, so we just use Pango to format the 
+      text and display it in the label. This involves
+      constructing an HTML string with the first part coloured
+      red and the rest in black. This can be set in the label,
+      and there is no need to use Cairo.
+    </p>
+
+    <p>
+      The program is <code>gtkkaraoke_player.c</code>
+      <em>Warning: the following program crashes regularly
+	when trying to copy a Pango attribute list in the Gtk code
+	for sizing
+	a label. Debugging shows that the Pango copy function
+	is set to NULL somewhere in Gtk, and shouldn't be. 
+	I have no fix as yet and haven't replicated the bug 
+	in a simple enough way to log a bug report.
+      </em>
+
+</p>
+      <pre class="sh_cpp">
+<!--#exec cmd="/usr/local/bin/escape.pl . gtkkaraoke_player.c" -->
+      </pre>
+<p>
+    </p>
+
+    <p>
+      When run it looks like <br/>
+      <img alt="" src="label_player.png"/>
+    </p>
+
+    <h2> Playing a background video with Gtk </h2>
+    <p>
+      The chapter on
+      <a href="../../Diversions/Gtk/"> Gtk </a>
+      showed how to play a background video with images (using Pixbufs),
+      text (using Cairo) and coloured text (using Pango).
+      We can extend that by adding in the dynamic text display
+      for playing Karaoke. 
+    </p>
+
+    <p>
+      We capture each lyric line in a structure which keeps the whole
+      of the line, the part that has been sung already, the Pango
+      markup for the line and the Pango attributes:
+</p>
+      <pre class="sh_cpp">
+typedef struct _coloured_line_t {
+    gchar *line;
+    gchar *front_of_line;
+    gchar *marked_up_line;
+    PangoAttrList *attrs;
+} coloured_line_t;
+      </pre>
+<p>
+      This is updated each time a MIDI Lyric event occurs, in a
+      thread listening to the FluidSynth sequencer.
+    </p>
+
+    <p>
+      A separate thread plays the video, and on each frame overlays
+      the frame image with the current and next lyric.
+      This is set into a <code>GdkImage</code> for display
+      by Gtk.
+    </p>
+
+    <p>
+      The program is <code>gtkkaraoke_player_video_pango.c</code>
+</p>
+      <pre class="sh_cpp">
+<!--#exec cmd="/usr/local/bin/escape.pl . gtkkaraoke_player_video_pango.c" -->
+      </pre>
+
+
+    <p>
+      The application looks like <br/>
+      <img alt="" src="pango.png"/>
+<p>
+    </p>
+
+    <h2> Conclusion </h2>
+    <p>
+      By extending FluidSynth it an be made into a Karaoke player in various
+      ways. It is quite heavy in CPU usage though. On my laptop, the final version
+      runs at about 100% CPU.
+    </p>
+
+
+
+
+<pre class="sh_cpp">
+<!--#exec cmd="/usr/local/bin/escape.pl . OpenMAX_AL_playback.c" -->
+      </pre>
+
+
+<!--#exec cmd="/usr/local/bin/dataprogram.pl . a.c" -->
+
+
+<hr/>
+ <!--#include virtual="../../footer.html" -->
+
+  </body>
+</html>

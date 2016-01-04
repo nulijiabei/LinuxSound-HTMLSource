@@ -1,0 +1,31 @@
+#!/bin/bash
+set -x
+VLC_OPTS="--play-and-exit -f"
+
+./Table/server |
+while read line
+do
+	if expr match "$line" ".*mp3"
+	then
+		vlc $VLC_OPTS "$line"
+	elif expr match "$line" ".*zip"
+	then
+		rm -f /tmp/karaoke/*
+		unzip -d /tmp/karaoke "$line"
+		vlc $VLC_OPTS /tmp/karaoke/*.mp3
+	elif  expr match "$line" ".*kar"
+	then
+		WMAFILE=${line/.kar/.wma}
+		if [ -f "$WMAFILE" ]
+		then
+                    java -cp ../JavaSound/java/ KaraokePlayer "${line}" &
+                    sleep 0.5s
+		    # searching through the Sonken dir for subtitles
+		    # is REALLY slow, so turn subtitle search off
+                    mplayer -novideo -noautosub "$WMAFILE"
+
+		else
+			java -cp ../JavaSound/java/ KaraokePlayer "$line"
+		fi
+	fi
+done

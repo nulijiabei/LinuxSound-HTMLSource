@@ -1,0 +1,60 @@
+#!/bin/bash
+
+# Play a song if it exists
+
+SONGDIR=/home/newmarch/Music/karaoke/sonken/songs/
+
+test $# -eq 0 && echo "Usage $0 (play|play-sing|wma) [songnumber]" && exit 1
+
+KARFILE=$SONGDIR/${2}.kar
+WMAFILE=$SONGDIR/${2}.wma
+SONKENDIR=/home/httpd/html/LinuxSound/Karaoke/Sonken
+
+
+if [ ! -f $KARFILE ]
+then
+    cd $SONKENDIR
+    ./run extract $2
+    cd -
+fi
+
+
+case $1 in
+     play)
+		cd java
+		if [ -f $WMAFILE ]
+		then
+		    java KaraokePlayer $KARFILE &
+		    sleep 0.5
+		    mplayer $WMAFILE
+		else
+		    java KaraokePlayer $KARFILE
+		fi
+		;;
+     play-sing)
+                if [ ! -f $KARFILE ]
+		then
+		    echo "No file $KARFILE"
+		    exit 1
+		fi
+		cd java
+		java KaraokePlayerSampled $KARFILE
+		;;
+    wma)
+                if [ ! -f $WMAFILE ]
+		then
+		    echo "No file $WMAFILE"
+		    exit 1
+		fi
+                if [ ! -f $KARFILE ]
+		then
+		    echo "No file $KARFILE"
+		    exit 1
+		fi
+		cd java
+		java KaraokePlayer $KARFILE &
+		mplayer $WMAFILE
+		;;
+esac
+
+exit 0

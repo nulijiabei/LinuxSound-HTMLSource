@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="../../stylesheet.css" />
+
+    <title> Decoding the Malata disk </title>
+
+    <style type="text/css">
+        body { counter-reset: chapter 28; }
+    </style>
+
+    <script type="text/javascript" src="../../toc.js"> 
+      /* empty */
+   </script>
+
+   <script type="text/javascript">
+/* <![CDATA[ */
+    (function() {
+        var s = document.createElement("script"), t = document.getElementsByTagName("script")[0];
+        s.type = "text/javascript";
+        s.async = true;
+        s.src = "http://api.flattr.com/js/0.6/load.js?mode=auto";
+        t.parentNode.insertBefore(s, t);
+    })();
+/* ]]> */
+    </script>
+
+
+   <link rel="stylesheet" type="text/css" href="../../js/doc/style.css">
+   <!-- <link rel="stylesheet" type="text/css" href="../../js/css/sh_emacs.css"> -->
+   <link rel="stylesheet" type="text/css" href="../../js/sh_style.css">
+   <script type="text/javascript" src="../../js/sh_main.min.js"></script>
+   <script type="text/javascript" src="../../js/lang/sh_cpp.min.js"></script>
+   
+
+  </head>
+  <body onload="sh_highlightDocument();">
+
+    <!--#include virtual="../../header.html" -->
+
+
+    <div class="chapter">
+        <h1> Decoding the Malata disk </h1>
+     </div>
+
+    <div class="preface">
+      <p>
+	I have a Malata 6619 Karaoke player.
+	It has about 15,000 songs, but only about 500 English
+	songs. My wife insists that the Chinese songs on it
+	are of far higher quality than on my Sonken.
+	I'm not so sure I agree, but anyway
+	it's time to try to decode its file format.
+      </p>
+
+      <p>
+	<em>
+	  This is only partially successful: while I have got
+	  some information, I can't as yet play a MIDI file
+	  from the disk.
+	</em>
+      </p>
+    </div>
+
+    <div id="generated-toc" class="generate_from_h2"></div>
+
+    <h2> Resources </h2>
+    <p>
+</p>
+      <ul>
+	<li>
+	  <a href="http://karaoke-engineering.996290.n3.nabble.com/Arirang-MIDI-Karaoke-DVD-storage-file-struct-and-MP3-Extraction-td467.html">
+	    Arirang MIDI Karaoke DVD storage file struct and MP3 Extraction
+	  </a>
+	  by thanhth
+	</li>
+	<li>
+	  <a href="https://sites.google.com/site/zhuoweisite/blog/decodingamidi-dvdusedbyamalatadvdplayer">
+	    Decoding a Midi-DVD used by a Malata DVD player
+	  </a>
+	  by Zhuowei
+	</li>
+	<li>
+	  <a href="http://wiki.xentax.com/index.php/DGTEFF">
+	    DGTEFF - The definitive word in archive exploration
+	  </a>
+	</li>
+      </ul>
+<p>
+    </p>
+      
+    <h2> Files </h2>
+    <p>
+      The files on the disk are
+</p>
+      <pre>
+AUDIO_TS      MALATAF3.BIN  MALATAS3.IDX  MULTAK.DA4    
+F6838.IDX     MALATAJ1.BIN  MALATAS4.IDX  MULTAK.DAT    
+FONT.BIN      MALATAM1.INF  
+FONTFT.BIN    MALATAM2.INF  MULTAK.DA1    VIDEO_TS
+Makefile      MALATAM3.INF  MULTAK.DA2    SEARCH.IDX
+MALATAF1.BIN  MALATARM.DAT  MULTAK.DA3    
+      </pre>
+    <h2> Song titles </h2>
+    <p>
+      The command <code>strings</code> shows that song titles are in
+      several files, including <code>MALATAS4.IDX</code>.
+      This seems to contain the most song titles, so I looked at that.
+    </p>
+
+    <p>
+      The block of song titles starts at 0x5F000. Before that is a bunch
+      of nulls. To confirm this, the first song in my Malata songbook
+      is "1001次吵架" and I can see the string "1001" as the first entry
+      in that table.
+    </p>
+
+    <p>
+      This first song contains Chinese characters in the title, and the site
+      <a href="http://www.ansell-uebersetzungen.com/gborder.html">
+	GB Code Table
+      </a> by Mary Ansell confirms that they are encoded using 
+      GB2312.
+    </p>
+
+    <p>
+      The song titles are just concatenated, for example as
+      "AlrightAmourAndyAngelAre You ReadyAsk For MoreBABY I'M YOUR MANBACK HOME".
+      So there must be a table somewhere showing start and end of each title.
+      I looked for any table giving offsets of the start of songs
+      from 0x5F000. There is such a table, at 0x800! After playing with 
+      that for a while, it turns out that this table consists
+      of records of 25 bytes.
+      I'm not sure of the start of the records from 0x800: 
+      if I take a starting offset of one,
+      then  bytes 19 and 20 hold the
+      offset into the song title table while byte 25 is the length of the song title.
+      But the offset could be higher.
+    </p>
+
+    <p>
+      The language appears to be specified in byte 11:
+</p>
+      <ul>
+	<li>
+	  00 is Chinese (GB2132)
+	<li>
+	  07 is English
+	<li>
+	  01 is ???
+	</li>
+      </ul>
+<p>
+    </p>
+
+    <p>
+      The song number is a bit sneaky: in bytes 15-17 are 3 hexadecimal numbers.
+      If they are concatenated then they are the song number.
+      For example, for the song Medley One, the record is
+</p>
+      <pre>
+00 00 00 6D 6F 00 00 00 00 04 07 20 00 02 02 01 35 01 7C A8 9E 02 02 00 0A
+      </pre>
+<p>
+      Bytes 15, 16, 17 are "02 01 35" (in hex) and this is the song number
+      20135 for the Beatles "Medley One".
+    </p>
+
+    <p>
+      The earliest English song is 20001 "7Days" and the last one is
+      20501 "Take Me To Your Heart"
+    </p>
+
+    <p>
+      We currently have
+</p>
+      <pre>
+11    language
+15-17 song number
+19,20 offset into song title table
+21,22 offset into artist name table?
+25    length of title
+      </pre>
+<p>
+      e.g. for Medley One
+      <pre>
+00 00 00 6D 6F 00 00 00 00 04 07 20 00 02 02 01 35 01 7C A8 9E 02 02 00 0A
+                              07          02 01 35 01 7C    9E 02
+                              La          SongNumb SongT    Artis 
+      </pre>
+<p>
+      I don't at present know what else is in these records.
+    </p>
+
+    <p>
+      A program to list the titles is 
+      <code>SongTitles.java</code>:
+
+</p>
+      <pre class="sh_cpp">
+<!--#exec cmd="/usr/local/bin/escape.pl programs SongTitles.java" -->
+      </pre>
+<p>
+    </p>
+
+
+    <p>
+      One table finishes at 0xF5260, maybe starting another at 0xF5800. 
+      Another table starts at 0x88000 and finishes about 0x9ADF0.
+      Another starts at 0x9B000 and finishes at 0x9B2B0
+      I don't know what is in these tables.
+    </p>
+
+    <h2> Song data </h2>
+    <p>
+      Most of this section was discovered by
+      <a href="http://karaoke-engineering.996290.n3.nabble.com/Arirang-MIDI-Karaoke-DVD-storage-file-struct-and-MP3-Extraction-td467.html">
+	thanth</a>.
+      However, he only deals with a single data file, and as the Malata has
+      more, it becomes more complex.
+    </p>
+
+    <p>
+      There are four data files: MULTAK.DAT, MULTAK.DA1, MULTAK.DA2
+      and MULTAK.DA3. The primary data file is MULTAK.DAT, and this contains
+      tables of pointers to song data. The other files seem to just contain
+      the song data.
+    </p>
+
+    <p>
+      The number of songs (minus one) is in byte-swapped order at 0x14E in
+      MULTAK.DAT. In my files, this is "FB 3D" which when swapped to
+      "3D FB" is one less than the number of songs, 0x3DFC (15868).
+      This was identified by thanth.
+    </p>
+
+    <p>
+      Starting at 0xD20 is a table of 4 byte numbers (prefixed by
+      "FF 00 FF FF" which are indexes into the table of song data.
+      If the bytes are "b0 b1 b2 b3" then thanth discovered that
+      the song data starts at
+</p>
+      <pre>
+(((b0 * 0x3C) + b1) * 0x48 +b2) * 0x800 + 0x10000
+      </pre>
+      
+<p>
+    </p>
+
+    <p>
+      Actually, it is more complex than that: for the songs with data
+      on the first disk MULTAK.DAT this is the case. The table also
+      contains pointers to data in the other files, and for these
+      the formula is
+</p>
+      <pre>
+(((b0 * 0x3C) + b1) * 0x48 +b2) * 0x800
+      </pre>
+<p>
+      That is, the data in these later files starts immediately
+      with no offset.
+    </p>
+
+    <p>
+      The file for each song is given in the top half of the fourth byte
+      of the song index: (b3 &gt;&gt; 4), where zero is MULTAK.DAT,
+      one is MULTAK.DA1, etc.
+    </p>
+
+    <p>
+      At the locations of the song data pointers is either 
+      the phrase "OK" which means a
+      "simple song" or "FF FF" which means "complex song",
+      according to thanth. Simple songs just contain
+      lyrics and MIDI data, while complex songs also have
+      MP3 data. I haven't yet found any information about the
+      size of the data for each song.
+    </p>
+
+    <p>
+      The program <code>SongData.java</code> splits the MULTAK
+      files into individual song data files. It only saves a
+      part of the data for each song, since I don't know where the 
+      data finishes.
+</p>
+      <pre class="sh_cpp">
+<!--#exec cmd="/usr/local/bin/escape.pl programs SongData.java" -->
+      </pre>
+<p>
+    </p>
+
+    <h2> Linking songs in the song book to song data </h2>
+    <p>
+      The file MULATAS4.IDX, we have determined, holds a table of
+      25 byte blocks starting at 0x800. The current knowledge of
+      these blocks is
+    </p>
+      <table>
+	<tr>
+	  <td>11</td>
+	  <td>language (00 is GB2132, 07 is English)</td>
+	</tr>
+	<tr>
+	  <td>15-17</td>
+	  <td>song number in song book (read the hex number as decimal)
+	  </td>
+	<tr>
+	  <td>19-20</td>
+	  <td> offset of song title into table at 0x5F000</td>
+	</tr>
+	<tr>
+	  <td>25</td>
+	  <td> length of title</td>
+	</tr>
+      </table>
+    <p>
+    </p>
+
+    <p>
+      The song data is spread across files MULTAK.DAT - MULTAK.DA4.
+      At 0xd20 in MULTAK.DAT is a table of 4 bytes indexes.
+      Each index translates into a starting location in the various
+      data files. These are of type "simple" (probably MIDI data only)
+      and "complex" (MIDI plus MP3).
+    </p>
+
+    <p>
+      The problem now is to link the song information to its data.
+    </p>
+
+    <p>
+      Using the starting points of each data file, we can extract, say,
+      a few thousand bytes from each file. The correct length is at present
+      unknown. I saved them them as files 1, 2, 3, ..., 15460.
+    </p>
+
+    <p>
+      With them all in separate files, I tried to see if any of them 
+      were recognisable. Completely by fluke by running <code>strings</code>
+      looking for Fool on the Hill (which I knew was on the disk), I hit upon song
+      10397 by searching for "hill", with <code>bvi</code> showing
+</p>
+      <pre>
+00000000  00 00 4F 4B 00 00 00 00 00 00 00 00 00 00 00 00 ..OK............
+00000010  00 00 00 00 00 20 00 00 00 07 00 00 00 00 00 00 ..... ..........
+00000020  00 00 91 06 00 00 20 11 00 00 77 48 41 54 00 64 ...... ...wHAT.d
+00000030  52 45 41 4D 53 00 61 52 45 00 6D 41 44 45 00 6F REAMS.aRE.mADE.o
+00000040  46 0F 6F 72 69 67 69 6E 61 6C 1A 0F 68 49 4C 4C F.original..hILL
+00000050  41 52 59 00 64 55 46 46 20 20 20 52 20 25 C8 2E ARY.dUFF   R %..
+      </pre>
+<p>
+      This song isn't in my song book, but it is in the list I pulled out
+      of MALATAS4.IDX:
+      <pre>
+00 00 00 77 64 61 6D 6F 00 04 07 00 00 05 02 04 42 01 87 CE F1 02 05 80 17  SongIndex 20442  ArtistIndex F102 10415: What Dreams Are Made Of
+      </pre>
+<p>
+      So song title 20442 has its song data in file 10397.
+    </p>
+
+    <p>
+      With this clue, doing something like <code>strings -f -n 30 *</code>
+      quickly shows up other files with english text. Enough to draw up
+      a table
+    </p>
+      <table border="1">
+	<tr>
+	  <td>ID</td>	  <td>Song # in book</td>  <td> Index to data</td> <td> Song title</td>
+	</tr>
+	<tr><td>S1</td>	  <td>20247</td>	 <td> 10202</td><td> NEXT 100 YEARS</tr>
+	<tr><td>S2</td>	  <td>20428</td>	  <td>10383</td><td> Lovers </td></tr> 
+	<tr><td>S3</td>	  <td>20442</td>	  <td>10397</td><td> What dreams are...</td></tr>
+	<tr><td>S4</td>	  <td>20154</td>	  <td>10109</td><td> Only sleeping</td></tr>
+      </table>
+<p>
+      and this is just linear:
+</p>
+      <pre>
+data index = song number - 10045
+      </pre>
+<p>
+      NB: this only works for some songs - I guess the English ones!
+      If this pattern holds for all English songs, the earliest data
+      file is (20001-10045) = 9956 and the last one is
+      (20501-10045) = 10456.
+    </p>
+
+    <h2> Decoding song data </h2>
+    <p>
+      It would be easy if all songs contained English text in the data. 
+      But I only found the above four. So the rest must be encoded
+      in some way.
+    </p>
+
+    <p>
+      A couple that I looked at seemed a bit messy. So I settled 
+      (for no particular reason) on Don Gibson's "Oh Lonesome Me".
+      By playing the song on the Malata, the headers were
+</p>
+      <pre>
+Oh Lonesome Me
+ORIGINAL:
+Don Gibson
+      </pre>
+<p>
+      while the lyrics are
+      <pre>
+Every body's goin'
+out and havin' fun
+I'm just a fool
+for stayin' home
+and havinnone
+      </pre>
+<p>
+      Running <code>bvi</code> on the data file gives
+      <pre>
+00000000  00 00 4F 4B 00 00 00 00 00 00 00 00 00 00 00 00 ..OK............
+00000010  00 00 00 00 00 20 00 00 00 07 00 00 00 00 00 00 ..... ..........
+00000020  00 00 6D 05 00 00 33 0F 00 00 7C 5B 13 7F 5C 5D ..m...3...|[..\]
+00000030  56 40 5C 5E 56 13 7E 56 1C 7C 61 7A 74 7A 7D 72 V@\^V.~V.|aztz}r
+00000040  7F 09 1C 77 5C 5D 13 74 5A 51 40 5C 5D 1C 33 33 ...w\].tZQ@\].33
+00000050  33 1F 33 36 27 37 33 33 32 33 33 33 05 30 30 32 3.36'7332333.002
+00000060  33 33 3D 0B 35 3A 32 33 33 7F 17 37 3C 32 33 32 33=.5:233..7&lt;232
+      </pre>
+<p>
+    </p>
+
+    <p>
+      From the songs with English, I know the song title starts at 0x2A,
+      and we have to do this match:
+</p>
+      <pre>
+7C 5B 13 7F 5C 5D 56 40 5C 5E 56 13 7E 56 1C 7C 61 7A 74 7A 7D 72
+O  h     L  o  n  e  s  o  m  e     M  e  /  O  R  I  G  I  N  A
+
+7F 09 1C 77 5C 5D 13 74 5A 51 40 5C 5D 1C 33 33
+L  :  /  D  o  n     G  i  b  s  o  n  /
+      </pre>
+<p>
+      The obvious thing to try is a substitution cipher: for example,
+      the 'o's are encoded as 0x5c while the 'O's are 0x7c.
+      It's a game of pattern matching, and the answer is the following
+      piece of C code
+      <pre class="sh_cpp">
+<!--#exec cmd="/usr/local/bin/escape.pl programs trans10206.c" -->
+      </pre>
+<p>
+      The substitutions here are grouped in fours, but of course there
+      is no reason why they should be. (This is repeated in some
+      other decodings, but not all.).
+    </p>
+
+    <p>
+      Following application of that substitution, the file looks like
+</p>
+      <pre>
+00000000  2E 2E 2E 2E 2E 2E 2E 2E 2E 2E 2E 2E 2E 2E 2E 2E ................
+00000010  2E 2E 2E 2E 2E 2E 2E 2E 2E 2E 2E 2E 2E 2E 2E 2E ................
+00000020  2E 2E 2E 2E 2E 2E 2E 2E 2E 2E 4F 68 20 4C 6F 6E ..........Oh Lon
+00000030  65 73 6F 6D 65 20 4D 65 2E 4F 52 49 47 49 4E 41 esome Me.ORIGINA
+00000040  4C 3A 2E 2E 6F 6E 20 47 69 62 73 6F 6E 2E 2E 2E L:..on Gibson...
+00000050  2E 2E 2E 2E 2E 2E 2E 2E 2E 2E 2E 2E 2E 2E 2E 2E ................
+00000060  2E 2E 2E 2E 2E 2E 2E 2E 2E 4C 2E 2E 2E 2E 2E 2E .........L......
+00000070  2E 2E 2E 2E 2E 2E 2E 2E 2E 2E 2E 2E 2E 2E 2E 2E ................
+00000080  2E 2E 2E 2E 2E 2E 2E 2E 2E 2E 2E 2E 2E 2E 2E 2E ................
+00000090  45 2E 76 2E 65 2E 72 2E 79 2E 20 2E 62 2E 6F 2E E.v.e.r.y. .b.o.
+000000A0  64 2E 79 2E 27 2E 73 2E 20 2E 67 2E 6F 2E 69 2E d.y.'.s. .g.o.i.
+000000B0  6E 2E 27 2E 2E 2E 2E 2E 2E 2E 2E 2E 2E 49 2E 27 n.'..........I.'
+000000C0  2E 6D 2E 20 2E 6A 2E 75 2E 73 2E 74 2E 20 2E 61 .m. .j.u.s.t. .a
+000000D0  2E 20 2E 66 2E 6F 2E 6F 2E 6C 2E 2E 2E 2E 2E 2E . .f.o.o.l......
+000000E0  2E 2E 2E 61 2E 6E 2E 64 2E 20 2E 68 2E 61 2E 76 ...a.n.d. .h.a.v
+000000F0  2E 2E 2E 69 2E 6E 2E 6E 2E 6F 2E 6E 2E 65 2E 2E ...i.n.n.o.n.e..
+00000100  2E 2E 2E 2E 2E 2E 2E 2E 68 2E 6F 2E 77 2E 20 2E ........h.o.w. .
+00000110  2E 2E 73 2E 68 2E 65 2E 20 2E 73 2E 65 2E 74 2E ..s.h.e. .s.e.t.
+00000120  20 2E 2E 2E 6D 2E 65 2E 20 2E 66 2E 72 2E 65 2E  ...m.e. .f.r.e.
+00000130  65 2E 2E 2E 2E 2E 2E 2E 2E 2E 2E 54 2E 68 2E 61 e..........T.h.a
+00000140  2E 74 2E 20 2E 6D 2E 69 2E 73 2E 74 2E 61 2E 6B .t. .m.i.s.t.a.k
+      </pre>
+<p>
+      Which is much more readable! it doesn't quite follow the lyrics
+      though - an issue for later.
+    </p>
+
+    <p>
+      The next occurrence of this substitution cipher is at file
+      10281, song number 20326 "Give me all night" 
+      so there are other substitutions used,
+      of course! Then at 10326, song number 20371 "Stand By Your Man"
+    </p>
+
+    <p>
+      So then I tried another song, California dreaming, song 20088, file 10043.
+      That was pretty straightforward. Other songs using this substitution
+      are 20033 Heartbreaker, file 9988, 20082 Another Girl, file 10037,
+      20213 Don't talk, file 10168, 20382 Things we Said Today, file 10336.
+      I also tried some others: no pattern as to song numbers.
+    </p>
+
+    <p>
+      However, the label for the substitution pattern appears
+      to be byte 0x26. Here we another coincidence: the byte which
+      is mapped to the space character ' ' is 0x20 less than byte
+      0x26. e.g. the substitution for songs like file 10337 is
+</p>
+      <pre  class="sh_cpp">
+        switch (ch) {
+        case 0x95: ch = ' '; break;
+
+        case 0xD4: ch = 'a'; break;
+        case 0xD7: ch = 'b'; break;
+        case 0xD6: ch = 'c'; break;
+
+        case 0xD1: ch = 'd'; break;
+        case 0xD0: ch = 'e'; break;
+        case 0xD3: ch = 'f'; break;
+        case 0xD2: ch = 'g'; break;
+
+        case 0xDD: ch = 'h'; break;
+        case 0xDC: ch = 'i'; break;
+        case 0xDF: ch = 'j'; break;
+        case 0xDE: ch = 'k'; break;
+
+        case 0xD9: ch = 'l'; break;
+        case 0xD8: ch = 'm'; break;
+        case 0xDB: ch = 'n'; break;
+        ...
+      </pre>
+<p>
+      and byte 0x26 for that file is 0xB5, and 0x20 = 0xB5 - 0x95.
+      Maybe the pattern is just based on these bytes (e.g. what is
+      byte 0x27 - an index into pattern types?).
+    </p>
+
+    <p>
+      To be followed up...
+    </p>
+
+    <p>
+      There is one critival issue in this: it isn't only the English
+      alphabetic characters that are encoded: others are too.
+      But I have no clues as to what the other 65000+ Unicode
+      characters should be!
+    </p>
+
+    <h2> MIDI from data file</h2>
+    <p>
+      Here is where I am currently stuck.
+      The data files are <em>not</em> MIDI files.
+      For example, song 10383 Lovers by Abba is
+</p>
+      <pre>
+00000000  00 00 4F 4B 00 00 00 00 00 00 00 00 00 00 00 00 ..OK............
+00000010  00 00 00 00 00 24 00 00 00 07 00 00 00 00 00 00 .....$..........
+00000020  00 00 77 07 00 00 00 12 00 00 4C 6F 76 65 72 73 ..w.......Lovers
+00000030  2F 4F 52 49 47 49 4E 41 4C 3A 2F 41 62 62 61 2F /ORIGINAL:/Abba/
+00000040  28 4C 69 76 65 20 41 20 4C 69 74 74 6C 65 20 4C (Live A Little L
+00000050  6F 6E 67 65 72 29 2F 00 00 00 56 00 06 EB 0A 00 onger)/...V.....
+00000060  00 01 00 00 00 36 05 01 01 00 00 17 2A 06 02 01 .....6......*...
+00000070  00 00 38 2A 04 03 01 00 00 46 36 05 04 01 00 00 ..8*.....F6.....
+00000080  88 39 05 05 01 00 00 A8 36 05 06 01 00 00 F1 2A .9......6......*
+00000090  04 07 01 00 01 16 53 02 08 01 00 01 24 42 04 09 ......S.....$B..
+000000A0  01 00 01 32 23 06 11 CA 00 0D 5B 00 0D 62 81 80 ...2#.....[..b..
+000000B0  05 82 9D 09 30 07 18 07 18 07 18 07 18 07 00 26 ....0..........&
+000000C0  01 5C 00 53 04 69 04 74 06 20 00 64 07 6F 05 77 .\.S.i.t. .d.o.w
+000000D0  05 6E 07 20 00 61 09 6E 07 64 09 20 00 6C 0B 69 .n. .a.n.d. .l.i
+000000E0  09 73 08 74 08 65 09 6E 08 5E 01 00 1D 01 1E 26 .s.t.e.n.^.....&
+      </pre>
+<p>
+    </p>
+
+    <p>
+      This isn't a MIDI file. From my Sonken, I have a MIDI file for this
+      song (obviously not the same recording) which looks like
+</p>
+      <pre>
+00000000  4D 54 68 64 00 00 00 06 00 01 00 03 00 1E 4D 54 MThd..........MT
+00000010  72 6B 00 00 00 2B 00 FF 03 0C 53 6F 66 74 20 4B rk...+....Soft K
+00000020  61 72 61 6F 6B 65 00 FF 01 13 40 4B 4D 49 44 49 araoke....@KMIDI
+00000030  20 4B 41 52 41 4F 4B 45 20 46 49 4C 45 00 FF 2F  KARAOKE FILE../
+00000040  00 4D 54 72 6B 00 00 1A 5E 00 FF 01 05 40 4C 45 .MTrk...^....@LE
+00000050  4E 47 00 FF 01 1E 40 54 4C 6F 76 65 72 73 28 4C NG....@TLovers(L
+00000060  69 76 65 20 61 20 4C 69 74 74 6C 65 20 4C 6F 6E ive a Little Lon
+00000070  67 65 72 29 00 FF 01 02 40 54 8A 5B FF 01 02 5C ger)....@T.[...\
+00000080  53 06 FF 01 01 69 06 FF 01 01 74 09 FF 01 01 20 S....i....t....
+00000090  06 FF 01 01 64 06 FF 01 01 6F 06 FF 01 01 77 06 ....d....o....w.
+000000A0  FF 01 01 6E 07 FF 01 01 20 07 FF 01 01 61 07 FF ...n.... ....a..
+000000B0  01 01 6E 07 FF 01 01 64 0A FF 01 01 20 07 FF 01 ..n....d.... ...
+000000C0  01 6C 07 FF 01 01 69 07 FF 01 01 73 0A FF 01 01 .l....i....s....
+000000D0  74 0A FF 01 01 65 0A FF 01 01 6E 00 FF 01 01 5C t....e....n....\
+      </pre>
+<p>
+      and this <em>is</em> a conforming MIDI file.
+    </p>
+
+    <p>
+      Just looking at the lyric part, MIDI files require
+</p>
+      <pre>
+&lt;delta&gt; FF 01 &lt;string length&gt;
+      </pre>
+<p>
+      It is likely that the Malata just has
+      <pre>
+&lt;delta&gt;  single-char
+      </pre>
+<p>
+      That's easy to adjust - if we know where they lyrics stop!
+    </p>
+
+    <p>
+      The lyrics start after a sequence "18 07 18 07 18 07 18 07 00 26".
+    </p>
+
+    <p>
+      A much trickier problem is that the lyrics are not contiguous!
+      They should be
+</p>
+      <pre>
+Sit down and listen
+'cause I've got
+good news for you
+It was in the
+papers today
+      </pre>
+<p>
+      But if we look at the file, lines 2 and 4 are missing:
+      <pre>
+000000C0  01 5C 00 53 04 69 04 74 06 20 00 64 07 6F 05 77 .\.S.i.t. .d.o.w
+000000D0  05 6E 07 20 00 61 09 6E 07 64 09 20 00 6C 0B 69 .n. .a.n.d. .l.i
+000000E0  09 73 08 74 08 65 09 6E 08 5E 01 00 1D 01 1E 26 .s.t.e.n.^.....&
+000000F0  01 67 05 6F 05 6F 05 64 07 20 00 6E 08 65 05 77 .g.o.o.d. .n.e.w
+00000100  04 73 07 20 00 66 09 6F 07 72 09 20 00 79 09 6F .s. .f.o.r. .y.o
+00000110  05 75 06 5E 01 00 10 01 33 26 01 70 0D 61 0C 70 .u.^....3&.p.a.p
+      </pre>
+<p>
+      For the missing line 2, there is some sort of pointer 
+      "09 6E 08 5E 01 00 1D 01 1E 26",
+      and it turns out that the missing lines are elsewhere:
+      <pre>
+00000790  68 19 5E 01 00 81 C9 1A FF 85 21 26 02 27 02 63 h.^.......!&.'.c
+000007A0  03 61 02 75 03 73 02 65 04 20 00 49 04 27 04 76 .a.u.s.e. .I.'.v
+000007B0  03 65 05 20 00 67 0A 6F 08 74 08 5E 02 00 10 02 .e. .g.o.t.^....
+000007C0  4C 26 02 49 06 74 08 20 00 77 09 61 07 73 09 20 L&.I.t. .w.a.s.
+000007D0  00 69 07 6E 06 20 00 74 07 68 04 65 04 5E 02 00 .i.n. .t.h.e.^..
+      </pre>
+<p>
+    </p>
+
+    <p>
+      The Malata displays two lines at a time.
+      All of the first lines form a chunk. The second lines form another
+      chunk, later on. I haven't found an offset or length
+      to say where this second chunk occurs.
+      Each line appears to consist of a delta value (I guess) 
+      for the delay of the lyric, followed by a lyric character.
+    </p>
+
+    <p>
+      Between lines is a section that starts with the character
+      '^' and finishes with the character '&'.
+      I haven't any idea what is in these sections apart from two
+      observations:
+</p>
+      <ul>
+	<li>
+	  The character 0xFF appears twice: the first time it
+	  signals a shift from first line lyrics to second line
+	  lyrics. The next time it occurs it signals the end
+	  of the lyrics.
+	</li>
+	<li>
+	  Several times the sequence  "09 6E 08 5E 01 00 1D 01 1E 26"
+	  occurs. This seems to signal a long break (e.g. for a solo)
+	  in the lyrics. In the "Lovers" song this occurs several times:
+	  it occurs in the first line, but sometimes the second line
+	  is played immediately, sometimes it is delayed until after
+	  the next first line is played.
+	  I haven't resolved this yet :-(
+	</li>
+      </ul>
+<p>
+    </p>
+
+    <p>
+      The file <code>printLyrics.c</code> gives a  dump fo the lyrics
+      for songs like Lovers (non-coded lyrics) plus the
+      deltas (assumed) and the stuff between lines
+</p>
+      <pre class="sh_cpp">
+<!--#exec cmd="/usr/local/bin/escape.pl programs printLyrics.c" -->
+      </pre>
+<p>
+      it prints out stuff like
+      <pre>
+ 0:  0: \Sit down and listen     
+    1  0  4  4  6  0  7  5  5  7  0  9  7  9  0  B  9  8  8  9                 8 5E  1  0 1D  1 1E 26 
+47: 47: 'cause I've got          
+    2  2  3  2  3  2  4  0  4  4  3  5  0  A  8                                8 5E  2  0 10  2 4C 26 
+ 1:  1: good news for you        
+    1  5  5  5  7  0  8  5  4  7  0  9  7  9  0  9  5                          6 5E  1  0 10  1 33 26 
+48: 48: It was in the            
+    2  6  8  0  9  7  9  0  7  6  0  7  4                                      4 5E  2  0 10  2 80 C8 26 
+ 2:  2: papers today             
+    1  D  C  5  5  5  7  0 14 10 11 10                                        11 5E  1  0 10  1 80 A7 26 
+49: 49: Some physician           
+    2  5  5  5  7  0  B  9  8  D  C  6  7  6                                   6 5E  2  0 10  2 80 96 26 
+ 3:  3: had made a discovery     
+    1  4  5  6  0  5  3  4  4  0 1B  0  E  6  5  8  9  8 11  8                 4 5E  1  0 10  1 3F 26 
+      </pre>
+<p>
+      That's the data - not sure what information it is conveying.
+    </p>
+
+
+    <h2> Conclusion </h2>
+    <p>
+      The Malata uses a more complex encoding than the Sonken.
+      This is only partially solved at present.
+    </p>
+
+
+    <!--#include virtual="../../footer.html" -->
+
+  </body>
+</html>

@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="../../stylesheet.css" />
+
+    <title> Raspberry Pi</title>
+
+    <style type="text/css">
+        body { counter-reset: chapter 39; }
+    </style>
+
+    <script type="text/javascript" src="../../toc.js"> 
+   /* empty */
+   </script>
+
+   <script type="text/javascript">
+/* <![CDATA[ */
+    (function() {
+        var s = document.createElement("script"), t = document.getElementsByTagName("script")[0];
+        s.type = "text/javascript";
+        s.async = true;
+        s.src = "http://api.flattr.com/js/0.6/load.js?mode=auto";
+        t.parentNode.insertBefore(s, t);
+    })();
+/* ]]> */
+    </script>
+
+
+  </head>
+  <body>
+
+    <!--#include virtual="../../header.html" -->
+
+    <div class="chapter">
+        <h1> Raspberry Pi</h1>
+     </div>
+
+    <div class="preface">
+      <p>
+	The Raspberry Pi (RPi) is a low cost Linux computer 
+	developed with the intention of improving the background of students entering
+	university computer science courses by giving them a good, cheap environment in
+	which to play. And its true! I've got a bunch of colleagues at work, well into
+	middle-age who have leapt upon it to play with.
+	So far their kids haven't had a look-in though...
+      </p>
+    </div>
+
+    <div id="generated-toc" class="generate_from_h2"></div>
+
+    <h2> Resources </h2>
+    <p>
+</p>
+      <ul>
+	<li>
+	  <a href="http://raspberrypi.stackexchange.com/questions/44/why-is-my-audio-sound-output-not-working">
+	    Why is my Audio (Sound) Output not working?
+	  </a>
+	</li>
+	<li>
+	  <a href="https://github.com/raspberryp">
+	    Raspberry Pi github sources
+	  </a>
+	</li>
+	<li>
+	  <a href="http://elinux.org/RPi_VideoCore_APIs">
+	    RPi VideoCore APIs
+	  </a>
+	</li>
+	<li>
+	  <a href="http://linuxgizmos.com">
+	    Linux Gizmos
+	  </a> reports on many System on a Chip (SoCs)
+	  including the RPi
+	</li>
+	<li>
+	  <a href="http://intensecode.blogspot.com.au/2013/10/tutorial-vlc-with-hardware-acceleration.html?showComment=1405938529843#c6761170597378687078">
+	    Tutorial: VLC with hardware acceleration on Raspberry Pi 
+	  </a> by  Helder Araujo Carneiro
+	</li>
+	<li>
+	  <a href="http://snorp.net/2011/12/16/android-direct-texture.html">
+	    Using direct textures on Android </a>
+	  how to get from EGLImage to OpenGL texture
+	</li>
+	<li>
+	  <a href="http://wiki.linuxaudio.org/wiki/raspberrypi">
+	    Raspberry Pi and realtime, low-latency audio
+	  </a>
+	</li>
+	<li>
+	  <a href="">
+	  </a>
+	</li>
+	<li>
+	  <a href="">
+	  </a>
+	</li>
+      </ul>
+<p>
+    </p>
+
+    <h2> Introduction </h2>
+    <h3> Hardware </h3>
+    <p>
+      The Raspberry Pi (RPi)  Model B  has 512Mb RAM, 2 USB ports and an Ethernet port.
+      It has HDMI, and analogue audio and video outputs.
+      From the <a href="http://www.raspberrypi.org/faqs">FAQ</a>
+</p>
+      <blockquote>
+	The SoC is a Broadcom BCM2835. This contains an ARM1176JZFS, with floating point, 
+	running at 700Mhz, and a Videocore 4 GPU. The GPU is capable of BluRay quality 
+	playback, using H.264 at 40MBits/s. It has a fast 3D core accessed using 
+	the supplied OpenGL ES2.0 and OpenVG libraries.
+      </blockquote>
+<p>
+      Graphically it looks like <br/>
+      <img alt="" src="http://www.raspberrypi.org/wp-content/uploads/2011/07/RaspiModelB.png" width="584" height="514">
+      <br/> and physically it looks like <br/>
+      <img alt="" src="http://www.raspberrypi.org/wp-content/uploads/2011/07/7513051848_9a6ef2feb8_o.jpeg" width="584" height="388">.
+    </p>
+
+    <p>
+      The RPi has audio out through the HDMI port and also through an analogue 3.5 mm
+      audio out. There is no audio in. However, there are USB ports, and a USB sound
+      card can be plugged which is recognised by the Linux distros.
+    </p>
+
+    <p>
+      The CPU is an ARM CPU. A simple overview of the differences between ARM and
+      Intel instruction sets is given by
+      <a href="http://www.brighthub.com/computing/hardware/articles/107133.aspx">
+	ARM vs x86 Processors: What's the Difference?
+      </a>
+
+    <h3> Alternative Single Board Computers </h3>
+    <p>
+      There are many single board computers. Wikipedia has a
+      <a href="http://en.wikipedia.org/wiki/List_of_single_board_computers">
+	List of single-board computers
+      </a>. These are all potential alternatives to the RPi. Here is just a quick
+      selection
+</p>
+      <dl>
+	<dt>
+	  <a href="http://en.wikipedia.org/wiki/Gumstix">
+	    Gumstix
+	  </a>
+	</dt>
+	<dd>
+	  This is a single board computer that has been around for many years (I got one
+	  in 2004). It isn't high powered, but isn't meant to be.
+	</dd>
+
+	<dt>
+	  <a href="http://en.wikipedia.org/wiki/Arduino">
+	    Arduino
+	  </a>
+	</dt>
+	<dd>
+	  The Arduino is designed as a micro-controller for electronic projects.
+	  It uses an ARM Cortec-M3 CPU which has even lower specs than the RPi
+	</dd>
+
+	<dt>
+	  <a href="http://www.udoo.org/">
+	    UDOO
+	  </a>
+	</dt>
+	<dd>
+	  <a href="http://www.bit-tech.net/news/hardware/2013/04/16/udoo/1">
+	     UDOO
+	  </a>
+	  attempts to marry the best of the RPi and Arduino with two CPUs
+	  into a single board computer
+	</dd>
+	<dt>
+	  <a href="http://odroid.com">
+	    ODroid
+	  </a>
+	</dt>
+	<dd>
+	  The ODroid U2 is a higher powered system than the RPI, evaluated by
+	  <a href="http://gigaom.com/2013/02/11/following-raspberry-pi-the-89-odroid-u2-continues-small-cheap-computing-movement/">
+	    Gigaom
+	  </a>. It is about double the price.
+	</dd>
+	<dt>
+	  <a href="http://beagleboard.org/Products/BeagleBone%20Black">
+	    BeagleBone
+	  </a>
+	</dt>
+	<dd>
+	  The BeagleBone Black has a slightly better CPU (ARM Cortex-A8)
+	  than the RPi, and is a bit more expensive
+	</dd>
+	<dt>
+	  Wandboard
+	</dt>
+	<dd>
+
+	</dd>
+	<dt>
+	  PandaBoard
+	</dt>
+	<dd>
+
+	</dd>
+	<dt>
+	  CubieBoard
+	</dt>
+	<dd>
+
+	</dd>
+      </dl>
+<p>
+    </p>
+
+    <h3> Distros </h3>
+    <p>
+      There are a number of Linux images available from the Raspberry Pi site,
+      and others being developed elsewhere. I'm using the Debian-based image which
+      essentially comes in two forms: with soft float using Debian and with hard float
+      using  the FPU, called Raspbian. The hard float image is required for decent
+      sound processing which is heavily floating point dependent.
+      There is a good article benchmarking these against each other:
+      <a href="http://www.memetic.org/raspbian-benchmarking-armel-vs-armhf/">
+	Raspbian Benchmarking – armel vs armhf
+      </a>.
+      Another set of benchmarks is at
+      <a href="http://elinux.org/RaspberryPiPerformance">
+	RPi Performance
+      </a>.
+      Basically, these show that you should use the hard float version if you
+      want good floating point performance, and this is required for audio
+      processing.
+    </p>
+
+    <p>
+      ELinux.org maintains a list of
+      <a href="http://elinux.org/RPi_Distributions">
+	RPi Distributions
+      </a>
+      There are many standard Linux distros included here, such as Fedora,
+      Debian, Arch, SUSE, Gentoo and others.
+      The RPi has gained traction as a media centre based on the XBMC
+      media centre, and this is represented by distros such as
+      Raspbmc and OpenElec.
+    </p>
+
+    <p>
+      So how does it go with the various audio tools we have been discussing so far?
+      It's a mixed bag.
+    </p>
+
+    <p>
+      
+
+    <h2> No sound </h2>
+    <p>
+      I plugged mine into a 29 inch ViewSonic monitor using the HDMI connectors.
+      Initially I got no sound from either the 3.5mm analogue output or the HDMI monitor.
+      This is explained at
+      <a href="http://raspberrypi.stackexchange.com/questions/44/why-is-my-audio-sound-output-not-working">
+	Why is my Audio (Sound) Output not working?
+      </a>
+      I edited the file <code>/boot/config.txt</code> and uncommented the line "hdmi_drive=2".
+      I also used the command
+</p>
+      <pre>
+	<code>
+sudo amixer cset numid=3 &lt;n&gt;
+	</code>
+      </pre>
+<p>
+      where n is 0=auto, 1=headphones, 2=hdmi to toggle between outputs.
+    </p>
+    <p>
+      After that sound is fine.
+    </p>
+
+    <h2> ALSA </h2>
+    <p>
+      The Raspberry Pi uses the ALSA driver snd_bcm2835, and this can manage
+      HDMI output. The command <code>alsa-info</code> is not present, but as this is a shell
+      script it can be copied from elsewhere  and will run on the RPi. 
+      Some of the usual configuration files and
+      commands on a larger distro are missing, but it shows on the soft float Debian distro
+</p>
+      <pre>
+	<code>
+upload=true&amp;script=true&amp;cardinfo=
+!!################################
+!!ALSA Information Script v 0.4.61
+!!################################
+
+!!Script ran on: Sun Nov  4 02:33:41 UTC 2012
+
+
+!!Linux Distribution
+!!------------------
+
+Debian GNU/Linux wheezy/sid \n \l PRETTY_NAME="Debian GNU/Linux wheezy/sid" NAME="Debian GNU/Linux" ID=debian
+
+
+!!DMI Information
+!!---------------
+
+Manufacturer:      
+Product Name:      
+Product Version:   
+Firmware Version:  
+
+
+!!Kernel Information
+!!------------------
+
+Kernel release:    3.1.9+
+Operating System:  GNU/Linux
+Architecture:      armv6l
+Processor:         unknown
+SMP Enabled:       No
+
+
+!!ALSA Version
+!!------------
+
+Driver version:     1.0.24
+Library version:    1.0.25
+Utilities version:  1.0.25
+
+
+!!Loaded ALSA modules
+!!-------------------
+
+snd_bcm2835
+
+
+!!Sound Servers on this system
+!!----------------------------
+
+No sound servers found.
+
+
+!!Soundcards recognised by ALSA
+!!-----------------------------
+
+ 0 [ALSA           ]: BRCM bcm2835 ALSbcm2835 ALSA - bcm2835 ALSA
+                      bcm2835 ALSA
+
+
+!!PCI Soundcards installed in the system
+!!--------------------------------------
+
+
+
+!!Advanced information - PCI Vendor/Device/Subsystem ID's
+!!-------------------------------------------------------
+
+
+
+!!Modprobe options (Sound related)
+!!--------------------------------
+
+snd_atiixp_modem: index=-2
+snd_intel8x0m: index=-2
+snd_via82xx_modem: index=-2
+snd_pcsp: index=-2
+snd_usb_audio: index=-2
+
+
+!!Loaded sound module options
+!!---------------------------
+
+!!Module: snd_bcm2835
+	* : 
+
+
+!!ALSA Device nodes
+!!-----------------
+
+crw-rw---T+ 1 root audio 116,  0 Nov  3 22:17 /dev/snd/controlC0
+crw-rw---T+ 1 root audio 116, 16 Nov  3 22:17 /dev/snd/pcmC0D0p
+crw-rw---T+ 1 root audio 116,  1 Nov  3 22:17 /dev/snd/seq
+crw-rw---T+ 1 root audio 116, 33 Nov  3 22:17 /dev/snd/timer
+
+/dev/snd/by-path:
+total 0
+drwxr-xr-x 2 root root  60 Nov  3 22:17 .
+drwxr-xr-x 3 root root 140 Nov  3 22:17 ..
+lrwxrwxrwx 1 root root  12 Nov  3 22:17 platform-bcm2835_AUD0.0 -gt; ../controlC0
+
+
+!!Aplay/Arecord output
+!!--------------------
+
+APLAY
+
+**** List of PLAYBACK Hardware Devices ****
+card 0: ALSA [bcm2835 ALSA], device 0: bcm2835 ALSA [bcm2835 ALSA]
+  Subdevices: 8/8
+  Subdevice #0: subdevice #0
+  Subdevice #1: subdevice #1
+  Subdevice #2: subdevice #2
+  Subdevice #3: subdevice #3
+  Subdevice #4: subdevice #4
+  Subdevice #5: subdevice #5
+  Subdevice #6: subdevice #6
+  Subdevice #7: subdevice #7
+
+ARECORD
+
+**** List of CAPTURE Hardware Devices ****
+
+!!Amixer output
+!!-------------
+
+!!-------Mixer controls for card 0 [ALSA]
+
+Card hw:0 'ALSA'/'bcm2835 ALSA'
+  Mixer name	: 'Broadcom Mixer'
+  Components	: ''
+  Controls      : 3
+  Simple ctrls  : 1
+Simple mixer control 'PCM',0
+  Capabilities: pvolume pvolume-joined pswitch pswitch-joined penum
+  Playback channels: Mono
+  Limits: Playback -10239 - 400
+  Mono: Playback -1725 [80%] [-17.25dB] [on]
+
+
+!!Alsactl output
+!!--------------
+
+--startcollapse--
+state.ALSA {
+	control.1 {
+		iface MIXER
+		name 'PCM Playback Volume'
+		value -1725
+		comment {
+			access 'read write'
+			type INTEGER
+			count 1
+			range '-10239 - 400'
+			dbmin -9999999
+			dbmax 400
+			dbvalue.0 -1725
+		}
+	}
+	control.2 {
+		iface MIXER
+		name 'PCM Playback Switch'
+		value true
+		comment {
+			access 'read write'
+			type BOOLEAN
+			count 1
+		}
+	}
+	control.3 {
+		iface MIXER
+		name 'PCM Playback Route'
+		value 2
+		comment {
+			access 'read write'
+			type INTEGER
+			count 1
+			range '0 - 2'
+		}
+	}
+}
+--endcollapse--
+
+
+!!All Loaded Modules
+!!------------------
+
+Module
+snd_bcm2835
+snd_pcm
+snd_seq
+snd_timer
+snd_seq_device
+snd
+snd_page_alloc
+evdev
+
+
+!!ALSA/HDA dmesg
+!!--------------
+
+[   16.369584] EXT4-fs (mmcblk0p2): re-mounted. Opts: (null)
+[   16.750460] ### snd_bcm2835_alsa_probe c05c88e0 ############### PROBING FOR bcm2835 ALSA device (0):(1) ###############
+[   16.776071] Creating card...
+--
+[   16.834082] Registering card ....
+[   16.853728] bcm2835 ALSA CARD CREATED!
+[   16.883259] ### BCM2835 ALSA driver init OK ### 
+[   23.608360] smsc95xx 1-1.1:1.0: eth0: link up, 100Mbps, full-duplex, lpa 0x45E1
+	</code>
+      </pre>
+<p>
+    </p>
+
+
+    <h2> Sampled audio players </h2>
+    <h3> MPlayer</h3>
+    <p>
+      MPlayer plays fine on the default ALSA modules, for mp3, ogg and wav.
+    </p>
+
+    <h3> VLC </h3>
+    <p>
+      VLC attempts to play wav files, but it is very broken up on the soft float distro. 
+      CPU usage is up around 90% and it is
+      quite unplayable. The hard float distro can play wav, mp3 and ogg.
+    </p>
+
+    <h3> Alsaplayer </h3>
+    <p>
+      The program <code>alsaplayer</code> can attempt to play files in formats such as Ogg-Vorbis
+      and MP3.
+      However, CPU usage hits as high as 80% on the soft float at which point the 
+      sound falls to pieces. The hard float distro is okay.
+    </p>
+
+
+    <h3> OmxPlayer </h3>
+    <p>
+      The RPi has GPU, and this can be used
+      by omxplayer. It can play Ogg-Vorbis files with only 12% CPU usage and looks to be
+      a good candidate for audio as well as video.
+    </p>
+
+    <h3> Is it X using the CPU? </h3>
+    <p>
+      Apparently not just X: gnome-player works fine.
+    </p>
+
+    <h2> Sampled audio capture </h2>
+    <p>
+      The RPi does not have an audio-in or line-in port.
+      I connected my SoundBlaster USB card through a powered USB hub.
+      It shows up with <code>arecord -l</code> as
+</p>
+      <pre>
+	<code>
+**** List of CAPTURE Hardware Devices ****
+card 1: Pro [SB X-Fi Surround 5.1 Pro], device 0: USB Audio [USB Audio]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+	</code>
+      </pre>
+<p>
+      so that to ALSA it is device <code>hw:1,0</code>.
+    </p>
+
+    <h3> ALSA </h3>
+    <p>
+      The standard program <code>arecord</code> works if you get the options
+      correct:
+</p>
+      <pre>
+	<code>
+arecord -D hw:1,0 -f S16_LE -c 2 -r 48000 tmp.s16
+Recording WAVE 'tmp.s16' : Signed 16 bit Little Endian, Rate 48000 Hz, Stereo
+	</code>
+      </pre>
+<p>
+      The resulting file can be played back using
+      <pre>
+	<code>
+aplay -D hw:1,1 -c 2 -r 48000 -f S16_LE tmp.s16
+	</code>
+      </pre>
+
+<p>
+    </p>
+
+    <p>
+      In the chapter on <a href="../Sampled/Alsa"> ALSA </a>
+      I gave the source for a program <code>alsa_capture.c</code>.
+      When run by
+</p>
+      <pre>
+	<code>
+alsa_capture hw:1,0 tmp.s16
+	</code>
+      </pre>
+<p>
+      it records PCM data in stereo at 48,000hz.
+    </p>
+
+
+
+    <h2> MIDI players </h2>
+    <h3> Timidity </h3>
+    <p>
+      Timidity hits upto 90% CPU. It can't play MIDI files on the RPi properly using the
+      soft float dsitro, but is just about okay on the hard float distro.
+    </p>
+
+    <p>
+      To make the RPi usable, in the <code>timidity.cfg</code>
+      file uncomment the lines
+</p>
+      <pre>
+	<code>
+## If you have a slow CPU, uncomment these:
+#opt EFresamp=d         #disable resampling
+#opt EFvlpf=d           #disable VLPF
+#opt EFreverb=d         #disable reverb
+#opt EFchorus=d         #disable chorus
+#opt EFdelay=d          #disable delay
+#opt anti-alias=d       #disable sample anti-aliasing
+#opt EWPVSETOZ          #disable all Midi Controls
+#opt p32a               #default to 32 voices with auto reduction
+#opt s32kHz             #default sample frequency to 32kHz
+#opt fast-decay         #fast decay notes
+	</code>
+      </pre>
+<p>
+      This brings the CPU usage down to about 30%.
+      (Thanks to <a href="http://chivalrytimberz.wordpress.com/2012/12/03/pi-lights/">
+	Chivalry Timber</a>).
+    </p>
+
+
+    <h3> PyKaraoke </h3>
+    <p>
+      This only uses 40% of the CPU and plays okay, even giving a GUI on the soft float distro.
+    </p>
+
+    <h3> Fluidsynth/Qsynth </h3>
+    <p>
+      This just sat there doing not very at all using soft float Debian wheezy out of the box.
+      I spent some time with the FluidSynth team investigating possibilities.
+      <h4> Images </h4>
+    <p>
+      The soft float image is unusable. You need to use the hard float image.
+    </p>
+
+    <h4> Scheduling </h4>
+    <p>
+      Sometimes fluidsynth complains about not being able to reset the scheduler.
+      <a href="http://lists.gnu.org/archive/html/fluid-dev/2012-10/msg00018.html">
+	Aere Greenway
+      </a> suggests making the following security changes:
+</p>
+      <blockquote>
+	You need to create a file (whose name starts with your user-ID) 
+	in the following folder:  /etc/security/limits.d
+	For example, my user-ID is aere, so the filename I use is: aere.conf
+	The file needs to contain the following lines:
+	<pre>
+	  <code>
+aere - rtprio 85
+aere - memlock unlimited
+	  </code>
+	</pre>
+<p>
+	Except, substitute your user-ID in place of "aere". 
+      </blockquote>
+<p>
+      This is necessary, but not sufficient
+      It did help with the
+      Raspbian hard-float image, but only a little: some MIDI files played fine
+      while others broke up badly.
+    </p>
+
+    <h4> Analysis tools </h4>
+    <p>
+      The simplest tool to analyse performance is <code>perf</code>.
+      This will give a breakdown of the percentage of CPU usage for
+      the function calls within a program.
+    </p>
+
+    <p>
+      <code>perf</code> averages the results over an execution period.
+      The MIDI songs I tried only misplayed in parts, not over the whole
+      song. <code>perf</code> can however be run as a separate process
+      to sample every second
+      by the command
+</p>
+      <pre>
+	<code>
+perf top -d 1
+	</code>
+      </pre>
+<p>
+      You can then observe function calls over one second periods.
+    </p>
+
+    <p>
+      This didn't reveal much in this instance, but may be helpful in other
+      cases.
+    </p>
+    
+    <p>
+      The command <code>pidstat</code> can be run by e.g.
+</p>
+      <pre>
+	<code>
+pidstat -C fluidsynth -r -u 5
+	</code>
+      </pre>
+<p>
+      to give CPU and memory usage every 5 seconds. it is similar to <code>top</code>
+      but just writes figures for the command to stdout. The output can be massaged
+      using shell scripts and shown as a histogram using GNU octave.
+      This shows that the distortion occurs when CPU usage hits over 100% (don't
+      ask me how!). Memory usage is fine, around 40%.
+    </p>
+
+    <h4>Non-causes</h4>
+    <p>
+      The following were suggested as causes of the problems, but ultimately discarded
+</p>
+      <ul>
+	<li>
+	  Fluidsynth can be configured to use either doubles or floats.
+	  The default is doubles, and these are slow on Arm chips.
+	  Switching to floats didn't remove the problem peaks in CPU use
+	</li>
+	<li>
+	  Fluidsynth uses soundfont files and these are quite large: about 40M
+	  is typical. Switching to smaller fonts didn't help - memory use was
+	  not the problem
+	</li>
+	<li>
+	  Buffering is small in fluidsynth. The "-z" parameter can be used to make
+	  it larger. Buffering was not the problem and changing it didn't help
+	</li>
+	<li>
+	  A number of operations are known to be expensive in CPU.
+	  Fluidsynth supports a number of interpolation algorithms
+	  and these can be set using its command interpreter by e.g.
+	  "interp 0" to turn off interpolation.
+	  Other expensive operations include reverb, polyphony and chorus.
+	  Mucking around with any of these in isolation proved fruitless.
+	</li>
+      </ul>
+<p>
+    </p>
+
+    <h4>Solutions</h4>
+    <p>
+      The two solutions that I have found are
+</p>
+      <ul>
+	<li>
+	  polyphony=64 and reverb=false; or
+	</li>
+	<li>
+	  rate=22050
+	</li>
+      </ul>
+<p>
+    </p>
+
+    <h2> JavaSound </h2>
+    <p>
+      I installed OpenJDK version 6, the default Java install at present.
+      The program <code>DeviceInfo</code> was  given in the JavaSound Sampled chapter
+      The output from this on the RPi is
+</p>
+      <pre>
+	<code>
+Mixers:
+   PulseAudio Mixer, version 0.02
+    Mixer: org.classpath.icedtea.pulseaudio.PulseAudioMixer@1d05c81
+      Source lines
+        interface SourceDataLine supporting 42 audio formats, and buffers of 0 to 1000000 bytes
+        interface Clip supporting 42 audio formats, and buffers of 0 to 1000000 bytes
+      Target lines
+        interface TargetDataLine supporting 42 audio formats, and buffers of 0 to 1000000 bytes
+   ALSA [default], version 1.0.24
+    Mixer: com.sun.media.sound.DirectAudioDevice@12558d6
+      Source lines
+        interface SourceDataLine supporting 84 audio formats, and buffers of at least 32 bytes
+        interface Clip supporting 84 audio formats, and buffers of at least 32 bytes
+      Target lines
+   ALSA [plughw:0,0], version 1.0.24
+    Mixer: com.sun.media.sound.DirectAudioDevice@eb7859
+      Source lines
+        interface SourceDataLine supporting 8 audio formats, and buffers of at least 32 bytes
+        interface Clip supporting 8 audio formats, and buffers of at least 32 bytes
+      Target lines
+   Port ALSA [hw:0], version 1.0.24
+    Mixer: com.sun.media.sound.PortMixer@fd54d6
+      Source lines
+      Target lines
+        PCM target port
+	</code>
+      </pre>
+<p>
+      Althjough this is using the PulseAudio mixer, pulse audio isn't actually running
+      (at this stage)!
+      So it can only use the ALSA interface.
+    </p>
+
+ 
+    <p>
+      The program <code>PlayAudioFile</code> was  given in the JavaSound Sampled chapter.
+      This can play .wav files okay. But it can't play Ogg-Vorbis or MP3 files and throws
+      anUnsupportedAudioFileException.
+    </p>
+
+    <h2> PulseAudio </h2>
+    <p>
+      PulseAudio installs okay from the repositories and runs with no problems.
+      The output from pulsedevlist is
+</p>
+      <pre>
+	<code>
+=======[ Output Device #1 ]=======
+Description: bcm2835 ALSA Analog Stereo
+Name: alsa_output.platform-bcm2835_AUD0.0.analog-stereo
+Index: 0
+
+=======[ Input Device #1 ]=======
+Description: Monitor of bcm2835 ALSA Analog Stereo
+Name: alsa_output.platform-bcm2835_AUD0.0.analog-stereo.monitor
+Index: 0
+	</code>
+      </pre>
+<p>
+    </p>
+
+    <h2> Java MIDI </h2>
+    <p>
+      openJDK supports the Java MIDI devices. The program <code>DeviceInfo</code> reports
+</p>
+      <pre>
+	<code>
+MIDI devices:
+    Name: Gervill, Decription: Software MIDI Synthesizer, Vendor: OpenJDK
+        Device is a synthesizer
+        Open receivers:
+
+        Default receiver: com.sun.media.sound.SoftReceiver@10655dd
+
+        Open receivers now:
+            com.sun.media.sound.SoftReceiver@10655dd
+
+        Open transmitters:
+        No default transmitter
+    Name: Real Time Sequencer, Decription: Software sequencer, Vendor: Sun Microsystems
+        Device is a sequencer
+        Open receivers:
+
+        Default receiver: com.sun.media.sound.RealTimeSequencer$SequencerReceiver@12f0999
+
+        Open receivers now:
+            com.sun.media.sound.RealTimeSequencer$SequencerReceiver@12f0999
+
+        Open transmitters:
+
+        Default transmitter: com.sun.media.sound.RealTimeSequencer$SequencerTransmitter@65a77f
+
+        Open transmitters now:
+            com.sun.media.sound.RealTimeSequencer$SequencerTransmitter@65a77f
+Default system sequencer is Real Time Sequencer
+Default system synthesizer is Gervill
+
+	</code>
+      </pre>
+<p>
+    </p>
+
+    <p>
+      Programs like DumpSequence work okay. But the SimpleMidiPlayer hits 80% CPU
+      usage and is unusable.
+      So any idea of a Karaoke player using Java on the RPi is simply not on :-(.
+      There is a thread on the Raspberry Pi site discussing
+      <a href="http://www.raspberrypi.org/phpBB3/viewtopic.php?f=38&amp;t=11009">
+	problems with sound
+      </a>.
+    </p>
+
+    <h2> OpenMAX </h2>
+    <p>
+      Audio and video can be played on the Raspberry Pi using the OpenMAX IL
+      toolkit. This has been implemented by Broadcom for their GPU used by the
+      RPi.  This is partly covered
+      in the chapter
+      <a href="../../Sampled/OpenMAX/"> OpenMAX and and OpenSL </a>.
+      More examples will be explored in later editions of this book.
+    </p>
+
+    <h3> Displaying images </h3>
+    <p>
+      As a step in using the RPi, I decided to try drawing JPEG
+      images into the GPU using OpenMAX. As with all things related
+      to OpenMAX this is far too hard - OpenMAX is one of the worst
+      APIs I have ever had to deal with, and the version on the RPi
+      brings its own set of problems.
+    </p>
+
+    <p>
+      The directory <code>/opt/vc/src/hello_pi/hello_jpeg</code>
+      contains an example to read in a JPEG file and resize
+      the image. This program works. But it uses the Broadcom
+      convenience functions such as <code>ilclient_create_component</code>
+      and I don't want to use those just in case they aen't available
+      elsewhere.
+    </p>
+
+    <p>
+      I adapted their code, and it didn't work.
+      Digging deep with the debugger showed a bizarre set of values:
+</p>
+      <ul>
+	<li>
+	  The JPEG decoder has the OpenMAX label "image_decode"
+	</li>
+	<li>
+	  This has an input port number 320 on which to receive
+	  the original iamge and an output port number 321 to place
+	  the decoded output
+	</li>
+	<li>
+	  When I created a buffer for the input, the buffer showed
+	  that port 320 was it's output port!
+	</li>
+	<li>
+	  The Broadcom example showed that (correctly) it was the
+	  input port
+	</li>
+      </ul>
+<p>
+      Duh!
+    </p>
+    
+    <p>
+      The problem was the type <code>OMX_TICKS</code>. In a 64-bit
+      environment it is a 64-bit integer, otherwise it is a struct
+      of two 32-bit values. I used one version, the Broadcom code
+      on the RPi is using the other.
+    </p>
+
+    <p>
+      By looking at the compile environment for the Broadcom example,
+      it uses the defines
+</p>
+      <pre>
+	<code>
+-DSTANDALONE -D__STDC_CONSTANT_MACROS -D__STDC_LIMIT_MACROS -DTARGET_POSIX\
+-D_LINUX -fPIC -DPIC -D_REENTRANT -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64\
+-U_FORTIFY_SOURCE -Wall -g -DHAVE_LIBOPENMAX=2 -DOMX -DOMX_SKIP64BIT\
+-ftree-vectorize -pipe -DUSE_EXTERNAL_OMX -DHAVE_LIBBCM_HOST\
+-DUSE_EXTERNAL_LIBBCM_HOST -DUSE_VCHIQ_ARM
+	</code>
+      </pre>
+<p>
+      The <code>OMX_SKIP64BIT</code> flag is needed to choose the right
+      value for the RPi type. What else is needed for what, 
+      I don't know yet :-(
+    </p>
+
+    <h2> Conclusion </h2>
+    <p>
+      The Raspberry Pi is an exciting new toy to play with.
+      There are many competitors on the block but it has still sold
+      over one million devices. This chapter has covered some of 
+      the audio aspects of the device.
+    </p>
+
+<!--#exec cmd="/usr/local/bin/dataprogram.pl . a.c" -->
+
+
+<hr/>
+ <!--#include virtual="../../footer.html" -->
+
+  </body>
+</html>

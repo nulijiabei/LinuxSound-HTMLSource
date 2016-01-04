@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="../../stylesheet.css" />
+
+    <title> Java Sound and MIDI</title>
+
+    <style type="text/css">
+        body { counter-reset: chapter 19; }
+    </style>
+
+    <script type="text/javascript" src="../../toc.js"> 
+   /* empty */
+   </script>
+
+   <script type="text/javascript">
+/* <![CDATA[ */
+    (function() {
+        var s = document.createElement("script"), t = document.getElementsByTagName("script")[0];
+        s.type = "text/javascript";
+        s.async = true;
+        s.src = "http://api.flattr.com/js/0.6/load.js?mode=auto";
+        t.parentNode.insertBefore(s, t);
+    })();
+/* ]]> */
+    </script>
+
+   <link rel="stylesheet" type="text/css" href="../../js/doc/style.css">
+   <!-- <link rel="stylesheet" type="text/css" href="../../js/css/sh_emacs.css"> -->
+   <link rel="stylesheet" type="text/css" href="../../js/sh_style.css">
+   <script type="text/javascript" src="../../js/sh_main.min.js"></script>
+   <script type="text/javascript" src="../../js/lang/sh_cpp.min.js"></script>
+
+
+  </head>
+  <body onload="sh_highlightDocument();">
+
+    <!--#include virtual="../../header.html" -->
+
+
+    <div class="chapter">
+        <h1> Java Sound </h1>
+    </div>
+
+    <div id="generated-toc" class="generate_from_h2"></div>
+
+    <h2> Introduction </h2>
+    <p>
+      Java Sound has been around since early days of Java. 
+      It deals with both sampled and MIDI data.
+      This chapter considers programming using the MIDI API.
+    </p>
+
+    <h2> Resources </h2>
+    <p>
+      There are many resources available for Java Sound:
+    </p>
+      <ul>
+	<li>
+	  The 
+	  <a href="http://docs.oracle.com/javase/7/docs/api/">
+	    Java™ Platform, Standard Edition 7 API Specification
+	  </a>
+	  is the reference point for all of the standard Java APIs,
+	  including <code>javax.sound.sampled</code>.
+	</li>
+	<li>
+	  The 
+	  <a href="http://docs.oracle.com/javase/tutorial/sound/index.html">
+	    Java Tutorials - Trail: Sound
+	  </a>
+	  give a good overview of both the sampled and MIDI packages.
+	</li>
+	<li>
+	  The 
+	  <a href="http://www.jsresources.org/faq_audio.html">
+	    Java Sound Resources: FAQ: Audio Programming
+	  </a>
+	  answers many questions about Java Sound
+	</li>
+	<li>
+	  <a href="http://docs.oracle.com/javase/7/docs/technotes/guides/sound/programmer_guide/contents.html">
+	    JavaTM Sound Programmer Guide
+	  </a> is a full book from Oracle (formerly Sun MicroSystems) about Java Sound
+	</li>
+	    
+	<li>
+	  The
+	  <a href="http://openjdk.java.net/groups/sound/"> Sound Group </a>
+	  is "comprised of those developers designing, implementing and
+	  maintaining the various OpenJDK sound components".
+	  There's your hook into finding out more about the ongoing development
+	  of Java Sound in the Open Source community.
+	</li>
+	<li>
+	   <a href="https://java.net/projects/gervill/sources/Mercurial/show">
+		Gervill S/W sound synthesizer source </a>
+	</li>
+      </ul>
+    
+
+    <h2> Key JavaSound MIDI classes</h2>
+    
+      <ul>
+	<li>
+	  The <code>MidiSystem</code> class is the entry point for all
+	  MIDI classes.
+	</li>
+	<li>
+	  A <code>MidiDevice</code> includes synthesizers, sequencers, 
+	  MIDI input ports, and MIDI output ports
+	</li>
+	<li>
+	  A <code>Transmitter</code> sends <code>MidiEvent</code> objects
+	  to a <code>Receiver</code>. A <code>Transmitter</code> is the
+	  <em>source</em> of MIDI events and a <code>Receiver</code>
+	  is a <em>consumer</em> of events.
+	</li>
+	<li>
+	  "A <code>Sequencer</code> is a device for capturing and playing back sequences of MIDI events. 
+	  It has transmitters, because it typically sends the MIDI messages stored in the 
+	  sequence to another device, such as a synthesizer or MIDI output port. 
+	  It also has receivers, because it can capture MIDI messages and store them in a sequence."
+	  (<a href="http://docs.oracle.com/javase/7/docs/technotes/guides/sound/programmer_guide/chapter8.html#118852">
+	    Java Sound Programmers Manual: Chapter 8: Overview of the MIDI Package
+	  </a>)
+	</li>
+	<li>
+	  "A <code>Synthesizer</code> is a device for generating sound. 
+	  It's the only object in the javax.sound.midi package that produces audio data"
+	  (<a href="http://docs.oracle.com/javase/7/docs/technotes/guides/sound/programmer_guide/chapter8.html#118852">
+	    Java Sound Programmers Manual: Chapter 8: Overview of the MIDI Package
+	  </a>)
+	</li>
+      </ul>
+    
+
+    <h2> Device Information </h2>
+    <p>
+      Device information is found by querying <code>MidiSystem</code> for its
+      list of <code>DeviceInfo</code> objects. Each information object contains
+      fields such as Name and Vendor. The actual device may be found using this
+      information object by <code>MidiSystem.getMidiDevice(info)</code>.
+      The device may then be queried for its receivers and transmitters and
+      its type as sequencer or synthesizer. 
+    </p>
+
+    <p>
+      One annoying part is that you
+      cannot get a list of all the devices's transmitters and receivers, only those
+      that are <em>open</em>. You can ask for the default transmitter and
+      receiver which will implicitly open them. So you can see that the list may
+      be empty before asking for the default, but will be non-empty afterwards
+      if there is a default! if there are no defaults, a
+      <code>MidiUnavailableException</code> exception will be thrown.
+    </p>
+
+    <p>
+      The program is:
+    </p>
+      <pre  class="sh_cpp">
+	<code>
+      <!--#exec cmd="/usr/local/bin/escape.pl . DeviceInfo.java" -->
+	</code>
+      </pre>
+
+    <p>
+      The output on my system is
+    </p>
+      <pre>
+	<code>
+MIDI devices:
+    Name: Gervill, Decription: Software MIDI Synthesizer, Vendor: OpenJDK
+        Device is a synthesizer
+        Open receivers:
+
+        Default receiver: com.sun.media.sound.SoftReceiver@72f2a824
+
+        Open receivers now:
+            com.sun.media.sound.SoftReceiver@72f2a824
+
+        Open transmitters:
+        No default transmitter
+    Name: Real Time Sequencer, Decription: Software sequencer, Vendor: Oracle Corporation
+        Device is a sequencer
+        Open receivers:
+
+        Default receiver: com.sun.media.sound.RealTimeSequencer$SequencerReceiver@c23c5ff
+
+        Open receivers now:
+            com.sun.media.sound.RealTimeSequencer$SequencerReceiver@c23c5ff
+
+        Open transmitters:
+        Default transmitter: com.sun.media.sound.RealTimeSequencer$SequencerTransmitter@4e13aa4e
+
+        Open transmitters now:
+            com.sun.media.sound.RealTimeSequencer$SequencerTransmitter@4e13aa4e
+Default system sequencer is Real Time Sequencer
+Default system synthesizer is Gervill
+	</code>
+      </pre>
+
+
+    <h2> Dumping a MIDI file </h2>
+    <p>
+      These two programs from jsresources.org dump a MIDI file to the console.
+      The <code>MidiSystem</code> creates a <code>Sequence</code> from a file.
+      Each track of the sequence is looped through and each event within each
+      track is examined. While it would be possible to print <em>in situ</em>,
+      each event is passed to a <code>Receiver</code> object which in this case
+      is <code>DumpReceiver</code>. That object could do anything, but in this case
+      just prints the event to stdout.
+    </p>
+
+    <p>
+      DumpSequence.java is
+    </p>
+    <pre class="sh_cpp">
+      <code>
+      <!--#exec cmd="/usr/local/bin/escape.pl . DumpSequence.java" -->
+      </code>
+    </pre>
+
+    <p>
+      DmpReceiver.java is
+    </p>
+    <pre class="sh_cpp">
+      <code>
+      <!--#exec cmd="/usr/local/bin/escape.pl . DumpReceiver.java" -->
+      </code>
+    </pre>
+
+    <p>
+      There are several sites with legal free MIDI files. The file
+      <a href="http://files.mididb.com/amy-winehouse/rehab.mid">
+	Amy Winehouse - Rehab
+      </a>
+      gives the result
+    </p>
+      <pre>
+	<code>
+---------------------------------------------------------------------------
+File: rehab.mid
+---------------------------------------------------------------------------
+Length: 251475 ticks
+Duration: 216788738 microseconds
+---------------------------------------------------------------------------
+DivisionType: PPQ
+Resolution: 480 ticks per beat
+---------------------------------------------------------------------------
+Track 0:
+-----------------------
+tick 0: Time Signature: 4/4, MIDI clocks per metronome tick: 24, 1/32 per 24 MIDI clocks: 8
+tick 0: Key Signature: C major
+tick 0: SMTPE Offset: 32:0:0.0.0
+tick 0: Set Tempo: 145.0 bpm
+tick 0: End of Track
+---------------------------------------------------------------------------
+Track 1:
+-----------------------
+tick 0: Sequence/Track Name: amy winehouse - rehab
+tick 0: Instrument Name: GM Device
+tick 40: Sysex message: F0 7E 7F 09 01 F7
+tick 40: End of Track
+---------------------------------------------------------------------------
+Track 2:
+-----------------------
+tick 0: MIDI Channel Prefix: 1
+tick 0: Sequence/Track Name: amy winehouse - rehab
+tick 0: Instrument Name: GM Device  2
+tick 480: [B1 79 00] channel 2: control change 121 value: 0
+tick 485: [B1 0A 40] channel 2: control change 10 value: 64
+tick 490: [B1 5D 14] channel 2: control change 93 value: 20
+tick 495: [B1 5B 00] channel 2: control change 91 value: 0
+tick 500: [B1 0B 7F] channel 2: control change 11 value: 127
+tick 505: [B1 07 69] channel 2: control change 7 value: 105
+tick 510: [E1 00 40] channel 2: pitch wheel change 8192
+tick 515: [B1 00 00] channel 2: control change 0 value: 0
+tick 520: [C1 22] channel 2: program change 34
+...
+	</code>
+      </pre>
+
+
+
+    <h2> Playing a MIDI file </h2>
+    
+    <p>
+      To play a MIDI file, you create a <code>Sequence</code> from a <code>File</code>,
+      using the <code>MidiSystem</code>.
+      You also create a <code>Sequencer</code> from the  <code>MidiSystem</code>
+      and pass it the sequence. The sequencer will output MIDI messages through
+      its <code>Transmitter</code>. This completes setup of the 
+      MIDI event generation side of
+      the system.
+    </p>
+
+    <p>
+      The play side is constructed by getting a <code>Synthesizer</code> from
+      the  <code>MidiSystem</code>. The <code>Receiver</code> is found from the
+      synthesizer and is given to the transmitter of MIDI events.
+      Play commences by calling <code>start()</code> on the sequencer,
+      which reads from the file and passes MIDI events to its transmitter.
+      These are passed to the synthesizer's receiver and played. The UML class
+      diagram for the relevant classes is
+      <br/>
+      <img alt="" src="SimpleMidiPlayer.png"/>
+    </p>
+
+    <p>
+      This code is from <a href="http://www.jsresources.org/examples/SimpleMidiPlayer.html">
+	Playing an audio file (easy)
+      </a>
+    </p>
+    <pre class="sh_cpp">
+      <code>
+      <!--#exec cmd="/usr/local/bin/escape.pl . SimpleMidiPlayer.java" -->
+      </code>
+    </pre>
+
+    <h2> Playing a file to an external MIDI synthesizer </h2>
+    <p>
+      I have an Edirol Studio Canvas SD-20 synthesizer which I bought
+      for a few hundred Australian dollars. This plugs into a PC
+      through a USB port. Alsa recognises this by
+    </p>
+      <pre>
+	<code>
+ $ amidi -l
+Dir Device    Name
+IO  hw:2,0,0  SD-20 Part A
+IO  hw:2,0,1  SD-20 Part B
+I   hw:2,0,2  SD-20 MIDI
+	</code>
+      </pre>
+    
+
+    <p>
+      The list of <code>MidiDevice.Info</code> device information 
+      lists <code>hw:2,0,0</code> twice, once for input
+      and once for output, and similarly for the other values.
+      The device information can be identified by the <code>toString</code>
+      method, which returns values such as <code>"SD20 [hw:2,0,0]"</code>.
+      From the device information the device can be found as before
+      using <code>MidiSystem.getMidiDevice(info)</code>.
+      The input and output devices can be distinguished by the number
+      of <code>maxOutputReceivers</code> it supports: zero means none,
+      while any other value (including minus one!) means it has
+      a MIDI receiver. Selecting an external receiver is done 
+      by code like
+    </p>
+      <pre  class="sh_cpp">
+	<code>
+		Receiver	synthReceiver = null;
+		MidiDevice.Info[] devices;
+		devices = MidiSystem.getMidiDeviceInfo();
+		
+		for (MidiDevice.Info info: devices) {
+		    System.out.println("    Name: " + info.toString() + 
+				       ", Decription: " +
+				       info.getDescription() + 
+				       ", Vendor: " +
+				       info.getVendor());
+		    if (info.toString().equals("SD20 [hw:2,0,0]")) {
+			MidiDevice device = MidiSystem.getMidiDevice(info);
+			if (device.getMaxReceivers() != 0) {
+			    try {
+				device.open();
+				System.out.println("  max receivers: " + device.getMaxReceivers());
+				receiver = device.getReceiver();
+				System.out.println("Found a receiver");
+				break;
+			    } catch(Exception e) {}
+			}
+		    }
+		}
+	</code>
+      </pre>
+    
+
+    <p>
+      	Playing an audio file to my SD-20 is done by
+    </p>
+    <pre class="sh_cpp">
+      <code>
+      <!--#exec cmd="/usr/local/bin/escape.pl . ExternalMidiPlayer.java" -->
+      </code>
+    </pre>
+
+    <h2> Changing the soundbank </h2>
+    <p>
+      The soundbank is a set of "sounds" encoded in some way that
+      are used to generate the music played. The default sound
+      synthesizer for Java is the      Gervill synthesizer,
+      and this looks for its default soundbank in
+      <code>$HOME/.gervill/soundbank-emg.sf2</code>.
+      This default soundbank is tiny, only 1.9MBytes in size,
+      and sounds, well, poor quality.
+    </p>
+
+    <p>
+      DaWicked1 in <a href="http://www.minecraftforum.net/forums/mapping-and-modding/mapping-and-modding-tutorials/1571330-better-java-midi-instrument-sounds-for-linux">
+	Better Java-midi instrument sounds for Linux
+       </a>
+      offers two methods to improve this: the simpler is to replace the 
+      soundfont with a better one such as the Fluidsynth font,
+      using the default name.
+    </p>
+
+    <p>
+      The second method is programmatic and probably
+      better as it allows more flexibility and choice at
+      runtime.
+    </p>
+  
+    <h2> Changing pitch and speed </h2>
+    <p>
+      Changing the speed of playback of a MIDI file means changing
+      the  rate that MIDI messages are sent from the sequencer.
+      The Java sequencers have methods to control this such as
+      <code>setTempoFactor</code>. The sequencer will respond to
+      this method by sending the messages at a different rate.
+    </p>
+
+    <p>
+      Changing the pitch of the notes can be done by altering the
+      pitch of the <code>NOTE_ON</code> and <code>NOTE_OFF</code>
+      messages. The sequencer does not do this as it is unrelated
+      to time. The default MIDI <code>Receiver</code> just gets
+      MIDI messages and passes it onto its <code>Synthesizer</code>.
+      We can create our own <code>Receiver</code> and interpose
+      it between the default <code>Transmitter</code> and 
+      <code>Receiver</code>. This can examine MIDI messages
+      in transit and adjust the pitch of note on/off messages.
+    </p>
+
+    <p>
+      We look for input from the user of  ←, ↑, →, ↓ (ESC-[A, etc).
+      These then call the appropriate method. The program illustrating
+      this is an adaptation of the <code>SimpleMidiPlayer</code>
+      given earlier in the chapter and is
+      <a href="AdaptableMidiPlayer.java">AdaptableMidiPlayer.java</a>:
+    </p>
+    <pre class="sh_cpp">
+      <code>
+      <!--#exec cmd="/usr/local/bin/escape.pl . AdaptableMidiPlayer.java" -->
+      </code>
+    </pre>
+
+    <h2> Using TiMidity instead of the default Gervill synthesizer </h2>
+    <p>
+      The softsynth TiMidity can be run as a backend synthesizer using
+      the Alsa sequencer by 
+    </p>
+    <pre>
+      <code>
+$timidity -iA -B2,8 -Os -EFreverb=0
+
+Opening sequencer port: 128:0 128:1 128:2 128:3
+      </code>
+    </pre>
+    <p>
+      (and similarly for Fluidsynth.). This is opened on ports 128:0 etc.
+    </p>
+
+    <p>
+      Unfortunately this is not directly visible to JavaSound which expects
+      either the default Gervill synthesizer or a raw MIDI synthesizer such
+      as a hardware synthesizer. As discussed in the 
+      <a href=" ../Alsa/">MIDI Alsa</a> chapter, we can fix this by
+      using Alsa raw MIDI ports.
+    </p>
+    <p>
+      We add raw MIDI ports by
+    </p>
+    <pre>
+      <code>
+modprobe snd-seq snd-virmidi
+      </code>
+    </pre>
+
+    <p>
+      This will bring virtual devices both into the ALSA raw MIDI and into the
+      ALSA sequencer spaces:
+    </p>
+    <pre>
+      <code>
+$amidi -l
+Dir Device    Name
+IO  hw:3,0    Virtual Raw MIDI (16 subdevices)
+IO  hw:3,1    Virtual Raw MIDI (16 subdevices)
+IO  hw:3,2    Virtual Raw MIDI (16 subdevices)
+IO  hw:3,3    Virtual Raw MIDI (16 subdevices)
+
+$aplaymidi -l
+ Port    Client name                      Port name
+ 14:0    Midi Through                     Midi Through Port-0
+ 28:0    Virtual Raw MIDI 3-0             VirMIDI 3-0
+ 29:0    Virtual Raw MIDI 3-1             VirMIDI 3-1
+ 30:0    Virtual Raw MIDI 3-2             VirMIDI 3-2
+ 31:0    Virtual Raw MIDI 3-3             VirMIDI 3-3
+      </code>
+    </pre>
+
+    <p>
+      Virtual Raw MIDI port  3-0 can then be connected to TiMidity  port 0
+      by
+    </p>
+    <pre>
+      <code>
+aconnect 28:0 128:0
+      </code>
+    </pre>
+
+    <p>
+      The final step in playing to TiMidity is to change one line
+      of  <a href="AdaptableMidiPlayer.java">AdaptableMidiPlayer.java</a>
+      from
+    </p>
+    <pre>
+      <code>
+if (info.toString().equals("SD20 [hw:2,0,0]")) {
+      </code>
+    </pre>
+    <p>
+      to
+    </p>
+    <pre>
+      <code>
+if (info.toString().equals("VirMIDI [hw:3,0,0]")) {
+      </code>
+    </pre>
+
+
+    <h2> Conclusion </h2>
+    <p>
+      This chapter has built a number of programs using the 
+      MIDI API and discussed how to use external hardware
+      synthesizers and soft sythesizers such as TiMidity.
+    </p>
+
+
+ <!--#include virtual="../../footer.html" -->
+
+  </body>
+</html>

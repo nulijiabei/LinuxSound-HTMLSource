@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="../../stylesheet.css" />
+
+    <title> </title>
+
+    <style type="text/css">
+        body { counter-reset: chapter 9; }
+    </style>
+
+    <script type="text/javascript" src="../../toc.js"> 
+   /* empty */
+   </script>
+
+   <script type="text/javascript">
+/* <![CDATA[ */
+    (function() {
+        var s = document.createElement("script"), t = document.getElementsByTagName("script")[0];
+        s.type = "text/javascript";
+        s.async = true;
+        s.src = "http://api.flattr.com/js/0.6/load.js?mode=auto";
+        t.parentNode.insertBefore(s, t);
+    })();
+/* ]]> */
+    </script>
+
+   <link rel="stylesheet" type="text/css" href="../../js/doc/style.css">
+   <!-- <link rel="stylesheet" type="text/css" href="../../js/css/sh_emacs.css"> -->
+   <link rel="stylesheet" type="text/css" href="../../js/sh_style.css">
+   <script type="text/javascript" src="../../js/sh_main.min.js"></script>
+   <script type="text/javascript" src="../../js/lang/sh_cpp.min.js"></script>
+   
+
+  </head>
+  <body onload="sh_highlightDocument();">
+
+    <!--#include virtual="../../header.html" -->
+
+
+    <div class="chapter">
+        <h1> Java Sound</h1>
+    </div>
+
+    <div class="preface">
+    
+    <p>
+      This chapter covers the essentials of programming
+      sampled data using the Java Sound API
+    </p>
+    </div>
+
+    <div id="generated-toc" class="generate_from_h2"></div>
+
+    <h2> Introduction </h2>    
+    <p>
+      Java Sound has been around since early days of Java. 
+      It deals with both sampled and MIDI data.
+      There are many resources available for Java Sound:
+    </p>
+      <ul>
+	<li>
+	  The 
+	  <a href="http://docs.oracle.com/javase/7/docs/api/">
+	    Java™ Platform, Standard Edition 7 API Specification
+	  </a>
+	  is the reference point for all of the standard Java APIs,
+	  including <code>javax.sound.sampled</code>.
+	</li>
+	<li>
+	  The 
+	  <a href="http://docs.oracle.com/javase/tutorial/sound/index.html">
+	    Java Tutorials - Trail: Sound
+	  </a>
+	  give a good overview of both the sampled and MIDI packages.
+	</li>
+	<li>
+	  The 
+	  <a href="http://www.jsresources.org/faq_audio.html">
+	    Java Sound Resources: FAQ: Audio Programming
+	  </a>
+	  answers many questions about Java Sound
+	</li>
+	<li>
+	  The
+	  <a href="http://openjdk.java.net/groups/sound/"> Sound Group </a>
+	  is "comprised of those developers designing, implementing and
+	  maintaining the various OpenJDK sound components".
+	  There's your hook into finding out more about the ongoing development
+	  of Java Sound in the Open Source community.
+	</li>
+      </ul>
+
+    <h2> Key Java Sound classes </h2>
+    
+      <ul>
+	<li>
+	  The <code>AudioSystem</code> class is the entry point for all
+	  sampled audio classes.
+	</li>
+	<li>
+	  The <code>AudioFormat</code> class specifies information about the
+	  format, such as sampling rate.
+	</li>
+	<li>
+	  The <code>AudioInputStream</code> class supplies an input stream
+	  from the target line of a mixer
+	</li>
+	<li>
+	  The <code>Mixer</code> class represents an audio device
+	</li>
+	<li>
+	  The <code>SourceDataLine</code> class represents an input line
+	  to a device
+	</li>
+	<li>
+	  The <code>TargetDataLine</code> class represents an output line
+	  from a device
+	</li>
+      </ul>
+    
+
+    <h2> Information about devices </h2>
+    <p>
+      Each device is represented by a <code>Mixer</code> object.
+      Ask the <code>AudioSystem</code> for a list of these.
+      Each mixer has a set of target (output) lines and source
+      (input lines). Query each mixer about these separately.
+      The program is DeviceInfo.java:
+    </p>
+	
+    <pre class="sh_cpp">
+      <code>
+<!--#exec cmd="/usr/local/bin/escape.pl . DeviceInfo.java" -->
+      </code>
+    </pre>
+
+    <p>
+      A part of the output on my system is
+    </p>
+      <pre>
+	<code>
+Mixers:
+   PulseAudio Mixer, version 0.02
+      Source lines
+        interface SourceDataLine supporting 42 audio formats, and buffers of 0 to 1000000 bytes
+        interface Clip supporting 42 audio formats, and buffers of 0 to 1000000 bytes
+      Target lines
+        interface TargetDataLine supporting 42 audio formats, and buffers of 0 to 1000000 bytes
+   default [default], version 1.0.24
+      Source lines
+        interface SourceDataLine supporting 512 audio formats, and buffers of at least 32 bytes
+        interface Clip supporting 512 audio formats, and buffers of at least 32 bytes
+      Target lines
+        interface TargetDataLine supporting 512 audio formats, and buffers of at least 32 bytes
+   PCH [plughw:0,0], version 1.0.24
+      Source lines
+        interface SourceDataLine supporting 24 audio formats, and buffers of at least 32 bytes
+        interface Clip supporting 24 audio formats, and buffers of at least 32 bytes
+      Target lines
+        interface TargetDataLine supporting 24 audio formats, and buffers of at least 32 bytes
+   NVidia [plughw:1,3], version 1.0.24
+      Source lines
+        interface SourceDataLine supporting 96 audio formats, and buffers of at least 32 bytes
+        interface Clip supporting 96 audio formats, and buffers of at least 32 bytes
+      Target lines
+   NVidia [plughw:1,7], version 1.0.24
+      Source lines
+        interface SourceDataLine supporting 96 audio formats, and buffers of at least 32 bytes
+        interface Clip supporting 96 audio formats, and buffers of at least 32 bytes
+      Target lines
+   NVidia [plughw:1,8], version 1.0.24
+      Source lines
+        interface SourceDataLine supporting 96 audio formats, and buffers of at least 32 bytes
+        interface Clip supporting 96 audio formats, and buffers of at least 32 bytes
+      Target lines
+	</code>
+      </pre>
+    <p>
+      This shows both PulseAudio and ALSA mixers.
+      Further queries could show what the supported formats are, for example.
+    </p>
+
+
+    <h2> Playing audio from a file </h2>
+    <p>
+      To play from a file, appropriate objects must be created for reading
+      from the file and for writing to the output device. These are
+    </p>
+      <ul>
+	<li>
+	  An <code>AudioInputStream</code> is requested from the
+	  <code>AudioSystem</code>. It is created with the filename as
+	  parameter.
+	</li>
+	<li>
+	  A source data line is created for the output. The nomenclature
+	  may be confusing: the program produces <em>output</em>, but this
+	  is <em>input</em> to the dataline. So the dataline must be a source
+	  for the output device. The creation of a dataline is a multi-step
+	  process:
+	  <ul>
+	    <li>
+	      First create a <code>AudioFormat</code> object to specify
+	      parameters for the dataline
+	    </li>
+	    <li>
+	      Create a <code>DataLine.Info</code> for a source dataline with
+	      the audion format
+	    </li>
+	    <li>
+	      Request a source dataline from the <code>AudioSystem</code> which
+	      will handle the <code>DataLine.Info</code>
+	    </li>
+	  </ul>
+	</li>
+      </ul>
+    
+
+    <p>
+      Following these steps, data can then be read from the input stream and written
+      to the dataline.
+      The UML class diagram for the relevant classes is
+      <br/>
+      <img alt="" src="PlayAudioFile.png">
+    </p>
+
+    <pre class="sh_cpp">
+      <code>
+      <!--#exec cmd="/usr/local/bin/escape.pl . PlayAudioFile.java" -->
+      </code>
+    </pre>
+
+
+    <h2> Recording audio to a file </h2>
+    <p>
+      Most of the work to do this is in preparation of an audio input stream.
+      Once that is done the method <code>write</code> of <code>AudioSystem</code>
+      will copy input from the audio input stream to the output file.
+    </p>
+
+    <p>
+      To prepare the audio input stream:
+    </p>
+      <ul>
+	<li>
+	  Create an <code>AudioFormat</code> object describing the parameters
+	  of the input
+	</li>
+	<li>
+	  The microphone <em>produces</em> audio. So it needs a <code>TargetDataLine</code>.
+	  So create a <code>DataLine.Info</code> for a target dataline.
+	</li>
+	<li>
+	  Ask the <code>AudioSystem</code> for a line satisfying the information
+	</li>
+	<li>
+	  Wrap the line in an <code>AudioInputStream</code>
+	</li>
+      </ul>
+    
+
+    <p>
+      The output is just a Java <code>File</code>.
+    </p>
+
+    <p>
+      Then use the <code>AudioSystem</code> function <code>write()</code>
+      to copy the stream to the file.
+      The UML class diagram is
+      <br/>
+      <img alt="" src="Recorder.png"/>
+    </p>
+
+    <p>
+      The program is:
+    </p>
+    <pre class="sh_cpp">
+      <code>
+      <!--#exec cmd="/usr/local/bin/escape.pl . Recorder.java" -->
+      </code>
+    </pre>
+
+
+    <h2> Play microphone to speaker </h2>
+    <p>
+      This is a combination of the previous two programs. An <code>AudioInputStream</code>
+      is prepared for reading from the microphone. A <code>SourceDataLine</code> is
+      prepared for writing to the speaker. The data is copied from the first to the second
+      by reading from the audio input stream and writing to the source data line.
+      The UML class diagram is
+      <br/>
+      <img alt="" src="PlayMicrophone.png"/>
+    </p>
+
+    <p>
+      The program is:
+    </p>
+    <pre class="sh_cpp">
+      <code>
+      <!--#exec cmd="/usr/local/bin/escape.pl . PlayMicrophone.java" -->
+      </code>
+    </pre>
+
+    <h2> Where does javaSound get its devices from? </h2>
+    <p>
+      The first program in this chapter showed a list of mixer devices and their attributes.
+      How does Java get this information? In this section we look at JDK 1.7 - OpenJDK will
+      probably be similar.
+      You will need the Java source from Oracle to track through this. Alternatively, move on...
+    </p>
+
+    <p>
+      The file <code>jre/lib/resources.jar</code> contains a list of resources used by the
+      JRE runtime.  This is a zip file, and contains the file
+      <code> META-INF/services/javax.sound.sampled.spi.MixerProvider</code>.
+      On my system the contents of this file are
+    </p>
+      <pre>
+	<code>
+# last mixer is default mixer
+com.sun.media.sound.PortMixerProvider
+com.sun.media.sound.DirectAudioDeviceProvider
+	</code>
+      </pre>
+   
+
+    <p>
+      The class <code>com.sun.media.sound.PortMixerProvider</code> is in
+      the  file <code>java/media/src/share/native/com/sun/media/sound/PortMixerProvider.java</code>
+      on my system. It extends <code>MixerProvider</code> and implements methods such as
+      <code> Mixer.Info[] getMixerInfo</code>. This class stores the device information.
+    </p>
+
+    <p>
+      The bulk of the work done done by this class is actually performed by native methods in the
+      C file <code>java/media/src/share/native/com/sun/media/sound/PortMixerProvider.c</code>
+      which implements the two methods <code>nGetNumDevices</code> and
+      <code>nNewPortMixerInfo</code> used by the <code>PortMixerProvider</code> class.
+      Unfortunately, there's ot much joy to be found in this C file, as it just makes calls
+      to the C functions <code>PORT_GetPortMixerCount</code> and
+      <code>PORT_GetPortMixerDescription</code>.
+    </p>
+
+    <p>
+      There are three files containing these functions
+    </p>
+      <pre>
+	<code>
+java/media/src/windows/native/com/sun/media/sound/PLATFORM_API_WinOS_Ports.c
+java/media/src/solaris/native/com/sun/media/sound/PLATFORM_API_SolarisOS_Ports.c
+java/media/src/solaris/native/com/sun/media/sound/PLATFORM_API_LinuxOS_ALSA_Ports.c
+	</code>
+      </pre>
+    <p>
+      In the file <code>PLATFORM_API_LinuxOS_ALSA_Ports.c</code> you will see the
+      function calls to ALSA as described in the <a href="../Alsa/">ALSA chapter</a>.
+      These calls fill in information about the ALSA devices for use by JavaSound.
+    </p>
+
+
+    <h2> Conclusion </h2>
+    <p>
+      The Java Sound API is well documented. We have shown four simple programs here,
+      but more complex ones are possible. The link to the underlying sound system
+      is briefly discussed.
+    </p>
+
+<hr/>
+ <!--#include virtual="../../footer.html" -->
+
+  </body>
+</html>

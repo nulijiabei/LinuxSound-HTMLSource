@@ -1,0 +1,13 @@
+#!/bin/bash
+
+DIR=/server/KARAOKE/KARAOKE/Sonken
+
+cat allsonglist.txt |
+while read line
+do
+	num=${line/ */}
+	echo "\"$num\""
+	mv "$DIR/$num.kar" "$DIR/SK-$line.kar"
+	mv "$DIR/$num.mid" "$DIR/SK-$line.mid"
+	[ -f "$DIR/$num.wma" ] && mv "$DIR/$num.wma" "$DIR/SK-$line.wma"
+done

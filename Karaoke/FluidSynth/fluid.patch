@@ -1,0 +1,222 @@
+Only in fluidsynth-1.1.6-new/src/bindings/.deps: .dirstamp
+Only in fluidsynth-1.1.6-new/src/bindings: .dirstamp
+Only in fluidsynth-1.1.6-new/src/drivers/.deps: .dirstamp
+Only in fluidsynth-1.1.6-new/src/drivers: .dirstamp
+Only in fluidsynth-1.1.6-new/src/midi/.deps: .dirstamp
+Only in fluidsynth-1.1.6-new/src/midi: .dirstamp
+diff -crB fluidsynth-1.1.6/src/midi/fluid_midi.c fluidsynth-1.1.6-new/src/midi/fluid_midi.c
+*** fluidsynth-1.1.6/src/midi/fluid_midi.c	2012-08-16 14:01:13.000000000 +1000
+--- fluidsynth-1.1.6-new/src/midi/fluid_midi.c	2012-11-16 10:15:53.442014448 +1100
+***************
+*** 570,575 ****
+--- 569,605 ----
+                  break;
+  
+              case MIDI_LYRIC:
++ 		 /* NULL terminate strings for safety */
++  	        metadata[mf->varlen] = '\0';
++                 evt = new_fluid_midi_event();
++                 if (evt == NULL) {
++                     FLUID_LOG(FLUID_ERR, "Out of memory");
++                     result = FLUID_FAILED;
++                     break;
++                 }
++                 evt->dtime = mf->dtime;
++ 
++ 		fluid_midi_event_set_text(evt, MIDI_LYRIC, metadata, mf->varlen+1, TRUE);
++                 fluid_track_add_event(track, evt);
++ 		mf->dtime = 0;
++ 
++                 break;
++ 
++              case MIDI_TEXT:
++ 		 /* NULL terminate strings for safety */
++ 	        metadata[mf->varlen] = '\0';
++ 
++                 evt = new_fluid_midi_event();
++                 if (evt == NULL) {
++                     FLUID_LOG(FLUID_ERR, "Out of memory");
++                     result = FLUID_FAILED;
++                     break;
++                 }
++                 evt->dtime = mf->dtime;
++ 
++ 		fluid_midi_event_set_text(evt, MIDI_TEXT, metadata, mf->varlen+1, TRUE);
++                 fluid_track_add_event(track, evt);
++ 		mf->dtime = 0;
+                  break;
+  
+              case MIDI_MARKER:
+***************
+*** 803,809 ****
+          /* Dynamic SYSEX event? - free (param2 indicates if dynamic) */
+          if (evt->type == MIDI_SYSEX && evt->paramptr && evt->param2)
+              FLUID_FREE (evt->paramptr);
+! 
+          FLUID_FREE(evt);
+          evt = temp;
+      }
+--- 833,844 ----
+          /* Dynamic SYSEX event? - free (param2 indicates if dynamic) */
+          if (evt->type == MIDI_SYSEX && evt->paramptr && evt->param2)
+              FLUID_FREE (evt->paramptr);
+! 	/* text or lyric event needs text always free'd */
+! 	
+! 	if ((evt-> type == MIDI_TEXT) || (evt->type == MIDI_LYRIC)) {
+!             FLUID_FREE (evt->paramptr);
+! 	}
+! 	
+          FLUID_FREE(evt);
+          evt = temp;
+      }
+***************
+*** 1024,1029 ****
+--- 1059,1089 ----
+      return FLUID_OK;
+  }
+  
++ /**
++  * Assign text/lyric data to a MIDI event structure.
++  * @param evt MIDI event structure
++  * @param data Pointer to text data data, a copy is made of this
++  * @param size Size of text data
++  * @return Always returns #FLUID_OK
++  *
++  * NOTE: Unlike most other event assignment functions, this one sets evt->type
++  * and also allocates memory for a copy of the data.
++  */
++ int
++ fluid_midi_event_set_text(fluid_midi_event_t *evt, int type, void *data, int size, int dynamic)
++ {
++     evt->type = MIDI_SYSEX;
++     evt->paramptr = FLUID_MALLOC(size);
++     if (evt->paramptr == NULL) {
++       FLUID_LOG(FLUID_PANIC, "Out of memory");
++       return FLUID_FAILED;
++     }
++     FLUID_MEMCPY(evt->paramptr, data, size);
++     evt->type = type;
++     evt->param1 = size;
++     evt->param2 = dynamic;
++     return FLUID_OK;
++ }
+  /******************************************************
+   *
+   *     fluid_track_t
+***************
+*** 1268,1274 ****
+      player->cur_msec = 0;
+      player->cur_ticks = 0;
+      fluid_player_set_playback_callback(player, fluid_synth_handle_midi_event, synth);
+! 
+      player->use_system_timer = fluid_settings_str_equal(synth->settings,
+              "player.timing-source", "system");
+  
+--- 1328,1335 ----
+      player->cur_msec = 0;
+      player->cur_ticks = 0;
+      fluid_player_set_playback_callback(player, fluid_synth_handle_midi_event, synth);
+!     player->onload_callback = NULL;
+!     player->onload_userdata = NULL;
+      player->use_system_timer = fluid_settings_str_equal(synth->settings,
+              "player.timing-source", "system");
+  
+***************
+*** 1409,1414 ****
+--- 1470,1497 ----
+  }
+  
+  /**
++  * Change the MIDI callback function. This is usually set to 
++  * fluid_synth_handle_midi_event, but can optionally be changed
++  * to a user-defined function instead, for intercepting all MIDI
++  * messages sent to the synth. You can also use a midi router as 
++  * the callback function to modify the MIDI messages before sending
++  * them to the synth. 
++  * @param player MIDI player instance
++  * @param handler Pointer to callback function
++  * @param handler_data Parameter sent to the callback function
++  * @returns FLUID_OK
++  * @since 1.1.4
++  */
++ int 
++ fluid_player_set_onload_callback(fluid_player_t* player, 
++     handle_onload_func_t handler, void* handler_data)
++ {
++     player->onload_callback = handler;
++     player->onload_userdata = handler_data;
++     return FLUID_OK;
++ }
++ 
++ /**
+   * Add a MIDI file to a player queue.
+   * @param player MIDI player instance
+   * @param midifile File name of the MIDI file to add
+***************
+*** 1526,1531 ****
+--- 1609,1619 ----
+      if (buffer_owned) {
+          FLUID_FREE(buffer);
+      }
++ 
++     /* Callback for new source loaded */
++     if (player->onload_callback != NULL) {
++ 	player->onload_callback(player->onload_userdata, player);
++     }
+      return FLUID_OK;
+  }
+  
+Only in fluidsynth-1.1.6-new/src/midi: fluid_midi.c~
+diff -crB fluidsynth-1.1.6/src/midi/fluid_midi.h fluidsynth-1.1.6-new/src/midi/fluid_midi.h
+*** fluidsynth-1.1.6/src/midi/fluid_midi.h	2012-08-16 14:01:13.000000000 +1000
+--- fluidsynth-1.1.6-new/src/midi/fluid_midi.h	2012-11-16 10:09:44.821008471 +1100
+***************
+*** 155,160 ****
+--- 155,161 ----
+  };
+  
+  enum midi_meta_event {
++   MIDI_TEXT = 0x01,
+    MIDI_COPYRIGHT = 0x02,
+    MIDI_TRACK_NAME = 0x03,
+    MIDI_INST_NAME = 0x04,
+***************
+*** 307,312 ****
+--- 308,316 ----
+  
+    handle_midi_event_func_t playback_callback; /* function fired on each midi event as it is played */
+    void* playback_userdata; /* pointer to user-defined data passed to playback_callback function */
++   
++   handle_onload_func_t onload_callback; /* function fired when new MIDI data is loaded, such as a new file */
++   void* onload_userdata; /* pointer to user-defined data passed to onload_callback function */
+  };
+  
+  int fluid_player_add_track(fluid_player_t* player, fluid_track_t* track);
+Only in fluidsynth-1.1.6-new/src/midi: fluid_midi.h~
+Only in fluidsynth-1.1.6-new/src/rvoice/.deps: .dirstamp
+Only in fluidsynth-1.1.6-new/src/rvoice: .dirstamp
+Only in fluidsynth-1.1.6-new/src/sfloader/.deps: .dirstamp
+Only in fluidsynth-1.1.6-new/src/sfloader: .dirstamp
+Only in fluidsynth-1.1.6-new/src/synth/.deps: .dirstamp
+Only in fluidsynth-1.1.6-new/src/synth: .dirstamp
+diff -crB fluidsynth-1.1.6/src/synth/fluid_synth.c fluidsynth-1.1.6-new/src/synth/fluid_synth.c
+*** fluidsynth-1.1.6/src/synth/fluid_synth.c	2012-08-16 14:01:13.000000000 +1000
+--- fluidsynth-1.1.6-new/src/synth/fluid_synth.c	2012-11-15 20:15:52.527197369 +1100
+***************
+*** 4768,4773 ****
+--- 4768,4779 ----
+    int chan = fluid_midi_event_get_channel(event);
+  
+    switch(type) {
++      case MIDI_TEXT:
++        return  FLUID_OK;
++ 
++      case MIDI_LYRIC:
++        return  FLUID_OK;
++ 
+        case NOTE_ON:
+  	return fluid_synth_noteon(synth, chan,
+                                    fluid_midi_event_get_key(event),
+Only in fluidsynth-1.1.6-new/src/synth: fluid_synth.c~
+Only in fluidsynth-1.1.6-new/src/utils/.deps: .dirstamp
+Only in fluidsynth-1.1.6-new/src/utils: .dirstamp

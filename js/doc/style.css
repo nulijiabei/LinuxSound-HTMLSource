@@ -1,0 +1,113 @@
+body {
+  font-family: sans-serif;
+  margin-left: 5ex;
+  margin-right: 5ex;
+  margin-top: 5ex;
+}
+
+p {
+  margin-top: 2ex;
+  margin-bottom: 2ex;
+}
+
+img {
+  margin-top: 5px;
+  border-width: 0px;
+}
+
+h1 {
+  white-space: nowrap;
+  margin: 0px;
+}
+
+div#navigation {
+  position: absolute;
+  top: 14ex;
+  left: 5ex;
+  right: 5ex;
+  border-color: #aaaaaa;
+  border-width: 1px;
+  border-top-style: solid;
+  border-bottom-style: solid;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+.first {
+  margin-top: 12ex;
+}
+
+h2.first {
+  margin-top: 8ex;
+}
+
+table.first {
+  border-collapse: collapse;
+  border: 0px solid black;
+}
+
+table.first p.first {
+  margin-top: 0px;
+}
+
+table.first td {
+  padding: 0px;
+}
+
+td.example {
+  vertical-align: top;
+}
+
+#example {
+  border-color: #aaaaaa;
+  border-width: 1px;
+  border-style: dashed;
+/*
+  font-size: smaller;
+*/
+  margin-top: 0px;
+  margin-bottom: 20px;
+  margin-left: 20px;
+  margin-right: 0px;
+  padding: 20px;
+}
+
+#example div.caption {
+  font-weight: bold;
+  font-size: smaller;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+
+table#classes {
+  margin: 20px;
+  border-collapse: collapse;
+  border: 1px solid black;
+}
+
+table#classes th, table#classes td {
+  border: 1px solid black;
+  padding: 5px;
+}
+
+table#threecol tr td {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+address {
+/*
+  border-color: #aaaaaa;
+  border-width: thin;
+  border-top-style: solid;
+  border-bottom-style: solid;
+*/
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+.new {
+  font-size: smaller;
+  font-weight: bold;
+}

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="../../stylesheet.css" />
+
+    <title> DLNA </title>
+
+    <style type="text/css">
+        body { counter-reset: chapter 36; }
+    </style>
+
+    <script type="text/javascript" src="../../toc.js"> 
+   /* empty */
+   </script>
+
+   <script type="text/javascript">
+/* <![CDATA[ */
+    (function() {
+        var s = document.createElement("script"), t = document.getElementsByTagName("script")[0];
+        s.type = "text/javascript";
+        s.async = true;
+        s.src = "http://api.flattr.com/js/0.6/load.js?mode=auto";
+        t.parentNode.insertBefore(s, t);
+    })();
+/* ]]> */
+    </script>
+
+
+  </head>
+  <body>
+
+    <!--#include virtual="../../header.html" -->
+
+    <div class="chapter">
+        <h1> DLNA </h1>
+     </div>
+
+    <div id="preface">
+      <p>
+	DLNA (Digital Living Network Alliance) is designed for sharing
+	digital media such as photos, audio and video in a home network.
+      </p>
+    </div>
+
+    <div id="generated-toc" class="generate_from_h2"></div>
+
+    <h2> Resources </h2>
+    
+      <ul>
+	<li>
+	  <a href="http://www.dlna.org/">
+	    DLNA Home page
+	  </a>
+	</li>
+      </ul>
+    
+
+    <h2> Introduction </h2>
+    <p>
+	DLNA (Digital Living Network Alliance) is designed for sharing
+	digital media such as photos, audio and video in a home network.
+      	It is built on top of the UPnP (Universal Plug 'n Play) protocol
+	suite. This in turn is built on some of the uglier of the internet
+	standards such as SOAP. UPnP itself compounds this poor choice of
+	base technologies by using what can only be described as an
+	appallingly badly engineered hack in order to handle media information:
+	with its most complex data type being a string, UPnP buries complete
+	XML documents inside these strings, so that one XML document contains
+	another XML document as embedded string.
+	Oh dear, better quality engineers could surely
+	have come up with better solutions than this!
+    </p>
+
+    <p>
+      UPnP is open in that it can describe many different home network devices
+      and formats of data. DLNA restricts this to only a few "approved"
+      types, and then makes the specification private, only available after
+      paying a fee.
+    </p>
+
+    <p>
+      Despite all this, an increasing number of devices are "DLNA enabled" such
+      as TVs, BluRay players, etc. It seems like DLNA is here to stay :-(.
+    </p>
+
+    <p>
+      Matthew Panton in
+      <a href="http://news.cnet.com/8301-17938_105-10007069-1.html">
+	DLNA for media streamers--what does it all mean?
+      </a>
+      points out some further issues with DLNA.
+      mainly relating to supported file formats. 
+      The truth of his comments are illustrated by my latest purchase of
+      a Sony BDP-S390 BluRay player. It supports LPCM (.wav) as required,
+      but out of the optional  	MP3, WMA9, AC-3, AAC, ATRAC3plus
+      it supports MP3, AAC/HE-AAC (.m4a) and WMA9 Standard (.wma).
+      And of course, Ogg is nowhere in any of the DLNA lists.
+    </p>
+
+    <h2> DLNA open source projects </h2>
+    <p>
+      See
+      <a href="http://elinux.org/DLNA_Open_Source_Projects">
+	 DLNA Open Source Projects
+      </a>
+      I have used the Cybergarage Java client and server.
+    </p>
+
+
+<!--#exec cmd="/usr/local/bin/dataprogram.pl . a.c" -->
+
+
+<hr/>
+ <!--#include virtual="../../footer.html" -->
+
+  </body>
+</html>

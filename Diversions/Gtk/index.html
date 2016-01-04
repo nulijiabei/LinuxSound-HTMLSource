@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="../../stylesheet.css" />
+
+    <title> Displaying video with overlays using Gtk and FFMpeg </title>
+
+    <style type="text/css">
+      body { counter-reset: chapter 15; }
+    </style>
+
+    <script type="text/javascript" src="../../toc.js"> 
+      /* empty */
+    </script>
+
+    <script type="text/javascript">
+      /* <![CDATA[ */
+    (function() {
+        var s = document.createElement("script"), t = document.getElementsByTagName("script")[0];
+        s.type = "text/javascript";
+        s.async = true;
+        s.src = "http://api.flattr.com/js/0.6/load.js?mode=auto";
+        t.parentNode.insertBefore(s, t);
+    })();
+/* ]]> */
+    </script>
+
+
+    <link rel="stylesheet" type="text/css" href="../../js/doc/style.css">
+    <!-- <link rel="stylesheet" type="text/css" href="../../js/css/sh_emacs.css"> -->
+    <link rel="stylesheet" type="text/css" href="../../js/sh_style.css">
+    <script type="text/javascript" src="../../js/sh_main.min.js"></script>
+    <script type="text/javascript" src="../../js/lang/sh_cpp.min.js"></script>
+    
+
+  </head>
+  <body onload="sh_highlightDocument();">
+
+    <!--#include virtual="../../header.html" -->
+
+
+    <div class="chapter">
+      <h1>  Displaying video with overlays using Gtk and FFMpeg </h1>
+    </div>
+
+    <div class="preface">
+      <p>
+	This chapter has nothing to do with sound.
+	However, many sound applications use a GUI environment
+	playing a video (or similar), possibly with text overlays
+	such as subtitles.
+	This diversion is about programming the video side of this,
+	using FFMpeg, Gtk, Cairo and Pango.
+	I assume that you are familiar with the concepts of
+	widgets, events and event handlers and so on that underlie all
+	current GUI frameworks.
+      </p>
+    </div>
+
+    <div id="generated-toc" class="generate_from_h2"></div>
+
+    <h2> Introduction </h2>
+    <p>
+      Videos often accompany audio. Karaoke oftens overlays the video
+      with lyrics. Building an application to include video as well
+      as audio takes us into the realm of graphical user interfaces
+      (GUIs). This is a complex area in its own right, and deserves
+      (and has!) many books, including my own from many years back on
+      the X Window System and Motif.
+    </p>
+
+    <p>
+      Motif lost its status as a major GUI for Linux/Unix systems
+      a long time ago. There are many alternatives now, including
+      Gtk (Gimp toolkit), tcl/Tk, Java Swing, KDE, XFCE, ...
+      They each have their own adherents, domains of use, quirks,
+      idiosyncrasies, ... No single GUI will satisfy everyone.
+    </p>
+    <p>
+      In this chapter I deal with Gtk. The reasons are threefold:
+    </p>
+      <ul>
+	<li>
+	  It has a C library. It also has a Python library which
+	  is nice and I might use it one day. Most importantly it
+	  is <em>not</em> C++ based - C++ is one of my least 
+	  favourite languages. I once came across a quote (source
+	  lost) that "C++ is a laboratory experiment that escaped"
+	  and I completely agree with that assessment
+	</li>
+	<li>
+	  It has good support for i18n (internationalisation).
+	  I want to be able to play Chinese Karaoke files, so this
+	  is important to me
+	</li>
+	<li>
+	  It is not Java-based. Don't get me wrong, I really like Java
+	  and have been programming in it for years.
+	  The MIDI API is pretty good, and of course everything
+	  else such as i18n is great. But for MIDI it is a CPU
+	  hog and is unusable on low powered devices such as the
+	  Raspberry Pi, and generally the audio/video API has not
+	  progressed in years
+	</li>
+      </ul>
+
+
+    <p>
+      Nevertheless, as I struggled to get my head around Gtk,
+      versions 2.0 versus 3.0, Cairo, Pango, Glib, etc.
+      I thought it might have been easier just to fix the Java
+      MIDI engine! This was not a pleasant experience,
+      as the sequel will show :-(.
+    </p>
+
+    <h2> FFMpeg </h2>
+    <p>
+      To play Mpeg files, OGV files or similar, a decoder is
+      required. The main contenders seem to be GStreamer and 
+      FFMpeg. For no particular reason I chose FFMpeg.
+    </p>
+
+    <p>
+      The following program reads from a video file and stores
+      the first five frames to disk. It is taken directly
+      from 
+      <a href="http://dranger.com/ffmpeg/">
+	An ffmpeg and SDL Tutorial
+      </a> by Stephen Dranger.
+      The program is <code>play_video.c</code>:
+    </p>
+      <pre class="sh_cpp">
+	<!--#exec cmd="/usr/local/bin/escape.pl . play_video.c" -->
+      </pre>
+    
+
+    <h2> Basic Gtk </h2>
+    <p>
+      Gtk is a fairly standard GUI toolkit. Simple programs
+      are described in many tutorials such as
+      <a href="http://zetcode.com/tutorials/gtktutorial/firstprograms/">
+	First programs in GTK+
+      </a>
+      Refer to such tutorials for the basics in Gtk programming.
+    </p>
+
+    <p>
+      We just include the following example without explanation
+      which uses three child widgets, two buttons and one label. 
+      The label will hold an integer number. 
+      The buttons will increase or decrease this number. 
+    </p>
+      <pre class="sh_cpp">
+	#include &lt;gtk/gtk.h&gt;
+
+	gint count = 0;
+	char buf[5];
+
+	void increase(GtkWidget *widget, gpointer label)
+	{
+  	    count++;
+
+	    sprintf(buf, "%d", count);
+	    gtk_label_set_text(GTK_LABEL(label), buf);
+	}
+
+	void decrease(GtkWidget *widget, gpointer label)
+	{
+	    count--;
+
+	    sprintf(buf, "%d", count);
+	    gtk_label_set_text(GTK_LABEL(label), buf);
+	}
+
+	int main(int argc, char** argv) {
+
+	    GtkWidget *label;
+	    GtkWidget *window;
+	    GtkWidget *frame;
+	    GtkWidget *plus;
+	    GtkWidget *minus;
+
+	    gtk_init(&argc, &argv);
+
+	    window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	    gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
+	    gtk_window_set_default_size(GTK_WINDOW(window), 250, 180);
+	    gtk_window_set_title(GTK_WINDOW(window), "+-");
+
+	    frame = gtk_fixed_new();
+	    gtk_container_add(GTK_CONTAINER(window), frame);
+
+	    plus = gtk_button_new_with_label("+");
+	    gtk_widget_set_size_request(plus, 80, 35);
+	    gtk_fixed_put(GTK_FIXED(frame), plus, 50, 20);
+
+	    minus = gtk_button_new_with_label("-");
+	    gtk_widget_set_size_request(minus, 80, 35);
+	    gtk_fixed_put(GTK_FIXED(frame), minus, 50, 80);
+
+	    label = gtk_label_new("0");
+	    gtk_fixed_put(GTK_FIXED(frame), label, 190, 58); 
+
+	    gtk_widget_show_all(window);
+
+	    g_signal_connect(window, "destroy",
+	    G_CALLBACK (gtk_main_quit), NULL);
+
+	    g_signal_connect(plus, "clicked", 
+	    G_CALLBACK(increase), label);
+
+	    g_signal_connect(minus, "clicked", 
+	    G_CALLBACK(decrease), label);
+
+	    gtk_main();
+
+	    return 0;
+	}
+      </pre>
+
+
+    <p>
+      Gtk, like every other GUI toolkit, has a large number of widgets.
+      These are listed in the
+      <a href="https://developer.gnome.org/gtk3/3.0/">
+	GTK+ 3 Reference Manual
+      </a>.
+      This includes the widget
+      <a href="https://developer.gnome.org/gtk3/3.0/GtkImage.html">
+	GtkImage
+      </a>.
+      As would be expected from the name, it can take a set of pixels from somewhere
+      and build them into an image which can be displayed.
+    </p>
+
+    <p>
+      The following example is from
+      <a href="http://www.cs.dartmouth.edu/~xy/cs23/gtk.html">
+	CS 23 Software Design and Implementation Lecture notes GTK+ Programming
+      </a>
+      and shows an image loaded from a file:
+    </p>
+      <pre class="sh_cpp">
+#include &lt;gtk/gtk.h&gt;
+
+int main( int argc, char *argv[])
+{
+	GtkWidget *window, *image;
+
+	gtk_init(&argc, &argv);
+
+	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+
+	gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
+	gtk_window_set_default_size(GTK_WINDOW(window), 230, 150);
+	gtk_window_set_title(GTK_WINDOW(window), "Image");
+	gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
+
+	gtk_container_set_border_width(GTK_CONTAINER(window), 2);
+
+	image = gtk_image_new_from_file("pic/60cm.gif");
+	gtk_container_add(GTK_CONTAINER(window), image);
+
+	g_signal_connect(G_OBJECT(window), "destroy", G_CALLBACK(gtk_main_quit), NULL);
+	gtk_widget_show_all(window);
+	gtk_main();
+
+	return 0;
+}
+      </pre>    
+
+
+    <h2> Versions of Gtk  </h2>
+    <p>
+      Gtk currently (at July 2013) has major versions 2 and 3.
+      The macro <code>GTK_MAJOR_VERSION</code> can be used to detect
+      version 2 or 3. However, Gtk also depends on a number of other libraries
+      and it can  get very confusing working out which documentation pages
+      you should be looking at. Here is a list of the
+      principal libraries and their primary
+      API pages:
+      <dl>
+	<dt> 
+	  <a href="https://developer.gnome.org/gtk3/3.0/">
+	    Gtk 3
+	  </a>
+	</dt>
+	<dd>
+	  <ul>
+	    <li>
+	      <a href="https://developer.gnome.org/gdk3/stable/">
+		Gdk 3
+	      </a>
+	    </li>
+	    <li>
+	      <a href="http://cairographics.org/manual/">
+		Cairo 1
+	      </a>
+	    </li>
+	    <li>
+	      <a href="https://developer.gnome.org/pango/stable/">
+		Pango 1
+	      </a>
+	    </li>
+	    <li>
+	      <a href="https://developer.gnome.org/gdk-pixbuf/unstable/">
+		Gdk Pixbuf 2
+	      </a>
+	    </li>
+	    <li>
+	      <a href="https://developer.gnome.org/glib/">
+		Glib 2
+	      </a>
+	    </li>
+	    <li>
+	      <a href="http://www.freetype.org/freetype2/docs/reference/ft2-toc.html">
+		Freetype 2
+	      </a>
+	    </li>
+	  </ul>
+	</dd>
+	<dt> 
+	  <a href="">
+	    Gtk 2
+	  </a>
+	</dt>
+	<dd>
+	  <ul>
+	    <li>
+	      <a href="https://developer.gnome.org/gdk2/2.24/">
+		Gdk 2
+	      </a>
+	    </li>
+	    <li>
+	      <a href="http://cairographics.org/manual/">
+		Cairo 1
+	      </a>
+	    </li>
+	    <li>
+	      <a href="https://developer.gnome.org/pango/stable/">
+		Pango 1
+	      </a>
+	    </li>
+	    <li>
+	      <a href="https://developer.gnome.org/glib/">
+		Glib 2
+	      </a>
+	    </li>
+	    <li>
+	      <a href="http://www.freetype.org/freetype2/docs/reference/ft2-toc.html">
+		Freetype 2
+	      </a>
+	    </li>
+	  </ul>
+	</dd>
+      </dl>
+   
+
+
+
+    <h2> Displaying the video using Gtk </h2>
+
+    <p>
+      We want to take the images produced by FFMpeg as
+      <code>AVFrame</code>'s and display them in a
+      <code>GtkImage</code>. We don't want to use code that
+      reads from a file, because reading and writing files at 30 frames
+      per second would be ludicrous. Instead we want some in-memory
+      representation of the frames to load into the <code>GtkImage</code>.
+    </p>
+    <p>
+      Here is where we hit our first snag: the suitable in-memory
+      representation changed in an incompatable way between Gtk 2.0 and
+      Gtk 3.0.
+      I'm only going to talk in the language of the X Window System
+      since I don't know about other underlying systems such as
+      Microsoft Windows.
+    </p>
+
+    <p>
+      See
+      <a href="https://developer.gnome.org/gtk3/3.5/gtk-migrating-2-to-3.html">
+	Migrating from GTK+ 2.x to GTK+ 3
+      </a> for a description of some of the changes between these versions.
+      
+      <h3> Pixmaps </h3>
+    <p>
+      The X Window System architecture model is a client-server model which
+      has clients (applications) talking to servers (devices with graphic
+      displays and input devices). At the lowest level (Xlib) a client
+      will send basic requests such as "draw a line from here to there"
+      to the server. The server will draw the line using information on
+      the server side such as current line thickness, colour, etc.
+    </p>
+
+    <p>
+      If you want to keep an array of pixels to represent an image, then
+      this array is usually kept on the <em>X Window server</em> in a
+      <em>pixmap</em>. Pixmaps can be created and modified by applications
+      by sending messages across the wire from the client to the server.
+      Even a simple modification such as changing the value of a single
+      pixel involves a network roundtrip and this can obviously become
+      very expensive if done often.
+    </p>
+
+    <h3> Pixbufs </h3>
+    <p>
+      Pixbufs are <em>client</em> side equivalents of pixmaps.
+      They can be manipulated by the client without round trips
+      to the X server. This reduces time and network overheads in
+      manipulating them. However, it means that information that would
+      have been kept on the server now has to built and maintained on the
+      client application side.
+    </p>
+
+    <h3> X, Wayland and Mir </h3>
+    <p>
+      The X Window System is nearly 30 years old. During that time it has
+      evolved to meet changes in hardware and in software requirements,
+      while still maintaining backward compatability.
+    </p>
+
+    <p>
+      Significant changes have occurred in hardware during this 30 years:
+      multi-core systems are now prevalent and GPUs have brought changes
+      in processing video. And generally the amount of memory (cache and RAM)
+      means that memory is no longer such an issue.
+    </p>
+
+    <p>
+      At the same time, the software side has evolved.
+      It is now common to make use of a "compositing window manager" such
+      as Compiz so that you can have effects such as Wobbly Windows. This
+      is not good for the X Window model: requests from the application go
+      to the X server but then a requested image has to be passed to the
+      compositing window manager which will perform its effects and then
+      send images back to the X server. This is big increase in network
+      traffic, in which the X server is now just playing the role of
+      display rather than compositor.
+    </p>
+
+    <p>
+      Application libraries have now evolved so that much of the work
+      that was formerly done by the X server can now be done on the
+      application side by libraries such as cairo, pixman, freetype, fontconfig
+      and pango.
+    </p>
+
+    <p>
+      All of these changes have led to proposals for new backend
+      servers which live cooperatively in this evolved world.
+      This has been sparked by the development of 
+      <a href="http://wayland.freedesktop.org/">Wayland</a>,
+      but is a bit messed up by Ubuntu forking this to develop
+      <a href="https://wiki.ubuntu.com/Mir/">Mir</a>. 
+      We won't buy into those arguments - just google for
+      "mir and wayland"...
+    </p>
+
+    <p>
+      In a very simplistic sense, what it means here is that
+      in future pixmaps are out while pixbufs are in.
+    </p>
+
+    <h3> Gtk 3.0 </h3>
+    <p>
+      With Gtk 3.0, pixmaps no longer exist. You only have pixbufs,
+      in the data structure <code>GdkPixbuf</code>. To display the 
+      FFMpeg decoded video we pick up after the image has been
+      transcoded to the <code>picture_RGB</code>, translate it into
+      a <code>GdkPixbuf</code> and create the <code>GtkImage</code>
+    </p>
+      <pre class="sh_cpp">
+	pixbuf = gdk_pixbuf_new_from_data(picture_RGB->data[0], GDK_COLORSPACE_RGB,
+	                                  0, 8, width, height, 
+	                                  picture_RGB->linesize[0], 
+                                          pixmap_destroy_notify,
+	                                  NULL);
+	gtk_image_set_from_pixbuf((GtkImage*) image, pixbuf);
+      </pre>
+    
+    <h3> Gtk 2.0 </h3>
+    <p>
+      Gtk 2.0 still had pixmaps, in the structure <code>GdkPixmap</code>.
+      In theory it should be possible to have code similar to the Gtk 3.0
+      code using the function
+      <code>GdkPixmap *gdk_pixmap_create_from_data(GdkDrawable *drawable,
+	const gchar *data,
+	gint width,
+	gint height,
+	gint depth,
+	const GdkColor *fg,
+	const GdkColor *bg)</code>
+      which is documented in the GDK 2 Reference Manual at
+      <a href="https://developer.gnome.org/gdk/unstable/gdk-Bitmaps-and-Pixmaps.html#gdk-pixmap-create-from-data">
+	Bitmaps and Pixmaps
+      </a> and then call
+      <code>void gtk_image_set_from_pixmap(GtkImage *image,
+	GdkPixmap *pixmap,
+	GdkBitmap *mask)</code>
+      documented in the Gtk 2.6 reference manual at
+      <a href="http://www.gtk.org/api/2.6/gtk/GtkImage.html#gtk-image-set-from-pixmap">
+	GtkImage
+      </a>.
+    </p>
+
+    <p>
+      The only problem is that I couldn't get the function 
+      <code>gdk_pixmap_create_from_data</code> to work.
+      No matter what argument I tried for the drawable,
+      the call always barfed on either its type or its value.
+      For example, a documented value is <code>NULL</code>
+      but this always caused an assertion error
+      ("should not be NULL").
+    </p>
+
+    <p>
+      So what does work? Well, all I could find was a bit of a mess of
+      both pixmaps <em>and</em> pixbufs: create a pixbuf filled with
+      video data, create a pixmap, write the pixbuf data into the pixmap,
+      and then fill the image with the pixmap data:
+    </p>
+      <pre class="sh_cpp">
+	pixbuf = gdk_pixbuf_new_from_data(picture_RGB->data[0], GDK_COLORSPACE_RGB,
+             	                          0, 8, width, height, 
+	                                  picture_RGB->linesize[0], 
+	                                  pixmap_destroy_notify,
+	                                  NULL);
+	pixmap = gdk_pixmap_new(window->window, width, height, -1);
+	gdk_draw_pixbuf((GdkDrawable *) pixmap, NULL,
+	                pixbuf, 
+	                0, 0, 0, 0, wifth, height,
+	                GDK_RGB_DITHER_NORMAL, 0, 0);
+
+	gtk_image_set_from_pixmap((GtkImage*) image, pixmap, NULL);
+      </pre>
+
+
+    <h3> Threads and Gtk </h3>
+    <p>
+      The video will need to play in its own thread. Gtk will set up a 
+      GUI processing loop in its thread. Since this is Linux, we will
+      use Posix <code>pthreads</code>. The video thread will need to
+      be started explicitly by
+    </p>
+      <pre class="sh_cpp">
+	pthread_t tid;
+	pthread_create(&tid, NULL, play_background, NULL);
+      </pre>
+    <p>
+      where the function <code>play_background</code> calls the
+      FFMpeg code to decode the video file.
+      Note that the thread should not be started until the
+      application has been realised, or it will attempt to draw
+      into non-existent windows.
+    </p>
+
+    <p>
+      The Gtk thread will be started by the call to
+    </p>
+      <pre class="sh_cpp">
+	gtk_widget_show (window);
+      </pre>
+    
+
+    <p>
+      That's straightforward enough. But now we have to handle
+      the video thread making calls into the GUI thread in order
+      to draw the image. The best document I have found on this
+      is <a href="https://developer.gnome.org/gtk-faq/stable/x481.html">
+	Is GTK+ thread safe? How do I write multi-threaded GTK+ applications?
+      </a>
+      Basically it states that code which can affect the Gtk thread should
+      be enclosed by a <code>gdk_threads_enter() ... gdk_threads_leave()</code>
+      pair.
+    </p>
+
+    <p>
+      That's okay for Gtk 2.0. What about Gtk 3.0? Ooops!
+      Those calls are now deprecated. So what are you supposed
+      to do? So far (as at 3 July, 2013) all that seems to exist
+      are developer dialogs such as
+      <a href="https://mail.gnome.org/archives/gtk-devel-list/2012-August/msg00020.html">
+	Re: deprecating gdk threads
+      </a> which states "We have never done a great job of explaining when
+      gdk_threads_enter/leave are required, it seems - as a consequence, a
+      good number of the critical sections I've seen marked throughout my
+      jhbuild checkout are unnecessary. If your application doesn't call
+      gdk_threads_init or gdk_threads_set_lock_functions, there's no need to
+      use enter/leave. Libraries are a different story, of course".
+      But who should call <code>gdk_threads_init</code>? And what's this
+      about libraries? I'll continue to use them until I know better.
+    </p>
+
+    <h3> The code </h3>
+    <p>
+      Finally, the code to play a video in a Gtk application which
+      works with both Gtk 2.0 and Gtk 3.0! It is
+      <code>gtk_play_video.c</code>:
+    </p>
+      <pre class="sh_cpp">
+	<!--#exec cmd="/usr/local/bin/escape.pl . gtk_play_video.c" -->
+      </pre>
+    
+
+    <h2> Overlaying an image on top of an image </h2>
+    <p>
+      It is common in a movie on TV to see a fixed image layered
+      on top of the video. Subtitles can be an example of dynamic
+      images but may be text overlaid instead. This section just 
+      considers one image on top of another.
+    </p>
+
+    <p>
+      In Gtk 2.0 it is surprisingly easy: draw one pixbuf into a
+      pixmap and then draw the overlay pixbuf into the same pixmap.
+    </p>
+      <pre class="sh_cpp">
+pixmap = gdk_pixmap_new(window->window, 720, 480, -1);
+	
+gdk_draw_pixbuf((GdkDrawable *) pixmap, NULL,
+		pixbuf, 
+		0, 0, 0, 0, 720, 480,
+		GDK_RGB_DITHER_NORMAL, 0, 0);
+
+// overlay another pixbuf
+gdk_draw_pixbuf((GdkDrawable *) pixmap, NULL,
+                overlay_pixbuf, 
+                0, 0, 0, 0, overlay_width, overlay_height,
+                GDK_RGB_DITHER_NORMAL, 0, 0);
+
+gtk_image_set_from_pixmap((GtkImage*) image, pixmap, NULL);
+
+gtk_widget_queue_draw(image);
+      </pre>
+
+
+    <p>
+      Gtk 3.0 does not seem so straightforward as pixmaps have disappeared.
+      Various pages suggest using Cairo surfaces instead and later sections
+      will look at that. But the page on the
+      <a href="https://developer.gnome.org/gdk-pixbuf/unstable/gdk-pixbuf-The-GdkPixbuf-Structure.html">
+	The GdkPixbuf Structure
+      </a>
+      suggests that - as long as you get the data types aligned - you
+      can just write the pixels of the second image into the pixbuf
+      data of the first. The page (although old)
+      <a href="http://openbooks.sourceforge.net/books/wga/graphics-gdk-pixbuf.html">
+	Gdk-pixbuf
+      </a> is a useful tutorial on Gdk pixbufs.
+      One of the details you have to get right is the
+      <em>rowstride</em> of each image: the two-dimensional image 
+      is stored as a linear array of bytes and the rowstride tells how
+      many bytes make up a row. Typically there are 3 or 4 bytes per
+      pixel (for RGB or RGB+alpha) and these also need to be matched between
+      the images.
+    </p>
+
+    <p>
+      The program <code>gtk_play_video_overlay.c</code> is
+    </p>
+      <pre class="sh_cpp">
+	<!--#exec cmd="/usr/local/bin/escape.pl . gtk_play_video_overlay.c" -->
+      </pre>
+
+
+    <h2> Alpha channel </h2>
+    <p>
+      An overlay image may have some "transparent" parts in it. You don't want
+      such parts to be overlaid onto the underlying image. But such parts will
+      need to have a value in the array of pixels. Even zero is a value - black!
+      Some images will have another byte per pixel allocated as the
+      "alpha channel". This has a value to show how "transparent" the pixel is.
+      A value of 255 means not transparent at all, a value of zero means totally
+      transparent.
+    </p>
+
+    <p>
+      The simplest way of combining a "transparent" pixel with the underlying
+      pixel is simply to not do so: leave the underlying pixel untouched.
+      More complex algorithms are pointed to by the Wikipedia
+      <a href="http://en.wikipedia.org/wiki/Alpha_compositing">
+	Alpha compositing
+      </a> page.
+    </p>
+
+    <p>
+      Converting an image which doesn't have an alpha channel to one which
+      does can be done using the function <code>gdk_pixbuf_add_alpha</code>.
+      This can also be used to set the value of the alpha channel by
+      matching against a colour. For example, the following should set the
+      alpha value to 0 for any white pixels and to 255 for all others:
+    </p>
+      <pre class="sh_cpp">
+pixbuf = gdk_pixbuf_add_alpha(pixbuf, TRUE, 255, 255, 255);
+      </pre>
+
+    <p>
+      Unfortunately it seems to want to leave an "edge" of pixels which
+      should be marked as transparent.
+    </p>
+ 
+    <p>
+      With alpha marking in place, a simple test can be used in the overlay 
+      function as to whether or not to perform the overlay:
+    </p>
+      <pre class="sh_cpp">
+	<code>
+if (alpha &lt; 128) {
+    continue;
+ }
+	</code>
+      </pre>
+
+
+    <p>
+      It's not worth giving a complete program just for a couple 
+      of changed lines. It is
+      <a href="gtk_play_video_overlay_alpha.c">gtk_play_video_overlay_alpha.c</a>.
+    </p>
+
+    <h2> Using Cairo to draw on an image </h2>
+    <p>
+      With the disappearance of pixmaps from Gtk 3.0, Cairo is now the
+      only real way of assembling multiple components into an image.
+      General Cairo information is at
+      <a href="http://cairographics.org/documentation/">
+	Cairo documentation
+      </a>,
+      a tutorial is at
+      <a href="http://zetcode.com/gfx/cairo/">
+	Cairo graphics tutorial
+      </a>
+      and information about overlaying onto images is at
+      <a href="http://zetcode.com/gfx/cairo/cairoimages/">
+	Images in Cairo
+      </a>.
+    </p>
+
+    <p>
+      Cairo takes sources and a destination. The sources can be changed,
+      and frequently are: from an image source, to a colour source, etc.
+      The destination is where the drawn stuff ends up.
+    </p>
+
+    <p>
+      Destinations can be in memory or at a variety of backends.
+      We want in an in-memory destination so that we can extract
+      a pixbuf from it, with all operations done on the client side.
+      We create a destination as a <em>surface</em> 
+      of type <code>cairo_surface_t</code>
+      and set it into a <em>Cairo context</em> of type<code>cairo_t</code>
+      by
+    </p>
+      <pre class="sh_cpp">
+cairo_surface_t *surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, 
+						       width, height);
+cairo_t *cr = cairo_create(surface);
+      </pre>
+
+    <p>
+      The cairo context <code>cr</code> is then used to set sources, perform drawing, etc.
+      At the end of this we will extract a pixmap from the <code>surface</code>.
+    </p>
+
+    <p>
+      The first step is to set the source to the pixbuf for each frame
+      of the video and to <code>paint</code> this to the destination by
+    </p>
+      <pre class="sh_cpp">
+gdk_cairo_set_source_pixbuf(cr, pixbuf, 0, 0);
+cairo_paint (cr);
+      </pre>
+    
+
+
+    <p>
+      We can overlay another image on top of this by changing the source
+      to the overlay image and painting that:
+    </p>
+      <pre class="sh_cpp">
+gdk_cairo_set_source_pixbuf(cr, overlay_pixbuf, 300, 200);
+cairo_paint (cr);
+      </pre>
+    <p>
+      Note that Cairo will do any alpha blending that is required if
+      the overlay has "transparent" pixels.
+    </p>
+    <p>
+      To draw the text, we need to reset the source to an RGB surface,
+      set all the parameters for the text, and draw the text
+      into the
+      destination. This is done by
+    </p>
+      <pre class="sh_cpp">
+// white text
+cairo_set_source_rgb(cr, 1.0, 1.0, 1.0); 
+// this is a standard font for Cairo 
+cairo_select_font_face (cr, "cairo:serif",
+			CAIRO_FONT_SLANT_NORMAL, 
+			CAIRO_FONT_WEIGHT_BOLD);
+cairo_set_font_size (cr, 20);
+cairo_move_to(cr, 10.0, 50.0);
+cairo_show_text (cr, "hello");
+      </pre>
+    
+
+    <p>
+      Finally we want to extract the fnal image from the destination and set 
+      it into the <code>GdkImage</code> for display. Here there is another
+      difference between Gtk 2.0 and Gtk 3.0: Gtk 3.0 has a function
+      <code>gdk_pixbuf_get_from_surface</code> which will return a
+      <code>GdKPixbuf</code>; Gtk 2.0 has no such function.
+      We only look at the Gtk 3.0 version for now
+    </p>
+      <pre class="sh_cpp">
+pixbuf = gdk_pixbuf_get_from_surface(surface,
+				     0,
+				     0,
+				     width,
+				     height);
+
+gtk_image_set_from_pixbuf((GtkImage*) image, pixbuf); 
+      </pre>
+    
+
+    <p>
+      The complete program is <code>gtk_play_video_cairo.c</code>
+    </p>
+      <pre class="sh_cpp">
+	<!--#exec cmd="/usr/local/bin/escape.pl . gtk_play_video_cairo.c" -->
+      </pre>
+    
+
+    <h2> Drawing text using Pango </h2>
+    <p>
+      While Cairo can draw any form of text, the functions such as
+      <code>cairo_show_text</code> do not have much flexibility.
+      To draw in, say, multiple colours will involve much work.
+      Pango is a library for handling all aspects of text.
+      There is a 
+      <a href="https://developer.gnome.org/pango/stable/">
+	Pango Reference Manual
+      </a>.
+      A good tutorial is at
+      <a href="http://www.ibm.com/developerworks/library/l-u-pango2/">
+	The Pango connection: Part 2
+      </a>.
+    </p>
+
+    <p>
+      The simplest way of colouring text (and some other effects)
+      is to create the text marked up with HTML such as
+    </p>
+      <pre class="sh_cpp">
+gchar *markup_text = "&lt;span foreground=\"red\"&gt;hello &lt;/span&gt;&lt;span foreground=\"black\"&gt;world&lt;/span&gt;";
+      </pre>
+    <p>
+      which has "hello" in red and "world" in black. This is then parsed into the
+      text itself "ed black" and a set of attribute markups.
+    </p>
+      <pre class="sh_cpp">
+gchar *markup_text = "&lt;span foreground=\"red\"&gt;hello &lt;/span&gt;&lt;span foreground=\"black\"&gt;world&lt;/span&gt;";
+PangoAttrList *attrs;
+gchar *text;
+
+pango_parse_markup (markup_text, -1,0, &attrs, &text, NULL, NULL);
+      </pre>
+    
+
+    <p>
+      This can be rendered into a Cairo context by creating a
+      <code>PangoLayout</code> from the Cairo context, laying out
+      the text with its attributes in the Pango layout and then
+      showing this layout in the Cairo context:
+    </p>
+      <pre class="sh_cpp">
+PangoLayout *layout;
+PangoFontDescription *desc;
+
+cairo_move_to(cr, 300.0, 50.0);
+layout = pango_cairo_create_layout (cr);
+pango_layout_set_text (layout, text, -1);
+pango_layout_set_attributes(layout, attrs);
+pango_cairo_update_layout (cr, layout);
+pango_cairo_show_layout (cr, layout);
+      </pre>
+    <p>
+      (Yes, there is a lot of jumping around between libraries in all
+      of this!).
+    </p>
+ 
+    <p>
+      Just as before, once all content has been drawn into the Cairo
+      context, it can be extracted as a pixbuf from the Cairo
+      surface destination, set into the <code>GtkImage</code>
+      and added to the Gtk event queue.
+    </p>
+
+    <p>
+      The complete program is <code>gtk_play_video_pango.c</code>:
+    </p>
+      <pre class="sh_cpp">
+	<!--#exec cmd="/usr/local/bin/escape.pl . gtk_play_video_pango.c" -->
+      </pre>
+   
+
+    <h2> Conclusion </h2>
+    <p>
+      Getting to grips with some aspects of the Gtk toolkit is not trivial.
+      We will use some of this material in later chapters,
+      which is why it has been pulled out of the sound sections
+      of this book and placed in a "diversions" section.
+      Those not interested in Linux sound may nevertheless find it
+      useful.
+    </p>
+
+
+      <pre class="sh_cpp">
+	<!--#exec cmd="/usr/local/bin/escape.pl . play_video_pango.c" -->
+      </pre>
+      <!--#include virtual="../../footer.html" -->
+
+  </body>
+</html>

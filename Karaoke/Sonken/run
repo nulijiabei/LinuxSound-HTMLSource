@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# Show the SongTable or
+# extract a song with a given index
+
+SONGDIR=/home/newmarch/Music/karaoke/sonken/songs/
+PLAYDIR=/home/httpd/html/LinuxSound/Karaoke/JavaSound
+
+test $# -eq 0 && echo "Usage $0 (extract|table) [songnumber]" && exit 1
+
+case $1 in
+     extract)
+		if [ -f $2.kar ]
+		then
+			exit
+		fi
+		cd java
+		java SongExtracter $2
+		java KARConverter ${SONGDIR}/$2
+		[ -f $2.wma ] && mv $2.* $SONGDIR
+		;;
+     table)
+	        cd java
+		java SongTableSwing |
+		while read songnum
+		do
+		    echo $songnum
+		    cd  $PLAYDIR
+		    ./run play $songnum
+		    cd -
+		done
+		;;
+esac
+
+exit 0

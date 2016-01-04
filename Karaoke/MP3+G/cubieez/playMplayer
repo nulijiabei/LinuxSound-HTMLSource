@@ -1,0 +1,13 @@
+#!/bin/bash
+
+#sleep 3.5s
+sleep 0.5s
+
+# http://stackoverflow.com/questions/14155501/mplayer-change-sound-pitch-and-speed-independently
+#mplayer -af ladspa=/usr/lib/ladspa/tap_pitch.so:tap_pitch  $1
+# mplayer -af ladspa=/usr/lib/ladspa/tap_pitch.so:tap_pitch:0:0:-90:0 "$*"  > /dev/null 2> /dev/null
+#mplayer -ao jack -af ladspa=/usr/lib/ladspa/tap_pitch.so:tap_pitch:0:40:-90:0 -speed 0.8 $1
+
+# one channel has the vocals, so play the other one as stereo
+mplayer -ao jack:port=jack_rack -af pan=1:1 "$*" > /dev/null 2> /dev/null
+#mplayer -ao jack -af pan=1:1 "$*" > /dev/null 2> /dev/null

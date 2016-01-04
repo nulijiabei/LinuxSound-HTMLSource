@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="../../stylesheet.css" />
+
+    <title> Using the Raspberry Pi's GPU with OpenGL ES</title>
+
+    <style type="text/css">
+      body { counter-reset: chapter 16; }
+    </style>
+
+    <script type="text/javascript" src="../../toc.js"> 
+      /* empty */
+    </script>
+
+    <script type="text/javascript">
+      /* <![CDATA[ */
+    (function() {
+        var s = document.createElement("script"), t = document.getElementsByTagName("script")[0];
+        s.type = "text/javascript";
+        s.async = true;
+        s.src = "http://api.flattr.com/js/0.6/load.js?mode=auto";
+        t.parentNode.insertBefore(s, t);
+    })();
+/* ]]> */
+    </script>
+
+
+    <link rel="stylesheet" type="text/css" href="../../js/doc/style.css">
+    <!-- <link rel="stylesheet" type="text/css" href="../../js/css/sh_emacs.css"> -->
+    <link rel="stylesheet" type="text/css" href="../../js/sh_style.css">
+    <script type="text/javascript" src="../../js/sh_main.min.js"></script>
+    <script type="text/javascript" src="../../js/lang/sh_cpp.min.js"></script>
+    
+
+  </head>
+  <body onload="sh_highlightDocument();">
+
+    <!--#include virtual="../../header.html" -->
+
+
+    <div class="chapter">
+      <h1>  Using the Raspberry Pi's GPU  </h1>
+    </div>
+
+    <div class="preface">
+      <p>
+	The Raspberry Pi (RPi) has a very underpowered CPU
+	but a very powerful GPU. Using the GPU is not well
+	documented. This chapter looks at drawing,
+	rendering images, etc, using the GPU.
+      </p>
+    </div>
+
+    <div id="generated-toc" class="generate_from_h2"></div>
+
+    <h2> Resources </h2>
+    
+      <ul>
+	<li>
+	  <a href="https://github.com/peepo/openGL-RPi-tutorial">
+	    openGL-RPi-tutorial  </a>
+	</li>
+	<li>
+	  <a href="http://www.raspberrypi.org/forums/viewtopic.php?f=33&amp;t=57721"> 
+	    OpenMAX+GLES2 : Decode and render JPEG (with source code):
+	    jpeg_gles2  </a>
+	</li>
+	<li>
+	  <a href="http://benosteen.wordpress.com/2012/04/27/using-opengl-es-2-0-on-the-raspberry-pi-without-x-windows/"> 
+	    Using OpenGL ES 2.0 on the Raspberry Pi without X windows </a>
+	</li>
+	<li>
+	  <a href="http://www.khronos.org/registry/egl/extensions/KHR/EGL_KHR_image_base.txt"> KHR_image_base </a>
+	  describes EGLImageKHR type
+	</li>
+	<li>
+	  <a href="http://en.wikibooks.org/wiki/OpenGL_Programming/Modern_OpenGL_Tutorial_Text_Rendering_01"> 
+	    OpenGL Programming/Modern OpenGL Tutorial Text Rendering 01 </a>
+	</li>
+	<li>
+	  <a href="https://software.intel.com/en-us/articles/using-opengl-es-to-accelerate-apps-with-legacy-2d-guis"> 
+	    Using OpenGL ES to Accelerate Apps with Legacy 2D GUIs </a>
+	</li>
+	<li>
+	  <a href="http://e2e.ti.com/support/dsp/omap_applications_processors/f/447/t/81109.aspx"> 
+	    glEGLImageTargetTexture2DOES </a>
+	</li>
+	<li>
+	  <a href="http://elinux.org/Raspberry_Pi_VideoCore_APIs"> 
+	    Raspberry Pi VideoCore APIs </a>
+	</li>
+	<li>
+	  <a href="http://opengles-book.com/es2/index.html"> 
+	  OpenGL® ES 2.0 Programming Guide
+	  </a> by Aaftab Munshi, Dan Ginsburg and Dave Shreiner
+	</li>
+	<li>
+	  <a href="https://code.google.com/p/opengles-book-samples/source/checkout">
+	    opengles-book-samples
+	  </a>
+
+	</li>
+	<li>
+	  <a href="http://www.fileformat.info/format/tga/egff.htm">
+	    TGA File Format Summary
+	  </a>
+	</li>
+
+      </ul>
+    
+
+    <h2> Accessing the GPU </h2>
+    <p>
+      Most drawing using RPi's GPU seems to be based around OpenGL ES.
+      In order to use this we need to get an EGLSurface upon which
+      OpenGL ES calls can be made.
+    </p>
+
+    <p>
+      The EGLSurface is a generic type which has to be backed by
+      a specific implementation for the device/hardware/etc which
+      you want to draw into. 
+      The page  <a href="http://elinux.org/Raspberry_Pi_VideoCore_APIs"> 
+	    Raspberry Pi VideoCore APIs </a>
+      gives a quick overview of the APIs involved.
+      Basically, to get to the EGLSurface you have to use the Dispmanx
+      window system, which is reportedly being deprecated but is still
+      used in all the demos and code that I have seen.
+    </p>
+
+    <p>
+      The relevant Dispmanx calls are
+    </p>
+      <pre class="sh_cpp">
+	<code>
+    DISPMANX_ELEMENT_HANDLE_T dispman_element;
+    DISPMANX_DISPLAY_HANDLE_T dispman_display;
+    DISPMANX_UPDATE_HANDLE_T dispman_update;
+    VC_RECT_T dst_rect;
+    VC_RECT_T src_rect;
+
+   success = graphics_get_display_size(0 /* LCD */, 
+             &amp;screen_width, &amp;screen_height);
+    assert( success >= 0 );
+
+    dst_rect.x = 0;
+    dst_rect.y = 0;
+    dst_rect.width = screen_width;
+    dst_rect.height = screen_height;
+
+    src_rect.x = 0;
+    src_rect.y = 0;
+    src_rect.width = screen_width &lt;&lt; 16;
+    src_rect.height = screen_height &lt;&lt; 16;        
+
+    dispman_display = vc_dispmanx_display_open( 0 /* LCD */);
+    dispman_update = vc_dispmanx_update_start( 0 );
+    dispman_element = 
+        vc_dispmanx_element_add(dispman_update, dispman_display,
+                                0/*layer*/, &amp;dst_rect, 0/*src*/,
+                                &amp;src_rect, DISPMANX_PROTECTION_NONE, 
+                                0 /*alpha*/, 0/*clamp*/, 0/*transform*/);
+	</code>
+      </pre>
+    <p>
+      At the end of this you have a window stored in 
+      <code>dispman_element</code> that can be used as a native window
+      object later.
+    </p>
+
+    <p>
+      Initialising EGL is done in the standard way of
+      <ul>
+	<li>
+	  Get an EGL display
+	</li>
+ 	<li>
+	  Initialise the display
+	</li>
+ 	<li>
+	  Choose a frame buffer
+	</li>
+ 	<li>
+	  Configure the frame buffer
+	</li>
+ 	<li>
+	  Create a rendering context
+	</li>
+  	<li>
+	  Create an EGL window surface
+	</li>
+      </ul>
+    <p>
+      Apart from the last step, this follows standard EGL
+      programming:
+    </p>
+      <pre class="sh_cpp">
+	<code>
+    static const EGLint attribute_list[] =
+        {
+            EGL_RED_SIZE, 8,
+            EGL_GREEN_SIZE, 8,
+            EGL_BLUE_SIZE, 8,
+            EGL_ALPHA_SIZE, 8,
+            EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+            EGL_NONE
+        };
+
+    static const EGLint context_attributes[] =
+        {
+            EGL_CONTEXT_CLIENT_VERSION, 2,
+            EGL_NONE
+        };
+
+    EGLConfig config;
+
+    // get an EGL display connection
+   display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+
+    // initialize the EGL display connection
+    result = eglInitialize(display, NULL, NULL);
+
+    // get an appropriate EGL frame buffer configuration
+    result = eglChooseConfig(display, attribute_list, &amp;config, 1, &amp;num_config);
+    assert(EGL_FALSE != result);
+
+    // get an appropriate EGL frame buffer configuration
+    result = eglBindAPI(EGL_OPENGL_ES_API);
+    assert(EGL_FALSE != result);
+
+
+    // create an EGL rendering context
+    context = eglCreateContext(display, config, EGL_NO_CONTEXT, context_attributes);
+    assert(context!=EGL_NO_CONTEXT);
+	</code>
+      </pre>
+    
+
+    <p>
+      The next step is to link the Dispmanx window to the EGL window
+      surface. This uses a structure of type <code>EGL_DISPMANX_WINDOW_T</code>
+      which is filled in from the Dispmanx information:
+    </p>
+      <pre class="sh_cpp">
+	<code>
+   EGL_DISPMANX_WINDOW_T nativewindow;
+
+   nativewindow.element = dispman_element;
+   nativewindow.width = screen_width;
+   nativewindow.height = screen_height;
+   vc_dispmanx_update_submit_sync( dispman_update );
+	</code>
+      </pre>
+    <p>
+      The EGL surface is then created by
+    </p>
+      <pre class="sh_cpp">
+	<code>
+surface = eglCreateWindowSurface(display, config, &amp;nativewindow, NULL);
+
+// connect the context to the surface
+eglMakeCurrent(display, surface, surface, context);
+	</code>
+      </pre>
+    
+
+    <p>
+      In this section we do the absolute minimum: having got an
+      EGL surface talking to the GPU, we just use OpenGL ES
+      calls to set the background of the buffer to red
+      and then display the buffer by swapping EGL buffers:
+    </p>
+      <pre class="sh_cpp">
+	<code>
+    glClearColor(1.0, 0.0, 0.0, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glFlush();
+
+    eglSwapBuffers(display, surface);
+	</code>
+      </pre>
+   
+
+    <p>
+      The complete program is <a href="rectangle.c">
+	rectangle.c</a> and just displays a large red
+      square:
+    </p>
+      <pre class="sh_cpp">
+	<!--#exec cmd="/usr/local/bin/escape.pl . rectangle.c" -->
+      </pre>
+    
+
+    <p>
+      Compiling the program uses a horrendous mess of defines
+      and libraries, probably not all of which are needed!
+    </p>
+      <pre>
+	<code>
+cc -g  -DUSE_OPENGL -DUSE_EGL -DIS_RPI -DSTANDALONE -D__STDC_CONSTANT_MACROS -D__STDC_LIMIT_MACROS -DTARGET_POSIX -D_LINUX -fPIC -DPIC -D_REENTRANT -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -U_FORTIFY_SOURCE -Wall -g -DHAVE_LIBOPENMAX=2 -DOMX -DOMX_SKIP64BIT -ftree-vectorize -pipe -DUSE_EXTERNAL_OMX -DHAVE_LIBBCM_HOST -DUSE_EXTERNAL_LIBBCM_HOST -DUSE_VCHIQ_ARM -Wno-psabi -I/opt/vc/include/ -I/opt/vc/include/interface/vcos/pthreads -I/opt/vc/include/interface/vmcs_host/linux -I./ -I/opt/vc/src/hello_pi/libs/ilclient -I/opt/vc/src/hello_pi/libs/vgfont -g -c rectangle.c -o rectangle.o -Wno-deprecated-declarations
+
+cc -o rectangle -Wl,--whole-archive rectangle.o -L/opt/vc/lib/ -lGLESv2 -lEGL -lbcm_host -lvcos -lvchiq_arm -lpthread -lrt -L/opt/vc/src/hello_pi/libs/vgfont -ldl -lm -Wl,--no-whole-archive -rdynamic
+	</code>
+      </pre>
+    <p>
+      However, it can then be run easily by
+    </p>
+      <pre>
+	<code>
+./rectangle
+	</code>
+      </pre>
+    
+
+    <h2> Drawing a triangle using OpenGL ES </h2>
+    <p>
+      The previous example did the absolute minimum of OpenGL calls,
+      just clearing the background. In this setion we do a bit more,
+      by using OpenGL calls to clear the background and repeatedly
+      draw a triangle (the same one!) multiple times a second.
+      The code is just adapted from Chapter 2 of the
+      <a href="http://opengles-book.com/es2/index.html">
+	OpenGL ES 2.0 Programming Guide
+      </a>
+    </p>
+
+    <p>
+      The essential differences from the Programming Guide are
+    </p>
+      <ul>
+	<li>
+	  We don't give any explanations of the OpenGL code -
+	  the Guide has an exhaustive description
+	</li>
+	<li>
+	  They hide the grubby details of building OpenGL programs
+	  in OS-specific modules such as <code>esUtils.c</code>,
+	  while we explicitly show the RPi stuff here
+	</li>
+      </ul>
+    
+
+  
+    <p>
+      The program is <a href="triangle.c">triangle.c</a>:
+    </p>
+      <pre class="sh_cpp">
+	<!--#exec cmd="/usr/local/bin/escape.pl . triangle.c" -->
+      </pre>
+    
+
+    <h2> Drawing an image using OpenGL ES</h2>
+    <p>
+      The OpenGL ES Programming Guide includes an example of drawing
+      a simple image using an array of pixels. Realistically, it notes
+      that the image data is more likely to be read from a file.
+      In this section we fill in the details.
+    </p>
+
+    <p>
+      There are many, many different file formats, some lossy, some lossless,
+      some compressed, some not, some with metadata, some without.
+      In this section we just use 
+      <a href="http://www.fileformat.info/format/tga/egff.htm">TGA</a> - an
+      uncompressed format with enough useful metadata, simple to load.
+    </p>
+
+    <p>
+      TGA files can be created from e.g. JPEG files by using the
+      <code>convert</code> utility from the Gimp drawing system.
+      It is simple to convert a file: just give the appropriate
+      file extensions:
+    </p>
+      <pre>
+	<code>
+convert image.jpg image.tga
+	</code>
+      </pre>
+    <p>
+      (Later sections look at decompressing files using the GPU itself.)
+    </p>
+
+    <p>
+      A TGA file has a header section which gives the width and height of the
+      image from which its size can be calculated. The default format will
+      be RGB, as 24-bit pixels. Reading in such a file is just a matter
+      of locating the dimensions, malloc'ing the right size buffer,
+      skipping to the start of the image data and reading it all in.
+    </p>
+
+    <p>
+      The default is for the origin of the image to be the bottom lefthand
+      corner, with the y-axis growing up. OpenGL ES on the other hand
+      has the origin in the top lefthand corner with the y-axis growing down.
+      So the image will be upside down. This can be fixed by reading the data
+      in differently, or by using an OpenGL ES reflection.
+    </p>
+
+    <p>
+      Getting a native window is done as before. Using the OpenGL ES Programming
+      Guide example, we also need to substitute our image array for their
+      2x2 array, adjusting the image bounds. Apart from those, there is no real
+      change.
+      The program is <a href="image.c">image.c</a>
+    </p>
+      <pre class="sh_cpp">
+	<!--#exec cmd="/usr/local/bin/escape.pl . image.c" -->
+      </pre>
+    <p>
+      The image used is of <a href="jan.tga">me</a>.
+    </p>
+
+
+
+      <!--#include virtual="../../footer.html" -->
+
+  </body>
+</html>

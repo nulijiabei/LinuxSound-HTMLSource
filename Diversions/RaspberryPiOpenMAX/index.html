@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="../../stylesheet.css" />
+
+    <title> Using the Raspberry Pi's GPU with OpenMAX</title>
+
+    <style type="text/css">
+      body { counter-reset: chapter 17; }
+    </style>
+
+    <script type="text/javascript" src="../../toc.js"> 
+      /* empty */
+    </script>
+
+    <script type="text/javascript">
+      /* <![CDATA[ */
+    (function() {
+        var s = document.createElement("script"), t = document.getElementsByTagName("script")[0];
+        s.type = "text/javascript";
+        s.async = true;
+        s.src = "http://api.flattr.com/js/0.6/load.js?mode=auto";
+        t.parentNode.insertBefore(s, t);
+    })();
+/* ]]> */
+    </script>
+
+
+    <link rel="stylesheet" type="text/css" href="../../js/doc/style.css">
+    <!-- <link rel="stylesheet" type="text/css" href="../../js/css/sh_emacs.css"> -->
+    <link rel="stylesheet" type="text/css" href="../../js/sh_style.css">
+    <script type="text/javascript" src="../../js/sh_main.min.js"></script>
+    <script type="text/javascript" src="../../js/lang/sh_cpp.min.js"></script>
+    
+
+  </head>
+  <body onload="sh_highlightDocument();">
+
+    <!--#include virtual="../../header.html" -->
+
+
+    <div class="chapter">
+      <h1>  Using the Raspberry Pi's GPU with OpenMAX </h1>
+    </div>
+
+    <div class="preface">
+      <p>
+	The Raspberry Pi (RPi) has a very underpowered CPU
+	but a very powerful GPU. Using the GPU is not well
+	documented. This chapter looks at drawing,
+	rendering images, etc, using the GPU.
+      </p>
+    </div>
+
+    <div id="generated-toc" class="generate_from_h2"></div>
+
+    <h2> Resources </h2>
+   
+      <ul>
+	<li>
+	  <a href="https://github.com/peepo/openGL-RPi-tutorial">
+	    openGL-RPi-tutorial  </a>
+	</li>
+	<li>
+	  <a href="http://thebugfreeblog.blogspot.com.au/2012/12/decoding-and-rendering-compressed.html"> 
+	    Decoding and Rendering Compressed Images with OpenMAX on Raspberry Pi: PiOmxTextures </a>
+	</li>
+	<li>
+	  <a href="http://elinux.org/Raspberry_Pi_VideoCore_APIs"> 
+	    Raspberry Pi VideoCore APIs </a>
+	</li>
+	<li>
+	  <a href="http://www.fileformat.info/format/tga/egff.htm">
+	    TGA File Format Summary
+	  </a>
+	</li>
+	<li>
+	  <a href="http://home.nouwen.name/RaspberryPi/documentation/ilcomponents/index.html">
+	    VMCS-X OpenMAX IL Components
+	  </a> is a link to OpenMAX IL components on the RPi
+	</li>
+	<li>
+	  <a href="http://www.fileformat.info/format/tga/egff.htm">
+	    TGA File Format Summary
+	  </a>
+	</li>
+	<li>
+	  <a href="">
+	    
+	  </a>
+	</li>
+	<li>
+	  <a href="">
+	    
+	  </a>
+	</li>
+	<li>
+	  <a href="">
+	    
+	  </a>
+	</li>
+      </ul>
+    
+
+    <h2> Acknowledgements </h2>
+    <p>
+      In many ways this chapter is a walk-through of some of the examples
+      in the RPi's <code>/opt/vc/src/hello_pi</code> directory.
+      These are written by a variety of authors, too many to acknowledge
+      individually. Thanks to all of you!
+    </p>
+
+
+    <h2> OpenMAX </h2>
+    <p>
+      We discussed OpenMAX in general in the chapter 
+      <a href="../../Sampled/OpenMAX/"> OpenMAX</a>, applying it to sound on the 
+      RPi and other systems. OpenMAX is an <em>extremely</em> difficult API
+      to work with - if you have any sense you will walk away right now.
+      By <a href="http://www.raspberrypi.org/forums/memberlist.php?mode=viewprofile&amp;u=754"> dom: </a>
+          "I have written a fair bit of openmax client code and find it very hard. 
+      You have to get an awful lot right before you get anything useful out.
+      Just lots of OMX_ErrorInvalidState, and OMX_ErrorBadParameter messages if you are lucky. 
+      Nothing happening at all if you are not..." 
+      dom is quite correct - I estimate that my productivity in dealing with this API
+      is done from the proverbial 10 lines per day to less than 10 lines per week.
+      And lots of that is staring at the screen in complete bewilderment as to why
+      it isn't working, with no error messages or anything to tell me
+      what is going on (or isn't).
+    </p>
+
+    <h2> Compilation </h2>
+    <p>
+      Just to add a wrinkle to OpenMAX's complexity, you have to be
+      careful to get all the flags correct in compiling programs -
+      or, guess what? - things don't work then either. I
+      suspect it is things like word-alignment that are critical,
+      but I've haven't checked
+      OpenMAX in detail. Here are what seems to work:
+    </p>
+      <pre>
+	<code>
+INCLUDES = -DSTANDALONE -D__STDC_CONSTANT_MACROS -D__STDC_LIMIT_MACROS -DTARGET_POSIX -D_LINUX -fPIC \
+    -DPIC -D_REENTRANT -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -U_FORTIFY_SOURCE -Wall -g \
+    -DHAVE_LIBOPENMAX=2 -DOMX -DOMX_SKIP64BIT -ftree-vectorize -pipe -DUSE_EXTERNAL_OMX -DHAVE_LIBBCM_HOST \
+    -DUSE_EXTERNAL_LIBBCM_HOST -DUSE_VCHIQ_ARM -Wno-psabi -I/opt/vc/include/ -I/opt/vc/include/interface/vcos/pthreads \
+    -I/opt/vc/include/interface/vmcs_host/linux -I./ -I/opt/vc/src/hello_pi/libs/ilclient -I/opt/vc/src/hello_pi/libs/vgfont
+
+LDFLAGS = -Wl,--whole-archive -lilclient -L/opt/vc/lib/ -lopenmaxil -lbcm_host -lvcos -lvchiq_arm \
+    -lpthread -lrt -L/opt/vc/src/hello_pi/libs/ilclient -L/opt/vc/src/hello_pi/libs/vgfont \
+    -Wl,--no-whole-archive -rdynamic
+	</code>
+      </pre>
+    <p>
+      You are welcome to try reducing the number of flags - good luck!
+    </p>
+      
+    <h2> State changes </h2>
+    <p>
+      Execution of an OpenMAX component is driven by a state-transition model.
+      A component will start in the <code>Loaded</code> state, transition to the
+      <code>Idle</code> state and then to the <code>Executing</code> state.
+      At least, that is the idea. In practice, the state transitions will 
+      only occur for a component when conditions are <em>exactly</em>
+      right for that component.
+    </p>
+
+    <p>
+      The hardest transition to get right is from  <code>Loaded</code> to
+      <code>Idle</code>. Any <em>enabled</em> component has ports which have to be set up
+      and if that is not done exactly right then nothing will happen.
+      Being <em>exactly right</em> means that all of the
+      resources such as buffers have to be allocated and configured
+      <em>correctly</em>, which is often not so easy.
+      So most programmers seem to default to <em>disabling</em>
+      all of a component's ports at the beginning in order that this
+      transition will occur, and then try enabling them afterwards.
+      [The dramatic over-emphasis in this section is the result of
+      bitter experience, both by myself and - I am sure - all of
+      the other OpenMAX programmers!]
+    </p>
+
+    <h2> The ilclient library </h2>
+    <p>
+      The RPI has a library <code>ilclient</code> intended to make things easier.
+      This library is <em>not</em> directly portable - it relies on
+      VideoCore VC threads.
+      This could presumably be replaced. The primary assistance that it appears
+      to give to me is:
+    </p>
+      <ul>
+	<li>
+	  OpenMAX is inherently multi-threaded, relying heavily on callbacks
+	  called in various threads
+	</li>
+	<li>
+	  The <code>ilclient</code> library manages those callbacks for you
+	  in a generic manner
+	</li>
+	<li>
+	  Instead of having to do asynchronous programming, the library gives
+	  you a number of thread wait/synchronise calls, and you use
+	  these to "sit out" the asynchronous calls in the main thread
+	</li>
+	<li>
+	  The programming style is often: "make an asynchronous call and then
+	  wait for it to complete."
+	</li>
+      </ul>
+    <p>
+      That sounds awful, essentially turning concurrent programming into sequential
+      programming, but in fact it doesn't matter much: much of the
+      execution flow is just waiting in one thread or another,
+      and this just reduces the number of threads you have to think of...
+      It's also a protective style of programming: by call and wait at least
+      you have some chance of pinning down where your program has silently
+      ground to a halt.
+    </p>
+
+    <p>
+      For example, a port for a component
+      may be in disabled state. You can't allocate
+      buffers for it until a call has been made to enable it.
+      Then buffers can be allocated. After that (assuming no other
+      issues) the port should be able to transition to 
+      enabled state. So wait for that to occur, to ensure that
+      it does. Typical code is
+    </p>
+      <pre class="sh_cpp">
+	<code>
+    // enable output port of decoder
+    OMX_SendCommand(decoder-&gt;imageDecoder-&gt;handle,
+		    OMX_CommandPortEnable,
+		    decoder-&gt;imageDecoder-&gt;outPort, NULL);
+
+    // and allocate a buffer
+    int             ret = OMX_AllocateBuffer(decoder-&gt;imageDecoder-&gt;handle,
+					     &amp;decoder-&gt;pOutputBufferHeader,
+					     decoder-&gt;imageDecoder-&gt;
+					     outPort,
+					     NULL,
+					     portdef.nBufferSize);
+    printf("Output port buffer allocated\n");
+
+    if (ret != OMX_ErrorNone) {
+	perror("Eror allocating buffer");
+	return OMXJPEG_ERROR_MEMORY;
+    }
+
+    // wait for enable to complete
+    ilclient_wait_for_event(decoder-&gt;imageDecoder-&gt;component,
+			    OMX_EventCmdComplete,
+			    OMX_CommandPortEnable, 1,
+			    decoder-&gt;imageDecoder-&gt;outPort, 1, 0,
+			    TIMEOUT_MS);
+    printf("Decoder output port enabled\n");
+	</code>
+      </pre>
+
+
+    <h3> ilclient errors </h3>
+    <p>
+      Calls to the <code>ilclient</code> library will sometimes
+      throw error messages such as this
+    </p>
+      <pre>
+	<code>
+assertion failure:ilclient.c:747:ilclient_change_component_state():error == OMX_ErrorNone
+
+Program received signal SIGABRT, Aborted.
+0xb6e41bfc in raise () from /lib/arm-linux-gnueabihf/libc.so.6
+	</code>
+      </pre>
+    <p>
+      This doesn't tell you where in your code the call was made, and gives
+      a totally useless error message.
+    </p>
+
+    <p>
+      Okay (you may think), run it
+      inside a debugger such as <code>gdb</code> and when it stops,
+      ask for a backtrace:
+    </p>
+      <pre>
+	<code>
+(gdb) where
+#0  0xb6e41bfc in raise () from /lib/arm-linux-gnueabihf/libc.so.6
+#1  0xb6e4597c in abort () from /lib/arm-linux-gnueabihf/libc.so.6
+#2  0xb6f825a4 in ?? () from /opt/vc/lib/libvcos.so
+#3  0xb6f825a4 in ?? () from /opt/vc/lib/libvcos.so
+Backtrace stopped: previous frame identical to this frame (corrupt stack?)
+(gdb) 
+	</code>
+      </pre>
+    
+
+    <p>
+      Ho hum, no luck there! You need to run the program inside the 
+      debugger to figure out which <code>ilclient</code> call
+      broke, stepping past each <code>ilclient</code> call until one
+      of them breaks. In this case, it was a call to 
+      <code>ilclient_change_component_state</code> 
+      (about the fifth such call I had made).
+      Then run the program again, this time stepping <em>into</em>
+      the offending call. Then you can see the details of each
+      call made: in my case I was trying to change state with
+      insufficient resources set:
+    </p>
+      <pre>
+	<code>
+(gdb) 
+365	    ilclient_change_component_state(decoder->imageRender->component,
+(gdb) step
+ilclient_change_component_state (comp=0x4b150, state=OMX_StateExecuting)
+    at ilclient.c:746
+746	   error = OMX_SendCommand(comp->comp, OMX_CommandStateSet, state, NULL);
+(gdb) next
+747	   vc_assert(error == OMX_ErrorNone);
+(gdb) print error
+$1 = OMX_ErrorInsufficientResources
+	</code>
+      </pre>
+
+    <p>
+      That's very tedious. Welcome to OpenMAX programming.
+    </p>
+
+    <h2> Creating a component </h2>
+    <p>
+      The <code>ilclient</code> library has a convenience function
+      to create a component, <code> ilclient_create_component</code>.
+      This takes four parameters. 
+      The first is an 
+      <code> ILCLIENT_T</code> which an application gets by a
+      call to <code>ilclient_init()</code>.
+      The second is the address to store the component.
+    </p>
+
+    <p>
+      The third is a 'simple' form of the component's name.
+      Now this isn't the name used in the OpenMAX specification.
+      And it isn't the actual name of the component.
+      For an image decoder object these are
+      <code>image_decoder</code> and
+      <code>OMX.broadcom.image_decode</code> respectively.
+      The name used is formed by dropping 
+      <code>OMX.broadcom.</code> from the component's name,
+      to give <code>image_decode</code>.
+      The full list of Broadcom components is at
+      <a href="http://home.nouwen.name/RaspberryPi/documentation/ilcomponents/index.html">
+	VMCS-X OpenMAX IL Components
+      </a> and this lists the names used.
+    </p>
+
+    <p>
+      The fourth parameter is a bit-wise OR of several flags.
+      A major one is <code>ILCLIENT_DISABLE_ALL_PORTS</code>
+      which - as might be expected - disables all ports of the
+      component, to make it easier to transition to idle state
+      later. Two other significant flags are
+      <code>ILCLIENT_ENABLE_INPUT_BUFFERS</code> and
+      <code>ILCLIENT_ENABLE_OUTPUT_BUFFERS</code>.
+      Now these don't actually enable any buffers for the ports,
+      create buffers, or apparently do anything really useful.
+      However, if you don't enable the appropriate buffers here
+      and later try to actually enable them using
+      an <code>OMX_CommandPortEnable</code> command,
+      then the library will throw a cryptic error
+      message  complaining about an illegal operation.
+      I suppose that is trying to ensure that you only
+      make valid calls for that component, but I wish the
+      error was not so un-helpful.
+    </p>
+
+    <p>
+      A typical component creation will look like
+    </p>
+      <pre class="sh_cpp">
+	<code>
+ ilclient_create_component(decoder-&gt;client,
+			&amp;decoder-&gt;imageDecoder-&gt;component,
+			"image_decode",
+			ILCLIENT_DISABLE_ALL_PORTS
+			|
+			ILCLIENT_ENABLE_INPUT_BUFFERS
+			|
+			ILCLIENT_ENABLE_OUTPUT_BUFFERS)
+	</code>
+      </pre>
+    
+	
+      
+    <h2> Decoding a JPEG image </h2>
+    <p>
+      OpenMAX on the RPi has a standard component 
+      <code>OMX.broadcom.image_decode</code>.
+      The RPi documentation for it is 
+      <a href="http://home.nouwen.name/RaspberryPi/documentation/ilcomponents/image_decode.html">
+	here </a>. It has two ports. The input port has (3) buffers to take a JPEG
+      image, and one output port for the decoded image.
+      The input buffers have a default size, and if the image is large you just
+      cycle through them, filling and emptying each buffer in turn.
+    </p>
+
+    <p>
+      The program starts off fairly easily in <code>main</code>
+      by reading the JPEG file into a byte-buffer of the right size.
+      The call to <code>bcm_host_init</code> is required to
+      initialise the Broadcom libraries. The JPEG image decoder
+      is then created and asked to decode the image.
+    </p>
+      <pre  class="sh_cpp">
+	<code>
+int
+main(int argc, char *argv[])
+{
+    OPENMAX_JPEG_DECODER *pDecoder;
+    char           *sourceImage;
+    size_t          imageSize;
+    int             s;
+    if (argc &lt; 2) {
+	printf("Usage: %s &lt;filename&gt;\n", argv[0]);
+	return -1;
+    }
+    FILE           *fp = fopen(argv[1], "rb");
+    if (!fp) {
+	printf("File %s not found.\n", argv[1]);
+    }
+    fseek(fp, 0L, SEEK_END);
+    imageSize = ftell(fp);
+    fseek(fp, 0L, SEEK_SET);
+    sourceImage = malloc(imageSize);
+    assert(sourceImage != NULL);
+    s = fread(sourceImage, 1, imageSize, fp);
+    assert(s == imageSize);
+    fclose(fp);
+    bcm_host_init();
+    s = setupOpenMaxJpegDecoder(&amp;pDecoder);
+    assert(s == 0);
+    s = decodeImage(pDecoder, sourceImage, imageSize);
+    assert(s == 0);
+    cleanup(pDecoder);
+    free(sourceImage);
+    return 0;
+}
+	</code>
+      </pre>
+
+    <p>
+      The call to <code>setupOpenMaxJpegDecoder</code> builds some
+      data structures and calls to <code>prepareImageDecoder</code>
+      to initialise the decoder and <code>startupImageDecoder</code>
+      to move it into executing state, so that it can then decode
+      the image.
+    </p>
+      <pre  class="sh_cpp">
+	<code>
+int
+setupOpenMaxJpegDecoder(OPENMAX_JPEG_DECODER ** pDecoder)
+{
+    *pDecoder = malloc(sizeof(OPENMAX_JPEG_DECODER));
+    if (pDecoder[0] == NULL) {
+	perror("malloc decoder");
+	return OMXJPEG_ERROR_MEMORY;
+    }
+    memset(*pDecoder, 0, sizeof(OPENMAX_JPEG_DECODER));
+
+    if ((pDecoder[0]-&gt;client = ilclient_init()) == NULL) {
+	perror("ilclient_init");
+	return OMXJPEG_ERROR_ILCLIENT_INIT;
+    }
+
+    if (OMX_Init() != OMX_ErrorNone) {
+	ilclient_destroy(pDecoder[0]-&gt;client);
+	perror("OMX_Init");
+	return OMXJPEG_ERROR_OMX_INIT;
+    }
+    // prepare the image decoder
+    int             ret = prepareImageDecoder(pDecoder[0]);
+    if (ret != OMXJPEG_OK)
+	return ret;
+
+    ret = startupImageDecoder(pDecoder[0]);
+    if (ret != OMXJPEG_OK)
+	return ret;
+
+    return OMXJPEG_OK;
+}
+	</code>
+      </pre>
+    
+
+    <p>
+      The call to <code>prepareImageDecoder</code> creates the
+      component and establishes its input and output port numbers
+      (which should be 320 and 321 respectively by the OpenMAX
+      specification). These two ports are disabled, but they
+      are enabled to have buffers.
+    </p>
+
+    <p>
+      The function <code>startupImageDecoder</code> is a heavy-duty
+      function. It has to establish the format that it will
+      accept from the input file by
+    </p>
+      <pre  class="sh_cpp">
+	<code>
+    // set input image format
+    OMX_IMAGE_PARAM_PORTFORMATTYPE imagePortFormat;
+    memset(&amp;imagePortFormat, 0, sizeof(OMX_IMAGE_PARAM_PORTFORMATTYPE));
+    imagePortFormat.nSize = sizeof(OMX_IMAGE_PARAM_PORTFORMATTYPE);
+    imagePortFormat.nVersion.nVersion = OMX_VERSION;
+    imagePortFormat.nPortIndex = decoder->imageDecoder->inPort;
+    imagePortFormat.eCompressionFormat = OMX_IMAGE_CodingJPEG;
+    OMX_SetParameter(decoder->imageDecoder->handle,
+		     OMX_IndexParamImagePortFormat, &amp;imagePortFormat);
+	</code>
+      </pre>
+    
+
+    <p>
+      Then it queries for the buffer requirements, building an
+      <code> OMX_PARAM_PORTDEFINITIONTYPE portdef</code>
+      structure and populating it with a get parameter call.
+    </p>
+      <pre  class="sh_cpp">
+	<code>
+    // get buffer requirements
+    OMX_PARAM_PORTDEFINITIONTYPE portdef;
+    portdef.nSize = sizeof(OMX_PARAM_PORTDEFINITIONTYPE);
+    portdef.nVersion.nVersion = OMX_VERSION;
+    portdef.nPortIndex = decoder->imageDecoder->inPort;
+    OMX_GetParameter(decoder->imageDecoder->handle,
+		     OMX_IndexParamPortDefinition, &amp;portdef);
+	</code>
+      </pre>
+    
+
+    <p>
+      Then we can make a call to enable the input port,
+      allocate the input buffers and wait for the port
+      to become enabled
+    </p>
+      <pre  class="sh_cpp">
+	<code>
+    // enable the port and setup the buffers
+    OMX_SendCommand(decoder-&gt;imageDecoder-&gt;handle,
+		    OMX_CommandPortEnable,
+		    decoder-&gt;imageDecoder-&gt;inPort, NULL);
+    decoder-&gt;inputBufferHeaderCount = portdef.nBufferCountActual;
+    // allocate pointer array
+    decoder-&gt;ppInputBufferHeader =
+	(OMX_BUFFERHEADERTYPE **) malloc(sizeof(void) *
+					 decoder-&gt;inputBufferHeaderCount);
+    // allocate each buffer
+    int             i;
+    for (i = 0; i &lt; decoder-&gt;inputBufferHeaderCount; i++) {
+	if (OMX_AllocateBuffer(decoder-&gt;imageDecoder-&gt;handle,
+			       &amp;decoder-&gt;ppInputBufferHeader[i],
+			       decoder-&gt;imageDecoder-&gt;inPort,
+			       (void *) i,
+			       portdef.nBufferSize) != OMX_ErrorNone) {
+	    perror("Allocate decode buffer");
+	    return OMXJPEG_ERROR_MEMORY;
+	}
+    }
+    // wait for port enable to complete - which it should once buffers are 
+    // assigned
+    int             ret =
+	ilclient_wait_for_event(decoder-&gt;imageDecoder-&gt;component,
+				OMX_EventCmdComplete,
+				OMX_CommandPortEnable, 0,
+				decoder-&gt;imageDecoder-&gt;inPort, 0,
+				0, TIMEOUT_MS);
+    if (ret != 0) {
+	fprintf(stderr, "Did not get port enable %d\n", ret);
+	return OMXJPEG_ERROR_EXECUTING;
+    }
+	</code>
+      </pre>
+    
+
+    <p>
+      Finally, we can move the component into executing state.
+      But being paranoic about the behaviour of this API,
+      we wait to ensure that it actually does make the state
+      transition requested:
+    </p>
+      <pre  class="sh_cpp">
+	<code>
+    // start executing the decoder 
+    ret = OMX_SendCommand(decoder-&gt;imageDecoder-gt;handle,
+			  OMX_CommandStateSet, OMX_StateExecuting, NULL);
+    if (ret != 0) {
+	fprintf(stderr, "Error starting image decoder %x\n", ret);
+	return OMXJPEG_ERROR_EXECUTING;
+    }
+    ret = ilclient_wait_for_event(decoder-gt;imageDecoder-gt;component,
+				  OMX_EventCmdComplete,
+				  OMX_StateExecuting, 0, 0, 1, 0,
+				  TIMEOUT_MS);
+    if (ret != 0) {
+	fprintf(stderr, "Did not receive executing stat %d\n", ret);
+	// return OMXJPEG_ERROR_EXECUTING;
+    }
+	</code>
+      </pre>
+    
+
+    <p>
+      The function <code>decodeImage</code> starts up normally enough.
+      It loads the input buffers in a circular fashion
+      from the JPEG image loaded
+      into the <code>sourceImage</code> array.
+      Each buffer is emptied by a call to
+      <code> OMX_EmptyThisBuffer</code>. When the entire image
+      has been loaded, the final buffer has the 
+      <code> OMX_BUFFERFLAG_EOS</code> flag set to indicate
+      that the image is complete.
+    </p>
+
+    <p>
+      The snag with this component is that you don't know how large the decoded
+      image will be until the decoder has done at least some work on it.
+      So while the input buffers can be assigned statically up front,
+      filled and emptied, we don't know what the size of the
+      output buffer should be.
+      Fortunately OpneMAX manages this
+      by raising
+      a <code>PortSettingsChanged</code> event
+      when enough information is gained from the JPEG image
+      to know the size of the decoded image.
+    </p>
+
+    <p>
+      If we were into concurrent programming, we would catch
+      a <code>PortSettingsChanged</code> event in an
+      event handling thread and work from there.
+      The <code>ilclient</code> library tries to force a
+      sequential mode of operation. So whenever a buffer
+      is emptied, the application will go into a loop
+      either waiting for a <code>PortSettingsChanged</code>
+      event to occur and timing out after 5 milliseconds
+      (I think)
+      if it doesn't or exiting if the input buffer is empty.
+      This code is a bit messy!
+    </p>
+      <pre  class="sh_cpp">
+	<code>
+	// wait for buffer to empty or port changed event
+	int             done = 0;
+	while ((done == 0) || (decoder-&gt;pOutputBufferHeader == NULL)) {
+	    if (decoder-&gt;pOutputBufferHeader == NULL) {
+		ret =
+		    ilclient_wait_for_event
+		    (decoder-&gt;imageDecoder-&gt;component,
+		     OMX_EventPortSettingsChanged,
+		     decoder-&gt;imageDecoder-&gt;outPort, 0, 0, 1, 0, 5);
+
+		if (ret == 0) {
+		    portSettingsChanged(decoder);
+		}
+	    } else {
+		ret =
+		    ilclient_remove_event(decoder-&gt;imageDecoder-&gt;component,
+					  OMX_EventPortSettingsChanged,
+					  decoder-&gt;imageDecoder-&gt;outPort,
+					  0, 0, 1);
+		if (ret == 0)
+		    portSettingsChangedAgain(decoder);
+
+	    }
+
+	    // check to see if buffer is now empty
+	    if (pBufHeader-&gt;nFilledLen == 0)
+		done = 1;
+
+	    if ((done == 0)
+		|| (decoder-&gt;pOutputBufferHeader == NULL)) {
+		printf("Buffer is now size %d\n", pBufHeader-&gt;nFilledLen);
+		sleep(1);
+	    }
+	}
+	</code>
+      </pre>
+    
+
+    <p>
+      If a <code>PortSettingsChanged</code> event occurs,
+      the application calls <code>portSettingsChanged</code>
+      in the main thread. This queries the (single) output port
+      for the width and height values now set, switches
+      the component to enabled state, allocates a buffer
+      and waits for it to move to enabled state.
+      We can also collect information about the
+      format of the decoded image as well as other
+      features such as size.
+    </p>
+
+    <p>
+      Once the output buffer has been created, we can make a
+      call to fill the buffer. We should only have to do this once,
+      so a flag <code>bFilled</code> is used to control this.
+    </p>
+      <pre  class="sh_cpp">
+	<code>
+	// fill the buffer if we have created the buffer
+	if (bFilled == 0) {
+	    if ((decoder-&gt;pOutputBufferHeader == NULL)) {
+		portSettingsChanged(decoder);
+	    }
+	    OMX_PARAM_U32TYPE param;
+	    param.nSize = sizeof(OMX_PARAM_U32TYPE);
+	    param.nVersion.nVersion = OMX_VERSION;
+	    param.nPortIndex = decoder-&gt;imageDecoder-&gt;outPort;
+	   
+	    OMX_GetParameter(decoder-&gt;imageDecoder-&gt;handle,
+		     OMX_IndexParamActiveStream, &amp;param);
+	    printf("Active stream %d\n", param.nU32);
+
+	    printf("Trying to fill output buffer\n");
+	    printState(decoder-&gt;imageDecoder-&gt;handle);
+	    ret = OMX_FillThisBuffer(decoder-&gt;imageDecoder-&gt;handle,
+				     decoder-&gt;pOutputBufferHeader);
+	    
+	    if (ret != OMX_ErrorNone) {
+		perror("Filling output buffer");
+		fprintf(stderr, "Error code %x\n", ret);
+		return OMXJPEG_ERROR_MEMORY;
+	    }
+
+	    bFilled = 1;
+	}
+	</code>
+      </pre>
+
+    <p>
+      Once the input buffers have been filled and emptied
+      the output buffer has been sized, allocated and
+      a call made to fill it, the application has nothing
+      to do but wait until the output buffer is filled.
+      OpenMAX should generate a <code>OMX_BUFFERFLAG_EOS</code>
+      when this happens, so we just wait
+    </p>
+      <pre  class="sh_cpp">
+	<code>
+    // wait for end of stream events
+    int             ret =
+	ilclient_wait_for_event(decoder->imageDecoder->component,
+				OMX_EventBufferFlag,
+				decoder->imageDecoder->outPort, 1,
+				OMX_BUFFERFLAG_EOS, 1,
+				0, 2);
+    if (ret != 0) {
+	fprintf(stderr, "No EOS event on image decoder %d\n", ret);
+    } else  {
+	fprintf(stderr, "EOS event on image decoder %d\n", ret);
+    }
+	</code>
+      </pre>
+    <p>
+      Ooops! the EOS event doesn't seem to get generated in
+      practice (contrary to the specification) but the program
+      seems to work anyway :-(.
+    </p>
+
+    <p>
+      At this point we can do something like save the decoded
+      image to a file, or do further processing.
+    </p>
+
+    <p>
+      The final code is <a href="jpeg-decoder.c">jpeg-decoder.c</a>
+    </p>
+      <pre class="sh_cpp">
+	<!--#exec cmd="/usr/local/bin/escape.pl . jpeg-decoder.c" -->
+      </pre>
+    
+    <h2> Format of decoded image</h2>
+    <p>
+      There are two principal colour formats used for images: YUV and RGB.
+      It is <a href="http://www.pcmag.com/encyclopedia/term/55166/yuv-rgb-conversion-formulas">
+	simple</a> to translate from one to the other.
+      But the Broadcom <code>image_decode</code> component won't do any
+      translation: it will only give you YUV images. 
+      This is according to the OpenMAX specifications for a JPEG
+      decoder. If you want RGB, you have to do it yourself
+      or use another Broadcom component,
+      the <code>resize</code> component. This is not a standard
+      OpenMAX component (see below).
+    </p>
+
+    <h2> Tunnelling </h2>
+    <p>
+      If you want to connect two or more OpenMAX components
+      then these two components have to be able to pass
+      information between them. This means that the port formats
+      must be the same between one component's output port
+      and the next component's input port, and there must be
+      a means of transferring from output buffers to input
+      buffers.
+    </p>
+
+    <p>
+      OpenMAX supplies two methods to do this:
+    </p>
+      <ul>
+	<li>
+	  Do it all yourself; or
+	</li>
+	<li>
+	  Use tunnelling
+	</li>
+      </ul>
+    <p>
+      Doing it yourself is always supported. In this case the client
+      has to work out compatable port formats, and co-ordinate
+      buffers. For example, when one component fills a buffer
+      the client could copy it to the next component's input
+      buffer. This is inefficient. Or the client could use
+      the first component's output buffer as the next component's
+      input buffer. But that would mean that the shared buffer
+      would not be free for the first component to refill
+      until the second component had received a buffer-empty
+      event. Messy.
+    </p>
+
+    <p>
+      The alternative is tunnelling where the client asks the
+      components to do all this for them. The OpenMAX components
+      support tunnelling, which makes life a lot easier.
+    </p>
+
+    <p>
+      Tunnelling is used to connect two ports. It can only be done
+      when the two components are in the Loaded state or when the 
+      ports are disabled. The call <code>OMX_SetupTunnel</code>
+      will then connect the two ports as in
+    </p>
+      <pre>
+	<code>
+    // establish tunnel between decoder output and resizer input
+    OMX_SetupTunnel(decoder-&gt;imageDecoder-&gt;handle,
+		    decoder-&gt;imageDecoder-&gt;outPort,
+		    decoder-&gt;imageResizer-&gt;handle,
+		    decoder-&gt;imageResizer-&gt;inPort);
+	</code>
+      </pre>
+    
+
+    <p>
+      A typical use of this is to disable the relevant ports 
+      while they are in Idle state, and then to fill and empty
+      the input buffers of the first component. This will
+      trigger a <code>PortSettingsChanged</code> event on the first
+      component's output port. At this point, with formats
+      and things like image sizes determined, the two
+      ports can be connected by a tunnel. 
+      There is no need to allocate buffers: the tunnel does that.
+    </p>
+
+    <h2> Decoding a JPEG image into RGB format </h2>
+    <p>
+      The OpenMAX component <code>image_resize</code>
+      will decode a JPEG image, but only to YUV format.
+      Broadcom has an additional non-standard component
+      <code>resize</code> which can not only resize
+      an uncompresssed image but also convert it
+      to RGB format.
+    </p>
+
+    <p>
+      Matt Ownby and Anthong Sale did a marvellous job
+      of unravelling the sequence of steps required
+      to set up tunnelling between a decoder and resizer.
+      Their logic is captured in the <code>portSettingsChanged</code>
+      function. This adds tunnelling to the
+      decoder program given earlier.
+    </p>
+      <pre class="sh_cpp">
+	<code>
+int
+portSettingsChanged(OPENMAX_JPEG_DECODER * decoder)
+{
+    OMX_PARAM_PORTDEFINITIONTYPE portdef;
+
+    // need to setup the input for the resizer with the output of the
+    // decoder
+    portdef.nSize = sizeof(OMX_PARAM_PORTDEFINITIONTYPE);
+    portdef.nVersion.nVersion = OMX_VERSION;
+    portdef.nPortIndex = decoder-&gt;imageDecoder-&gt;outPort;
+    OMX_GetParameter(decoder-&gt;imageDecoder-&gt;handle,
+		     OMX_IndexParamPortDefinition, &amp;portdef);
+
+    unsigned int    uWidth =
+	(unsigned int) portdef.format.image.nFrameWidth;
+    unsigned int    uHeight =
+	(unsigned int) portdef.format.image.nFrameHeight;
+
+    // tell resizer input what the decoder output will be providing
+    portdef.nPortIndex = decoder-&gt;imageResizer-&gt;inPort;
+    OMX_SetParameter(decoder-&gt;imageResizer-&gt;handle,
+		     OMX_IndexParamPortDefinition, &amp;portdef);
+
+    // establish tunnel between decoder output and resizer input
+    OMX_SetupTunnel(decoder-&gt;imageDecoder-&gt;handle,
+		    decoder-&gt;imageDecoder-&gt;outPort,
+		    decoder-&gt;imageResizer-&gt;handle,
+		    decoder-&gt;imageResizer-&gt;inPort);
+
+    // enable ports
+    OMX_SendCommand(decoder-&gt;imageDecoder-&gt;handle,
+		    OMX_CommandPortEnable,
+		    decoder-&gt;imageDecoder-&gt;outPort, NULL);
+    OMX_SendCommand(decoder-&gt;imageResizer-&gt;handle,
+		    OMX_CommandPortEnable,
+		    decoder-&gt;imageResizer-&gt;inPort, NULL);
+
+    // put resizer in idle state (this allows the outport of the decoder
+    // to become enabled)
+    OMX_SendCommand(decoder-&gt;imageResizer-&gt;handle,
+		    OMX_CommandStateSet, OMX_StateIdle, NULL);
+
+    // wait for state change complete
+    ilclient_wait_for_event(decoder-&gt;imageResizer-&gt;component,
+			    OMX_EventCmdComplete,
+			    OMX_CommandStateSet, 1,
+			    OMX_StateIdle, 1, 0, TIMEOUT_MS); 
+
+    // once the state changes, both ports should become enabled and the
+    // resizer
+    // output should generate a settings changed event
+    ilclient_wait_for_event(decoder-&gt;imageDecoder-&gt;component,
+			    OMX_EventCmdComplete,
+			    OMX_CommandPortEnable, 1,
+			    decoder-&gt;imageDecoder-&gt;outPort, 1, 0,
+			    TIMEOUT_MS);
+    ilclient_wait_for_event(decoder-&gt;imageResizer-&gt;component,
+			    OMX_EventCmdComplete, OMX_CommandPortEnable, 1,
+			    decoder-&gt;imageResizer-&gt;inPort, 1, 0,
+			    TIMEOUT_MS);
+    ilclient_wait_for_event(decoder-&gt;imageResizer-&gt;component,
+			    OMX_EventPortSettingsChanged,
+			    decoder-&gt;imageResizer-&gt;outPort, 1, 0, 1, 0,
+			    TIMEOUT_MS);
+
+    ilclient_disable_port(decoder-&gt;imageResizer-&gt;component,
+			  decoder-&gt;imageResizer-&gt;outPort);
+
+    // query output buffer requirements for resizer
+    portdef.nSize = sizeof(OMX_PARAM_PORTDEFINITIONTYPE);
+    portdef.nVersion.nVersion = OMX_VERSION;
+    portdef.nPortIndex = decoder-&gt;imageResizer-&gt;outPort;
+    OMX_GetParameter(decoder-&gt;imageResizer-&gt;handle,
+		     OMX_IndexParamPortDefinition, &amp;portdef);
+
+    // change output color format and dimensions to match input
+    portdef.format.image.eCompressionFormat = OMX_IMAGE_CodingUnused;
+    portdef.format.image.eColorFormat = OMX_COLOR_Format32bitABGR8888;
+    portdef.format.image.nFrameWidth = uWidth;
+    portdef.format.image.nFrameHeight = uHeight;
+    portdef.format.image.nStride = 0;
+    portdef.format.image.nSliceHeight = 0;
+    portdef.format.image.bFlagErrorConcealment = OMX_FALSE;
+
+    OMX_SetParameter(decoder-&gt;imageResizer-&gt;handle,
+		     OMX_IndexParamPortDefinition, &amp;portdef);
+
+    // grab output requirements again to get actual buffer size
+    // requirement (and buffer count requirement!)
+    OMX_GetParameter(decoder-&gt;imageResizer-&gt;handle,
+		     OMX_IndexParamPortDefinition, &amp;portdef);
+
+    // move resizer into executing state
+    ilclient_change_component_state(decoder-&gt;imageResizer-&gt;component,
+				    OMX_StateExecuting);
+    // show some logging so user knows it's working
+    printf
+	("Width: %u Height: %u Output Color Format: 0x%x Buffer Size: %u\n",
+	 (unsigned int) portdef.format.image.nFrameWidth,
+	 (unsigned int) portdef.format.image.nFrameHeight,
+	 (unsigned int) portdef.format.image.eColorFormat,
+	 (unsigned int) portdef.nBufferSize);
+    fflush(stdout);
+
+    // enable output port of resizer
+    OMX_SendCommand(decoder-&gt;imageResizer-&gt;handle,
+		    OMX_CommandPortEnable,
+		    decoder-&gt;imageResizer-&gt;outPort, NULL);
+
+    int             ret = OMX_AllocateBuffer(decoder-&gt;imageResizer-&gt;handle,
+					     &amp;decoder-&gt;pOutputBufferHeader,
+					     decoder-&gt;imageResizer-&gt;
+					     outPort,
+					     NULL,
+					     portdef.nBufferSize);
+    if (ret != OMX_ErrorNone) {
+	perror("Eror allocating buffer");
+	return OMXJPEG_ERROR_MEMORY;
+    }
+
+    ilclient_wait_for_event(decoder-&gt;imageResizer-&gt;component,
+			    OMX_EventCmdComplete,
+			    OMX_CommandPortEnable, 1,
+			    decoder-&gt;imageResizer-&gt;outPort, 1, 0,
+			    TIMEOUT_MS);
+
+    return OMXJPEG_OK;
+}
+	</code>
+      </pre>
+    
+
+    <p>
+      The only change we make to their code is to add a function
+      to dump the decoded and converted RGB image as a TGA file.
+      The function <code>save_image_as_TGA</code> is called
+      when the output buffer of the resizer is non-empty.
+      Just a few wrinkles in this. The image has a height and width.
+      The resizer will have aligned those up to a 16-byte
+      multiple, the Stride and the SliceHeight.
+      We have asked for a 32-bit format 
+      (<code> OMX_COLOR_Format32bitABGR8888</code>)
+      and so we have to specify this. The TGA format is specified
+      <a href="http://www.fileformat.info/format/tga/egff.htm">here</a>.
+    </p>
+
+    <p>
+      The co-ordinate system between TGA and the Broadcom is inverted.
+      We are lazy here because it simplifies the code, and save the
+      image upside down. The source is almost completely
+      from the RPi <code>/opt/vc/src/hello_pi/hello_jpeg/jpeg.c</code>
+      program, here as <a href="decodejpeg2rgb.c">decodejpeg2rgb.c</a>:
+    </p>
+      <pre class="sh_cpp">
+	<!--#exec cmd="/usr/local/bin/escape.pl . decodejpeg2rgb.c" -->
+      </pre>
+    
+
+    <h2> Rendering a JPEG image </h2>
+    <p>
+      In order to display am image we need to <em>render</em> it
+      on some output device. There is no specific component to
+      render images. Broadcom has a <code>video_render</code>
+      which will accept <em>both</em> a video stream or a single image.
+      Now this component only has one input port, and that port is
+      a <em>video</em> port. If we want to take an image from an output
+      <em>image</em> port, we would have to play some format
+      conversion games. Or, we can connect an image output port
+      to a video input port by using a tunnel, and let the
+      components sort it out themselves. This is much easier!
+    </p>
+
+    <p>
+      To render a JPEG image, we only need to use an
+      <code>image_decode</code> and a <code>video_render</code>
+      component. We need to set up the input port for the decoder
+      as in the last example. The video render component has no
+      output port so nothing needs to be done for that.
+      The two ports which are  connected by a tunnel do all necessary
+      setups and conversions themselves. So this is actually
+      simpler than the last program: load and empty input
+      buffers with the JPEG image, setup the tunnel
+      when port settings change, and ... that's
+      it! Note that we still defer setting up the tunnel
+      until the port settings have changed - otherwise
+      the buffer sizes would be wrong.
+    </p>
+
+    <p>
+      The program is <a href="renderjpeg.c">renderjpeg.c</a>
+    </p>
+      <pre class="sh_cpp">
+	<!--#exec cmd="/usr/local/bin/escape.pl . renderjpeg.c" -->
+      </pre>
+    
+
+    <h2> Rendering a JPEG image without tunnelling </h2>
+    <p>
+      Tunnelling gives an end-to-end means of decoding and rendering
+      an image. If we wanted to do things in the middle - say, overlay
+      some text - we would need to have access to the intermediate
+      stages. In this section we repeat the previous section, but
+      without using tunnelling.
+    </p>
+
+    <p>
+      We have to explicitly manage the communication between the
+      decode and render components. For the decode component,
+      we have to allocate a buffer.
+      We don't want to copy data between decode and render
+      buffers so the render component <em>uses</em> the
+      decoder's output buffers. Then as the decoder fills
+      its output buffer, the render component empties that
+      same buffer.
+    </p>
+
+    <p>
+      There are multiple hiccups along the way
+    </p>
+      <ul>
+	<li>
+	  Lots of information has to be copied from the
+	  decode port to the render port.
+	  We can't just use a <code>memcpy</code>
+	  because the decoder has a structure for an
+	  <em>image</em> while the render has a
+	  structure for a <em>video</em>, and these
+	  do not align.
+	
+	  <pre class="sh_cpp">
+	    <code>
+    // need to setup the input for the render with the output of the
+    // decoder
+    portdef.nSize = sizeof(OMX_PARAM_PORTDEFINITIONTYPE);
+    portdef.nVersion.nVersion = OMX_VERSION;
+    portdef.nPortIndex = decoder->imageDecoder->outPort;
+    OMX_GetParameter(decoder->imageDecoder->handle,
+		     OMX_IndexParamPortDefinition, &amp;portdef);
+
+    // Get default values of render
+    rportdef.nSize = sizeof(OMX_PARAM_PORTDEFINITIONTYPE);
+    rportdef.nVersion.nVersion = OMX_VERSION;
+    rportdef.nPortIndex = decoder->imageRender->inPort;
+    rportdef.nBufferSize = portdef.nBufferSize;
+
+    ret = OMX_GetParameter(decoder->imageRender->handle,
+			   OMX_IndexParamPortDefinition, &amp;rportdef);
+
+    // tell render input what the decoder output will be providing
+    //Copy some
+    rportdef.format.video.nFrameWidth = portdef.format.image.nFrameWidth;
+    rportdef.format.video.nFrameHeight = portdef.format.image.nFrameHeight;
+    rportdef.format.video.nStride = portdef.format.image.nStride;
+    rportdef.format.video.nSliceHeight = portdef.format.image.nSliceHeight;
+
+    ret = OMX_SetParameter(decoder->imageRender->handle,
+			   OMX_IndexParamPortDefinition, &amp;rportdef);
+	    </code>
+	  </pre>
+	</li>
+
+	<li>
+	  The decode component has one output buffer
+	  while the render component has three input
+	  buffers. We re-use one buffer and set the 
+	  other two to <code>NULL</code>
+	  <pre class="sh_cpp">
+	    <code>
+   ret = OMX_AllocateBuffer(decoder->imageDecoder->handle,
+			     &amp;decoder->pOutputBufferHeader,
+			     decoder->imageDecoder->
+			     outPort,
+			     NULL,
+			     portdef.nBufferSize);
+
+    // and share it with the renderer
+    // which has 3 default buffers, 2 minimum
+    decoder->ppRenderInputBufferHeader =
+	(OMX_BUFFERHEADERTYPE **) malloc(sizeof(void) *
+					 decoder->renderInputBufferHeaderCount);
+
+    ret = OMX_UseBuffer(decoder->imageRender->handle,
+			&amp;decoder->ppRenderInputBufferHeader[0],
+			decoder->imageRender->inPort,
+			NULL,
+			rportdef.nBufferSize,
+			decoder->pOutputBufferHeader->pBuffer);
+
+    int n;
+    for (n = 1; n &lt; decoder->renderInputBufferHeaderCount; n++) {
+	printState(decoder->imageRender->handle);
+	ret = OMX_UseBuffer(decoder->imageRender->handle,
+			    &
+amp;decoder->ppRenderInputBufferHeader[n],
+			    decoder->imageRender->inPort,
+			    NULL,
+			    0,
+			    NULL);
+    }
+	    </code>
+	  </pre>
+
+	</li>
+	<li>
+	  Even though we feed the size of the shared buffer into
+	  <code>UseBuffer</code> call, the field
+	  <code>nAllocLen</code> does not get set correctly
+	  (how do we know: because of an illegal parameter
+	  error, and then using the debugger to guess at what
+	  isn't right). 
+	  <pre class="sh_cpp">
+	    <code>
+    decoder->ppRenderInputBufferHeader[0]->nAllocLen =
+	decoder->pOutputBufferHeader->nAllocLen;
+	    </code>
+	  </pre>
+
+	</li>
+      </ul>
+    
+
+    <p>
+      Apart from that, it is the usual games of playing with
+      state, enabling and disabling ports until it works
+    </p>
+
+    <h2> Conclusion </h2>
+    <p>
+      The RPi has a useful GPU. Programming it using OpenMAX
+      is hard work, though. This chapter has covered some of
+      the issues. The topic is explored more in my
+      book <a href="https:/jan.newmarch.name/RPi/">
+	Programming the Raspberry Pi's GPU </a>
+    </p>
+    
+      <!--#include virtual="../../footer.html" -->
+
+  </body>
+</html>

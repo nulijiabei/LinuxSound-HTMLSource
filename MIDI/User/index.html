@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="../../stylesheet.css" />
+
+    <title> User level MIDI tools </title>
+
+    <style type="text/css">
+      body { counter-reset: chapter 18; }
+    </style>
+
+    <script type="text/javascript" src="../../toc.js"> 
+      /* empty */
+    </script>
+
+    <script type="text/javascript">
+      /* <![CDATA[ */
+    (function() {
+        var s = document.createElement("script"), t = document.getElementsByTagName("script")[0];
+        s.type = "text/javascript";
+        s.async = true;
+        s.src = "http://api.flattr.com/js/0.6/load.js?mode=auto";
+        t.parentNode.insertBefore(s, t);
+    })();
+/* ]]> */
+    </script>
+
+
+  </head>
+  <body>
+
+   <div class="preface">
+    
+    <p>
+      This chapter gives an  overview of the principal
+      tools used for playing MIDI files. It does not
+      include MIDI editors, MIDI producers, etc
+    </p>
+   </div>
+
+    <!--#include virtual="../../header.html" -->
+
+
+
+    <div class="chapter">
+      <h1> User level tools </h1>
+    </div>
+
+    <div id="generated-toc" class="generate_from_h2"></div>
+
+    <h2> Resources </h2>
+    
+      <ul>
+	<li>
+	  <a href="http://tedfelix.com/linux/linux-midi.html">
+	    Ted's Linux MIDI Guide
+	  </a>
+	</li>
+      </ul>
+    
+
+    <h2> Sound fonts </h2>
+    <p>
+      The tools described in this chapter each include a software synthesizer.
+      This produces audio as PCM data from the MID data fed to it.
+      The MIDI data contains information about the instrument playing each
+      note, and of course, every instrument sounds different.
+      So the synthesizer must make use of mapping information from
+      MIDI notes + instrument into PCM data.
+    </p>
+
+    <p>
+      The mapping is usually done using <em> soundfont </em> files.
+      There are various formats for this, of which the primary one
+      is the 
+      <a href="http://connect.creativelabs.com/developer/SoundFont/Forms/AllItems.aspx/"> 
+	.sf2
+      </a> format.
+      Some synthesizers (such as Timidity) can also use Gravis UltraSound
+      patches, which are recorded real instruments.
+    </p>
+
+    <p>
+      Many soundfont files have been created. See for example
+      <a href="http://www.synthfont.com/links_to_soundfonts.html">
+	Links to SoundFonts and other similar files
+      </a> (although many of the links are broken).
+    </p>
+      <ul>
+	<li>
+	  A common sound font is from FluidSynth, as 
+	  <code>/usr/share/sounds/sf2/FluidR3_GM.sf2</code>.
+	  This file is nearly 150Mbytes - soundfonts are not small!
+	</li>
+	<li>
+	  JavaSound has a soundfont 
+	  <code>soundbank-emg.sf2</code>.
+	  This is considerably smaller at 1.9Mb!
+	</li>
+	<li>
+	  Another popular soundfont is at
+	  <a href="http://www.schristiancollins.com/soundfonts/GeneralUser_GS_1.44-MuseScore.zip">
+	    GeneralUser_GS_1.44-MuseScore
+	  </a> by  S. Christian Collins.
+	  This is not so large, at 31Mb.
+	</li>
+	<li>
+	  A small soundfont is
+	  <a href="http://mscore.svn.sourceforge.net/viewvc/mscore/trunk/mscore/share/sound/TimGM6mb.sf2">
+	    by  Tim Brechbill
+	  </a> at 6Mb (linked from
+	  <a href="http://musescore.org/en/handbook/soundfont">
+	    MuseScore - soundfonts
+	  </a>)
+	</li>
+	<li>
+	   A list of soundfonts is at
+	   <a href="http://timidity.s11.xrea.com/files/readme_cfgp.htm">
+	 	TiMidity++ Configuration File Package v2004/8/3
+	   </a>
+	</li>
+      </ul>
+    
+
+    <p>
+      Possibly surprisingly, using different soundfonts doesn't seem 
+      to make much difference to CPU usage - for FluidSynth they all
+      use about 60-70% CPU on one song. They do, of course, sound
+      different.
+    </p>
+
+    <h2> Timidity </h2>
+    <p>
+      Timidity is a "Software sound renderer (MIDI sequencer, MOD player)"
+    </p>
+
+    <p>
+      Its home page is
+      <a href="http://maemo.org/packages/view/timidity/">
+	Maemo.org
+      </a>
+    </p>
+
+    <p>
+      Timidity can be used to play MIDI files by giving them on the command line
+    </p>
+    <pre>
+	<code>
+	  timidity rehab.mid
+	</code>
+      </pre>
+
+    <p>
+      The default soundfonts used by Timidity are Gravis UltraSound patches,
+      from the <code>/usr/share/midi/freepats/</code> directory.
+      These soundfonts are missing many instruments, so should be
+      replaced by another such as the FluidSynth fonts. 
+      The settings are made in the configurations file
+      <code>/etc/timidity/timidity.cfg</code>
+    </p>
+
+    <h3> TiMidity as a server </h3>
+    <p>
+      It can also be run as an ALSA server listening on a port
+      (<a href="http://wiki.winehq.org/MIDI">Using MIDI with UNIX</a>):
+    </p>
+      <pre>
+	<code>
+	  timidity -iAD -B2,8 -Os1l -s 44100
+	</code>
+      </pre>
+   <p>
+      The "-iAD" option runs it as a Daemon process in the background as an 
+      ALSA sequencer client. The "-B2,8" option selects the number of buffer
+      fragments. The "-Os1l" option selects ALSA output as PCM. The "-s"
+      option is the sample size.
+      (For the Raspberry Pi, I found that <code>-B0,12</code>
+      worked better than <code>-B2,8</code>).
+    </p>
+
+    <p>
+      In this mode, ALSA can send messages to it.
+      The command
+    </p>
+      <pre>
+	<code>
+	  aconnect -0
+	</code>
+      </pre>
+   <p>
+      will show output such as
+   </p>
+      <pre>
+	<code>
+	  client 14: 'Midi Through' [type=kernel]
+	  0 'Midi Through Port-0'
+	  laptop:/home/httpd/html/LinuxSound/MIDI/Python/pyPortMidi-0.0.3$aconnect -o
+	  client 14: 'Midi Through' [type=kernel]
+	  0 'Midi Through Port-0'
+	  client 128: 'TiMidity' [type=user]
+	  0 'TiMidity port 0 '
+	  1 'TiMidity port 1 '
+	  2 'TiMidity port 2 '
+	  3 'TiMidity port 3 '
+	</code>
+      </pre>
+  
+   <p>
+      The "Midi Through" port is not useful but the Timidity ports are.
+      MIDI files can then be played by an ALSA sequencer such as
+   </p>
+      <pre>
+	<code>
+	  aplaymidi -p128:0 rehab.mid
+	</code>
+      </pre>
+    
+
+    <h3> Setting Timidity output device </h3>
+    <p>
+      The default output for TiMidity can be changed using the
+      <code>-O</code> option. TiMidity help (<code>timidity -h</code>)
+      shows, for example,
+    </p>
+      <pre>
+	<code>
+	  Available output modes (-O, --output-mode option):
+	  -Os          ALSA pcm device
+	  -Ow          RIFF WAVE file
+	  -Or          Raw waveform data
+	  -Ou          Sun audio file
+	  -Oa          AIFF file
+	  -Ol          List MIDI event
+	  -Om          Write MIDI file
+	  -OM          MOD -> MIDI file conversion
+	</code>
+      </pre>
+    
+
+    <p>
+      For some of these modes the device name can also be set, using
+      the <code>-o</code> option. For example, to play a file using
+      the <code>hw:2</code> ALSA device, use
+    </p>
+      <pre>
+	<code>
+	  timidity -Os -o hw:2 ... 
+	</code>
+      </pre>
+    
+
+    <h3> TiMidity and Jack </h3>
+    <p>
+      TiMidity can be run with Jack output using the <code>-Oj</code>
+      option. In a user-based environment such as Ubuntu you may need
+      to stop or pause PulseAudio, start the Jack server and then run TiMidity.
+      PulseAudion may be paused by e.g.
+    </p>
+      <pre>
+	<code>
+pasuspender cat
+	</code>
+      </pre>
+   <p>
+      in one terminal. In another, start the Jack daemon
+      using ALSA input and output
+   </p>
+      <pre>
+	<code>
+jackd -dalsa
+	</code>
+      </pre>
+   <p>
+      In a third terminal, run TiMidity
+   </p>
+      <pre>
+	<code>
+timidity -Oj 54154.mid
+	</code>
+      </pre>
+    
+
+    <p>
+      The links may be shown graphically by also running
+      <code>qjackctl</code>.
+    </p>
+
+      <h2> Rosegarden </h2>
+    <p>
+      "Rosegarden is a well-rounded audio and MIDI sequencer, score editor, 
+      and general-purpose music composition and editing environment"
+    </p>
+
+    <p>
+      Its home page is
+      <a href="http://www.rosegardenmusic.com/">
+	RoseGarden
+      </a>
+    </p>
+    <p>
+      It is not a standalone synthsesizer: it uses FluidSynth,
+      for example.
+    </p>
+
+    <h2> GStreamer </h2>
+    <p>
+      GStreamer allows you to build "pipelines" that can be played using
+      <code>gst-launch</code>.
+      It can play MIDI files by e.g.
+    </p>
+      <pre>
+	<code>
+	  gst-launch filesrc location="rehab.mid" ! decodebin ! alsasink
+	</code>
+      </pre>
+    
+
+    <h2> FluidSynth </h2>
+    <p>
+      <code>fluidsynth</code> is a command line MIDI player.
+      It runs under ALSA with a command line
+    </p>
+      <pre>
+	<code>
+	  fluidsynth -a alsa -l &lt;soundfont&gt; &lt;files...&gt;
+	</code>
+      </pre>
+   <p>
+      The soundfont is set explicitly on the command line, so can be
+      set to another soundfont.
+    </p>
+
+    <p>
+      <code>qsynth</code> is a GUI interface to <code>fluidsynth</code>.
+    </p>
+
+    <p>
+      You can use FluidSynth to convert MIDI files to WAV files by
+    </p>
+      <pre>
+	<code>
+	  fluidsynth -F out.wav /usr/share/sounds/sf2/FluidR3_GM.sf2 myfile.mid
+	</code>
+      </pre>
+    
+
+    <h3> Fluidsynth as a server </h3>
+    <p>
+      Fluidsynth can be run as a server in the same way as TiMidity.
+      Use
+    </p>
+      <pre>
+	<code>
+fluidsynth --server --audio-driver=alsa /usr/share/sounds/sf2/FluidR3_GM.sf2
+	</code>
+      </pre>
+   <p>
+      Then <code>a connect -o</code> will show the ports and it can
+      be played to by e.g.
+   </p>
+      <pre>
+	<code>
+amidi -p 128:0 &lt;midi-file&gt;
+	</code>
+      </pre>
+    
+
+    <h2> Wild MIDI </h2>
+    <p>
+      The aim of this sequencer/synthesizer is to be <em>small</em>.
+      It succeeds at this!.
+    </p>
+
+    <h2> Comparison </h2>
+    <p>
+      On playing the same song with the different systems, I observed
+      the following CPU patterns:
+    </p>
+      <dl>
+	<dt>
+	  Timidity + pulseaudio (with GUS or SF2 soundfonts)
+	</dt>
+	<dd>
+	  12-20% CPU
+	</dd>
+	<dt>
+	  FluidSynth + pulseaudio
+	</dt>
+	<dd>
+	  65-72% CPU
+	</dd>
+	<dt>
+	  WildMIDI
+	</dt>
+	<dd>
+	  6% CPU
+	</dd>
+	<dt>
+	  JavaSound
+	</dt>
+	<dd>
+	  52-60%
+	</dd>
+	<dt>
+	  GStreamer
+	</dt>
+	<dd>
+	  15-20% CPU
+	</dd>
+      </dl>
+
+    <h2> VLC </h2>
+    <p>
+      VLC is a general purpose media player. 
+      There is a <a href="https://wiki.videolan.org/Midi">
+	VLC module</a> to handle MIDI files using
+      FluidSynth.
+      To get this working on a Debian system you first need to
+      intall the <code>vlc-plugin-fluidsynth</code> package.
+      Then in Advanced Options of VLC, choose Codecs-Audio Codecs-FluidSynth.
+      You will need to set the soundfont, eg. to 
+      <code>/usr/share/sounds/sf2/FluidR3_GM.sf2</code>.
+    </p>
+      
+
+    <h2> Conclusion </h2>
+   <p>
+     This chapter has looked at a variety of user level tools
+     for manipulating MIDI. It has primarily includde players,
+     but there are also a large number of MIDI editors, producers,
+     etc.
+   </p>
+
+
+
+    <hr/>
+ <!--#include virtual="../../footer.html" -->
+
+  </body>
+</html>

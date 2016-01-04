@@ -1,0 +1,21 @@
+libsndfile:            no (raw audio file rendering only)
+D-Bus:                 no
+PulseAudio:            no
+JACK:                  no
+ALSA:                  yes
+PortAudio:             no
+OSS:                   yes
+MidiShare:             no
+CoreAudio:             no
+CoreMIDI:              no
+LADSPA support:        no
+LASH support:          no
+LADCCA support:        no
+OS/2 DART support:     no
+Audio to file driver:  yes
+Readline:              no
+Profiling:             no
+Debug:                 no
+Trap on FPE (debug):   no
+Check FPE (debug):     no
+
